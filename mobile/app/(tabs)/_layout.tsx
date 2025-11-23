@@ -1,5 +1,5 @@
 import { Tabs } from "expo-router";
-import { Home, BookOpen, Map, User, ScrollText } from "lucide-react-native";
+import { Home, BookOpen, Map, User, ScrollText, Settings } from "lucide-react-native";
 import { View } from "react-native";
 
 export default function TabLayout() {
@@ -42,6 +42,13 @@ export default function TabLayout() {
                 options={{
                     title: "Map",
                     tabBarIcon: ({ color, size }) => <Map color={color} size={size} />,
+                }}
+            />
+            <Tabs.Screen
+                name="admin"
+                options={{
+                    title: "Admin",
+                    tabBarIcon: ({ color, size }) => <Settings color={color} size={size} />,
                 }}
             />
             <Tabs.Screen
