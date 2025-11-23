@@ -87,7 +87,7 @@ export default function LoginScreen() {
                                     <View className="mb-4 w-full items-center">
                                         <View className="flex-row justify-center gap-3">
                                             {groupCode.map((char, index) => (
-                                                <View 
+                                                <View
                                                     key={index}
                                                     className="w-10 h-14 bg-card rounded-lg border-2 items-center justify-center"
                                                     style={{
@@ -95,7 +95,7 @@ export default function LoginScreen() {
                                                     }}
                                                 >
                                                     <TextInput
-                                                        ref={(ref) => (inputRefs.current[index] = ref)}
+                                                        ref={(ref) => { inputRefs.current[index] = ref; }}
                                                         value={char}
                                                         onChangeText={(text) => handleCodeChange(text, index)}
                                                         onKeyPress={(e) => handleKeyPress(e, index)}
@@ -118,18 +118,16 @@ export default function LoginScreen() {
                                     <TouchableOpacity
                                         onPress={handleVerifyGroupCode}
                                         disabled={!isStep1Valid}
-                                        className={`rounded-xl p-4 items-center mt-6 flex-row justify-center ${
-                                            isStep1Valid ? 'bg-primary' : 'bg-sand-200'
-                                        }`}
+                                        className={`rounded-xl p-4 items-center mt-6 flex-row justify-center ${isStep1Valid ? 'bg-primary' : 'bg-sand-200'
+                                            }`}
                                     >
-                                        <Text className={`font-bold text-base mr-2 ${
-                                            isStep1Valid ? 'text-primary-foreground' : 'text-muted-foreground'
-                                        }`}>
+                                        <Text className={`font-bold text-base mr-2 ${isStep1Valid ? 'text-primary-foreground' : 'text-muted-foreground'
+                                            }`}>
                                             Continue
                                         </Text>
-                                        <ArrowRight 
-                                            size={20} 
-                                            color={isStep1Valid ? "hsl(140 80% 95%)" : "hsl(40 5% 55%)"} 
+                                        <ArrowRight
+                                            size={20}
+                                            color={isStep1Valid ? "hsl(140 80% 95%)" : "hsl(40 5% 55%)"}
                                         />
                                     </TouchableOpacity>
 
@@ -146,7 +144,7 @@ export default function LoginScreen() {
                             // Step 2: Personal Info
                             <>
                                 {/* Back Button */}
-                                <TouchableOpacity 
+                                <TouchableOpacity
                                     onPress={handleBack}
                                     className="flex-row items-center mb-4"
                                 >
@@ -211,13 +209,11 @@ export default function LoginScreen() {
                                     <TouchableOpacity
                                         onPress={handleJoinGroup}
                                         disabled={!isStep2Valid}
-                                        className={`rounded-xl p-4 items-center mt-6 ${
-                                            isStep2Valid ? 'bg-primary' : 'bg-sand-200'
-                                        }`}
+                                        className={`rounded-xl p-4 items-center mt-6 ${isStep2Valid ? 'bg-primary' : 'bg-sand-200'
+                                            }`}
                                     >
-                                        <Text className={`font-bold text-base ${
-                                            isStep2Valid ? 'text-primary-foreground' : 'text-muted-foreground'
-                                        }`}>
+                                        <Text className={`font-bold text-base ${isStep2Valid ? 'text-primary-foreground' : 'text-muted-foreground'
+                                            }`}>
                                             Join Group
                                         </Text>
                                     </TouchableOpacity>
