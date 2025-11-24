@@ -13,7 +13,7 @@ export default function RootLayout() {
   useEffect(() => {
     async function testConnection() {
       try {
-        const { data, error } = await supabase.from("faqs").select("id");
+        const { data, error } = await supabase.from("profiles").select("user_id");
         if (error) throw error;
         setStatus("ok");
       } catch (err) {
@@ -36,7 +36,7 @@ export default function RootLayout() {
         )}
       </View>
             <Stack screenOptions={{ headerShown: false }}>
-                <Stack.Screen name="login" options={{ headerShown: false }} />
+                <Stack.Screen name="join-trip" options={{ headerShown: false }} />
                 <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
                 <Stack.Screen name="itinerary" options={{ headerShown: false }} />
                 <Stack.Screen name="guide/[id]" options={{ headerShown: false }} />
