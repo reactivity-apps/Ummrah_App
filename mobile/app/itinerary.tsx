@@ -121,7 +121,7 @@ export default function ItineraryScreen() {
             </View>
 
             {/* Animated content */}
-            <Animated.ScrollView style={fadeStyle} className="flex-1 px-4 py-4">
+            <Animated.ScrollView style={fadeStyle} className="flex-1" contentContainerStyle={{ paddingHorizontal: 16, paddingVertical: 16 }}>
                 {SCHEDULE.map((day, dayIndex) => (
                     <View key={day.id} className="mb-6">
                         {/* Day Header */}

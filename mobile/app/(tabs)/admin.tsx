@@ -210,7 +210,7 @@ export default function AdminScreen() {
                 </ScrollView>
             </View>
 
-            <Animated.ScrollView style={fadeInStyle} className="flex-1">
+            <Animated.ScrollView style={fadeInStyle} className="flex-1" contentContainerStyle={{ paddingBottom: 16 }}>
                 {activeTab === 'overview' && <OverviewTab data={MOCK_ADMIN_DATA} onNavigate={setActiveTab} onAddMember={() => setShowAddMemberModal(true)} />}
                 {activeTab === 'members' && <MembersTab members={MOCK_ADMIN_DATA.members} groupCode={MOCK_ADMIN_DATA.groupCode} onAddMember={() => setShowAddMemberModal(true)} />}
                 {activeTab === 'communication' && <CommunicationTab unreadMessages={MOCK_ADMIN_DATA.unreadMessages} />}

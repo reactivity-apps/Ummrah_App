@@ -65,7 +65,7 @@ const TypingIndicator = () => {
     }));
 
     return (
-        <View className="flex-row items-center space-x-2 p-4 bg-white rounded-2xl rounded-tl-none shadow-sm border border-sand-100 self-start ml-4 mt-2">
+        <View className="flex-row items-center space-x-2 p-4 bg-white rounded-2xl rounded-tl-none shadow-sm border border-sand-100 self-start mt-2">
             <Animated.View style={[animatedStyle, { width: 8, height: 8, borderRadius: 4, backgroundColor: COLORS.primary }]} />
             <Animated.View style={[animatedStyle, { width: 8, height: 8, borderRadius: 4, backgroundColor: COLORS.primary, transform: [{ scale: 0.8 }] }]} />
             <Animated.View style={[animatedStyle, { width: 8, height: 8, borderRadius: 4, backgroundColor: COLORS.primary, transform: [{ scale: 0.6 }] }]} />
@@ -82,7 +82,7 @@ const MessageItem = ({ message }: { message: Message }) => {
         return (
             <Animated.View
                 entering={FadeInUp.duration(300)}
-                className="self-end rounded-2xl rounded-tr-none px-5 py-3.5 max-w-[85%] my-2 mr-4 shadow-sm"
+                className="self-end rounded-2xl rounded-tr-none px-5 py-3.5 max-w-[85%] my-2"
                 style={{ backgroundColor: '#4A6741' }}
             >
                 <Text className="text-white text-base leading-6">{message.content}</Text>
@@ -92,7 +92,7 @@ const MessageItem = ({ message }: { message: Message }) => {
 
     // Murshid Message (Guidance Card)
     return (
-        <Animated.View entering={FadeIn.duration(500)} className="self-start bg-white rounded-2xl rounded-tl-none max-w-[90%] my-3 ml-4 shadow-sm border border-sand-100 overflow-hidden">
+        <Animated.View entering={FadeIn.duration(500)} className="self-start bg-white rounded-2xl rounded-tl-none max-w-[90%] my-3 shadow-sm border border-sand-100 overflow-hidden">
             {/* Decorative Top Border */}
             <View className="h-1 w-full bg-sand-100" />
 
@@ -238,8 +238,8 @@ export default function MurshidScreen() {
                 <Animated.ScrollView
                     style={contentFadeStyle}
                     ref={scrollViewRef}
-                    className="flex-1 px-2"
-                    contentContainerStyle={{ paddingBottom: 20 }}
+                    className="flex-1"
+                    contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 20 }}
                 >
                     {messages.map((msg) => (
                         <MessageItem key={msg.id} message={msg} />

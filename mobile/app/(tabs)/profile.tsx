@@ -22,12 +22,12 @@ export default function ProfileScreen() {
 
     return (
         <SafeAreaView className="flex-1 bg-sand-50">
-            <Animated.ScrollView style={fadeInStyle} className="flex-1">
+            <Animated.ScrollView style={fadeInStyle} className="flex-1" contentContainerStyle={{ paddingBottom: 16 }}>
                 <View className="bg-card pb-6 pt-2 border-b border-sand-200">
                     {/* Back Button */}
                     <TouchableOpacity
                         onPress={() => router.push('/(tabs)')}
-                        className="p-2 -ml-2 mb-2"
+                        className="px-4 py-2 -ml-2 mb-2"
                         activeOpacity={0.7}
                     >
                         <ArrowLeft size={24} color="#4A6741" />

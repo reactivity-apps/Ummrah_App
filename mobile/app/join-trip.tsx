@@ -49,7 +49,7 @@ export default function JoinTripScreen() {
 
     const handleVerifyGroupCode = async () => {
         setErrorMessage(null);
-        const code = groupCode.join('').trim();       
+        const code = groupCode.join('').trim();
         // require full 10-character code
         if (code.length < 10) {
             setErrorMessage('Please enter the full 10-character group code.');
@@ -492,10 +492,10 @@ export default function JoinTripScreen() {
             >
                 <ScrollView
                     className="flex-1"
-                    contentContainerStyle={{ flexGrow: 1 }}
+                    contentContainerStyle={{ flexGrow: 1, paddingHorizontal: 16, paddingVertical: 32 }}
                     keyboardShouldPersistTaps="handled"
                 >
-                    <View className="flex-1 px-6 py-8">
+                    <View className="flex-1">
                         {step === 1 ? (
                             <GroupCodeStep
                                 groupCode={groupCode}

@@ -82,7 +82,7 @@ export default function DuasScreen() {
             <FlatList
                 data={filteredDuas}
                 keyExtractor={(item) => item.id}
-                contentContainerStyle={{ padding: 16 }}
+                contentContainerStyle={{ paddingHorizontal: 16, paddingVertical: 16 }}
                 renderItem={({ item }) => (
                     <View className="bg-card p-5 rounded-xl border border-sand-200 mb-4 shadow-sm">
                         <View className="flex-row justify-between items-start mb-3">

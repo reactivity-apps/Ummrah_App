@@ -53,7 +53,7 @@ export default function GuideDetailScreen() {
                 </View>
             </View>
 
-            <ScrollView className="flex-1 px-4 py-6">
+            <ScrollView className="flex-1" contentContainerStyle={{ paddingHorizontal: 16, paddingVertical: 24 }}>
                 {/* Hero Section */}
                 <Animated.View
                     style={heroStyle}

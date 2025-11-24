@@ -59,7 +59,7 @@ export default function ZiyaratDetailScreen() {
                 </TouchableOpacity>
             </View>
 
-            <ScrollView className="flex-1">
+            <ScrollView className="flex-1" contentContainerStyle={{ paddingBottom: 24 }}>
                 {/* Hero Section - Animated entrance */}
                 <Animated.View
                     style={heroStyle}

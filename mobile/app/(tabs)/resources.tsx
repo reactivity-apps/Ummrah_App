@@ -68,7 +68,7 @@ export default function ResourcesScreen() {
     return (
         <SafeAreaView className="flex-1 bg-[#FDFBF7]" edges={['top']}>
             <View className="flex-1">
-                <View className="px-6 pt-6 pb-4">
+                <View className="px-4 pt-6 pb-4">
                     <View className="flex-row items-center mb-2">
                         <TouchableOpacity
                             onPress={() => router.push('/(tabs)')}
@@ -81,7 +81,7 @@ export default function ResourcesScreen() {
                     <Text className="text-stone-500 text-base ml-11">Everything you need for your journey</Text>
                 </View>
 
-                <Animated.ScrollView style={fadeInStyle} showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 100 }}>
+                <Animated.ScrollView style={fadeInStyle} showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 100 }}>
                     {/* Resource List */}
                     <View className="space-y-3">
                         {resources.map((item) => (

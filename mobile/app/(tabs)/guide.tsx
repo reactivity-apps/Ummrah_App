@@ -84,7 +84,7 @@ export default function GuideScreen() {
             <FlatList
                 data={GUIDES}
                 keyExtractor={(item) => item.id}
-                contentContainerStyle={{ padding: 16 }}
+                contentContainerStyle={{ paddingHorizontal: 16, paddingVertical: 16 }}
                 renderItem={({ item, index }) => (
                     <GuideCard item={item} index={index} />
                 )}

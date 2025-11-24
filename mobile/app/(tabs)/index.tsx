@@ -22,7 +22,7 @@ export default function HomeScreen() {
 
     return (
         <SafeAreaView className="flex-1 bg-background">
-            <Animated.ScrollView style={fadeInStyle} className="flex-1 px-4 py-4">
+            <Animated.ScrollView style={fadeInStyle} className="flex-1" contentContainerStyle={{ paddingHorizontal: 16, paddingVertical: 16 }}>
                 {/* Mobile Header */}
                 <View className="flex-row items-center justify-between py-2 mb-6">
                     <View className="flex-row items-center gap-3">

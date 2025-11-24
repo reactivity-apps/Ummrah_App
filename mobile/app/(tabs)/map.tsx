@@ -84,7 +84,7 @@ export default function MapScreen() {
             <FlatList
                 data={ZIYARAT}
                 keyExtractor={(item) => item.id}
-                contentContainerStyle={{ padding: 16 }}
+                contentContainerStyle={{ paddingHorizontal: 16, paddingVertical: 16 }}
                 renderItem={({ item, index }) => (
                     <ZiyaratCard item={item} index={index} />
                 )}

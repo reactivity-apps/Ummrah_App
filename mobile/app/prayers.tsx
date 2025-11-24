@@ -124,9 +124,9 @@ export default function PrayersScreen() {
             {/* Animated content */}
             <Animated.ScrollView
                 style={fadeInStyle}
-                className="flex-1 px-6 py-6"
+                className="flex-1"
                 showsVerticalScrollIndicator={false}
-                contentContainerStyle={{ paddingBottom: 120 }}
+                contentContainerStyle={{ paddingHorizontal: 24, paddingVertical: 24, paddingBottom: 120 }}
             >
                 {/* Next Prayer Widget - Similar to home */}
                 {nextPrayer && (
