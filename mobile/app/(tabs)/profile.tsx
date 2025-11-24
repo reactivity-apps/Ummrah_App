@@ -4,20 +4,27 @@ import { PROFILE } from "../../data/mock";
 import { User, Settings, LogOut, ChevronRight, CreditCard, Bell, Shield, Calendar, Phone, Globe, ArrowLeft } from "lucide-react-native";
 import { useRouter } from "expo-router";
 import { useFadeIn } from "../../lib/sharedElementTransitions";
+import { supabase } from "../../lib/supabase";
 
 export default function ProfileScreen() {
     const router = useRouter();
     const fadeInStyle = useFadeIn(0);
 
-    const handleLogout = () => {
-        Alert.alert(
-            "Logout",
-            "Are you sure you want to logout?",
-            [
-                { text: "Cancel", style: "cancel" },
-                { text: "Logout", style: "destructive", onPress: () => console.log("Logged out") }
-            ]
-        );
+    const handleLogout = async () => {
+        try {
+            // Sign out via Supabase
+            const { error } = await supabase.auth.signOut();
+            if (error) {
+                console.warn('Logout error', error);
+                Alert.alert('Logout failed', error.message ?? 'Unable to logout');
+                return;
+            }
+            // After sign out, route to the join screen (Index handles auth changes too)
+            router.replace('/join-trip');
+        } catch (e: any) {
+            console.warn('Logout exception', e);
+            Alert.alert('Logout failed', e?.message ?? 'Unable to logout');
+        }
     };
 
     return (

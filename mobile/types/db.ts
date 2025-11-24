@@ -9,18 +9,20 @@
 // ENUMS
 export type GroupRole = 'admin' | 'sub_admin' | 'traveler';
 export type TripVisibility = 'draft' | 'published';
+export type ProfileRole = 'admin' | 'sub_admin' | 'traveler'
 
 // ========== PROFILES ==========
-export interface ProfileRow {
-  user_id: string; // uuid, PK → auth.users(id)
-  name: string;
-  phone?: string | null;
-  email?: string | null;
-  emergency_name?: string | null;
-  emergency_phone?: string | null;
-  emergency_notes?: string | null;
-  created_at?: string; // timestamptz as ISO string
-  updated_at?: string; // timestamptz as ISO string
+export type Profile = {
+  user_id: string
+  name: string
+  phone: string | null
+  email: string | null
+  emergency_name: string | null
+  emergency_phone: string | null
+  emergency_notes: string | null
+  role: ProfileRole
+  created_at: string
+  updated_at: string
 }
 
 // ========== GROUPS ==========

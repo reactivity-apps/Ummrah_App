@@ -1,20 +1,24 @@
-import React from 'react';
-import { View, Text, TextInput, TouchableOpacity } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, TextInput, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { User, ChevronLeft } from 'lucide-react-native';
 
 type Props = {
   name: string;
   setName: (s: string) => void;
-  handleJoinGroup: () => Promise<void>;
-  isNameValid: boolean;
-  goToStep: (n: number) => void;
+  // no longer finalizes join here; parent will handle finalization at the next step
+  setStep: (n: number) => void;
   groupCodeText: string;
 };
 
-export default function NameStep({ name, setName, handleJoinGroup, isNameValid, goToStep, groupCodeText }: Props) {
+export default function NameStep({ name, setName, setStep, groupCodeText }: Props) {
+  const [localLoading, setLocalLoading] = useState(false);
+  const [localError, setLocalError] = useState<string | null>(null);
+
+  const isNameValid = name.trim() !== '';
+
   return (
     <>
-      <TouchableOpacity onPress={() => goToStep(3)} className="flex-row items-center mb-4">
+      <TouchableOpacity onPress={() => setStep(1)} className="flex-row items-center mb-4">
         <ChevronLeft size={24} color="#4A6741" />
         <Text className="text-primary font-medium ml-1">Back</Text>
       </TouchableOpacity>
@@ -28,6 +32,10 @@ export default function NameStep({ name, setName, handleJoinGroup, isNameValid, 
         <View className="bg-primary/10 px-4 py-2 rounded-full mt-3"><Text className="text-primary font-semibold">Group: {groupCodeText}</Text></View>
       </View>
 
+      {/* Local loading & error shown between header and form */}
+      {localLoading && (<View className="mb-4 items-center"><ActivityIndicator size="small" color="#4A6741" /></View>)}
+      {localError && (<View className="mb-4 w-full"><View className="bg-red-50 border border-red-200 rounded-xl p-3 w-full"><Text className="text-sm text-red-700">{localError}</Text></View></View>)}
+
       <View className="space-y-4">
         <View className="mb-4">
           <Text className="text-sm font-medium text-foreground mb-2">Full Name</Text>
@@ -37,7 +45,7 @@ export default function NameStep({ name, setName, handleJoinGroup, isNameValid, 
           </View>
         </View>
 
-        <TouchableOpacity onPress={handleJoinGroup} disabled={!isNameValid} className={`rounded-xl p-4 items-center mt-6 ${isNameValid ? 'bg-primary' : 'bg-sand-200'}`}>
+        <TouchableOpacity onPress={() => setStep(3)} disabled={!isNameValid || localLoading} className={`rounded-xl p-4 items-center mt-6 ${isNameValid ? 'bg-primary' : 'bg-sand-200'}`}>
           <Text className={`font-bold text-base ${isNameValid ? 'text-primary-foreground' : 'text-muted-foreground'}`}>Join Group</Text>
         </TouchableOpacity>
       </View>
