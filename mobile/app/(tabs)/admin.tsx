@@ -1,4 +1,4 @@
-import { View, Text, ScrollView, TouchableOpacity, TextInput, Alert, Switch } from "react-native";
+import { View, Text, ScrollView, TouchableOpacity, TextInput, Alert, Switch, Modal, Animated } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useState } from "react";
 import {
@@ -17,8 +17,21 @@ import {
     Send,
     BarChart3,
     Shield,
-    Clock
+    Clock,
+    X
 } from "lucide-react-native";
+import { useFadeIn } from "../../lib/sharedElementTransitions";
+import Svg, { Path } from "react-native-svg";
+
+// Crescent Icon Component
+const CrescentIcon = ({ size = 20, color = "#C5A059" }) => (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+        <Path
+            d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"
+            fill={color}
+        />
+    </Svg>
+);
 
 // Mock data for admin
 const MOCK_ADMIN_DATA = {
@@ -49,18 +62,122 @@ const MOCK_ADMIN_DATA = {
 
 export default function AdminScreen() {
     const [activeTab, setActiveTab] = useState<'overview' | 'members' | 'communication' | 'trip'>('overview');
+    const [showAddMemberModal, setShowAddMemberModal] = useState(false);
+    const [newMemberPhone, setNewMemberPhone] = useState('');
+    const [newMemberFirstName, setNewMemberFirstName] = useState('');
+    const [newMemberLastName, setNewMemberLastName] = useState('');
+    const fadeInStyle = useFadeIn(0);
+
+    const handleAddMember = () => {
+        if (!newMemberPhone.trim() || !newMemberFirstName.trim() || !newMemberLastName.trim()) {
+            Alert.alert('Error', 'Please fill in all fields');
+            return;
+        }
+
+        // Here you would send the invitation
+        Alert.alert('Success', `Invitation sent to ${newMemberFirstName} ${newMemberLastName} at ${newMemberPhone}`);
+
+        // Reset and close
+        setNewMemberPhone('');
+        setNewMemberFirstName('');
+        setNewMemberLastName('');
+        setShowAddMemberModal(false);
+    };
 
     return (
         <SafeAreaView className="flex-1 bg-sand-50">
-            {/* Header */}
-            <View className="px-4 py-4 bg-card border-b border-sand-200">
-                <View className="flex-row items-center justify-between mb-2">
-                    <View>
-                        <Text className="text-2xl font-bold text-foreground">Group Admin</Text>
-                        <Text className="text-sm text-muted-foreground mt-1">Manage your Umrah group</Text>
+            {/* Add Member Modal */}
+            <Modal
+                visible={showAddMemberModal}
+                transparent={true}
+                animationType="fade"
+                onRequestClose={() => setShowAddMemberModal(false)}
+            >
+                <View className="flex-1 bg-black/50 justify-center items-center px-6">
+                    <View className="bg-card rounded-2xl w-full max-w-md p-6 border border-[#C5A059]/20">
+                        {/* Header */}
+                        <View className="flex-row items-center justify-between mb-4">
+                            <View className="flex-row items-center gap-2">
+                                <UserPlus size={24} color="#4A6741" />
+                                <Text className="text-xl font-bold text-foreground">Add New Member</Text>
+                            </View>
+                            <TouchableOpacity onPress={() => setShowAddMemberModal(false)} className="p-1">
+                                <X size={24} color="#718096" />
+                            </TouchableOpacity>
+                        </View>
+
+                        <Text className="text-sm text-muted-foreground mb-4">
+                            Enter member details to send them an invitation
+                        </Text>
+
+                        {/* Phone Number */}
+                        <View className="mb-4">
+                            <Text className="text-sm font-medium text-foreground mb-2">Phone Number</Text>
+                            <TextInput
+                                placeholder="+1 555-123-4567"
+                                placeholderTextColor="#A0AEC0"
+                                value={newMemberPhone}
+                                onChangeText={setNewMemberPhone}
+                                className="bg-sand-50 border border-sand-200 rounded-xl px-4 py-3 text-foreground"
+                                keyboardType="phone-pad"
+                            />
+                        </View>
+
+                        {/* First Name */}
+                        <View className="mb-4">
+                            <Text className="text-sm font-medium text-foreground mb-2">First Name</Text>
+                            <TextInput
+                                placeholder="Ahmed"
+                                placeholderTextColor="#A0AEC0"
+                                value={newMemberFirstName}
+                                onChangeText={setNewMemberFirstName}
+                                className="bg-sand-50 border border-sand-200 rounded-xl px-4 py-3 text-foreground"
+                            />
+                        </View>
+
+                        {/* Last Name */}
+                        <View className="mb-6">
+                            <Text className="text-sm font-medium text-foreground mb-2">Last Name</Text>
+                            <TextInput
+                                placeholder="Hassan"
+                                placeholderTextColor="#A0AEC0"
+                                value={newMemberLastName}
+                                onChangeText={setNewMemberLastName}
+                                className="bg-sand-50 border border-sand-200 rounded-xl px-4 py-3 text-foreground"
+                            />
+                        </View>
+
+                        {/* Buttons */}
+                        <View className="flex-row gap-3">
+                            <TouchableOpacity
+                                onPress={() => setShowAddMemberModal(false)}
+                                className="flex-1 bg-sand-100 rounded-xl p-4"
+                            >
+                                <Text className="text-muted-foreground font-semibold text-center">Cancel</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                                onPress={handleAddMember}
+                                className="flex-1 bg-[#4A6741] rounded-xl p-4"
+                            >
+                                <Text className="text-white font-semibold text-center">Send Invite</Text>
+                            </TouchableOpacity>
+                        </View>
                     </View>
-                    <View className="bg-primary/10 px-3 py-1.5 rounded-full border border-primary/20">
-                        <Text className="text-primary text-xs font-semibold">ADMIN</Text>
+                </View>
+            </Modal>
+
+            {/* Header */}
+            <View className="px-4 py-4 bg-card border-b border-[#C5A059]/20">
+                <View className="flex-row items-center justify-between mb-2">
+                    <View className="flex-row items-center gap-2">
+                        <Shield size={24} color="#C5A059" />
+                        <View>
+                            <Text className="text-2xl font-bold text-foreground">Group Admin</Text>
+                            <Text className="text-sm text-muted-foreground mt-1">Manage your Umrah group</Text>
+                        </View>
+                    </View>
+                    <View className="bg-[#C5A059]/10 px-3 py-1.5 rounded-full border border-[#C5A059]/30">
+                        <Text className="text-[#C5A059] text-xs font-semibold">ADMIN</Text>
                     </View>
                 </View>
             </View>
@@ -93,12 +210,12 @@ export default function AdminScreen() {
                 </ScrollView>
             </View>
 
-            <ScrollView className="flex-1">
-                {activeTab === 'overview' && <OverviewTab data={MOCK_ADMIN_DATA} />}
-                {activeTab === 'members' && <MembersTab members={MOCK_ADMIN_DATA.members} groupCode={MOCK_ADMIN_DATA.groupCode} />}
+            <Animated.ScrollView style={fadeInStyle} className="flex-1">
+                {activeTab === 'overview' && <OverviewTab data={MOCK_ADMIN_DATA} onNavigate={setActiveTab} onAddMember={() => setShowAddMemberModal(true)} />}
+                {activeTab === 'members' && <MembersTab members={MOCK_ADMIN_DATA.members} groupCode={MOCK_ADMIN_DATA.groupCode} onAddMember={() => setShowAddMemberModal(true)} />}
                 {activeTab === 'communication' && <CommunicationTab unreadMessages={MOCK_ADMIN_DATA.unreadMessages} />}
                 {activeTab === 'trip' && <TripDetailsTab trip={MOCK_ADMIN_DATA.currentTrip} />}
-            </ScrollView>
+            </Animated.ScrollView>
         </SafeAreaView>
     );
 }
@@ -107,30 +224,30 @@ function TabButton({ active, onPress, label }: { active: boolean; onPress: () =>
     return (
         <TouchableOpacity
             onPress={onPress}
-            className={`px-4 py-2 rounded-full border ${active ? 'bg-primary border-primary' : 'bg-card border-sand-200'
+            className={`px-4 py-2 rounded-full border ${active ? 'bg-[#4A6741] border-[#4A6741]' : 'bg-card border-sand-200'
                 }`}
         >
-            <Text className={`font-medium ${active ? 'text-primary-foreground' : 'text-muted-foreground'}`}>
+            <Text className={`font-medium ${active ? 'text-white' : 'text-muted-foreground'}`}>
                 {label}
             </Text>
         </TouchableOpacity>
     );
 }
 
-function OverviewTab({ data }: { data: typeof MOCK_ADMIN_DATA }) {
+function OverviewTab({ data, onNavigate, onAddMember }: { data: typeof MOCK_ADMIN_DATA; onNavigate: (tab: 'overview' | 'members' | 'communication' | 'trip') => void; onAddMember: () => void }) {
     return (
         <View className="p-4">
             {/* Current Trip Status */}
-            <View className="bg-card rounded-xl p-4 border border-sand-200 mb-4 shadow-sm">
+            <View className="bg-card rounded-xl p-4 border border-[#C5A059]/20 mb-4 shadow-sm">
                 <View className="flex-row items-center justify-between mb-3">
                     <Text className="text-lg font-bold text-foreground">Current Trip</Text>
-                    <View className="bg-primary/10 px-2.5 py-1 rounded-md">
-                        <Text className="text-primary text-xs font-semibold uppercase">{data.currentTrip.status}</Text>
+                    <View className="bg-[#4A6741]/10 px-2.5 py-1 rounded-md">
+                        <Text className="text-[#4A6741] text-xs font-semibold uppercase">{data.currentTrip.status}</Text>
                     </View>
                 </View>
                 <Text className="text-xl font-bold text-foreground mb-2">{data.currentTrip.name}</Text>
                 <View className="flex-row items-center gap-2 mb-4">
-                    <Calendar size={14} color="hsl(40 5% 55%)" />
+                    <Calendar size={14} color="#C5A059" />
                     <Text className="text-sm text-muted-foreground">
                         {new Date(data.currentTrip.startDate).toLocaleDateString()} - {new Date(data.currentTrip.endDate).toLocaleDateString()}
                     </Text>
@@ -138,16 +255,16 @@ function OverviewTab({ data }: { data: typeof MOCK_ADMIN_DATA }) {
 
                 {/* Stats Grid */}
                 <View className="flex-row gap-2">
-                    <View className="flex-1 bg-sand-50 p-3 rounded-lg border border-sand-100">
+                    <View className="flex-1 bg-[#4A6741]/5 p-3 rounded-lg border border-[#4A6741]/20">
                         <View className="flex-row items-center mb-1">
-                            <Users size={14} color="hsl(140 40% 45%)" />
+                            <Users size={14} color="#4A6741" />
                             <Text className="text-xs text-muted-foreground ml-1 font-medium">JOINED</Text>
                         </View>
                         <Text className="text-foreground text-lg font-bold">{data.currentTrip.joinedMembers}/{data.currentTrip.totalMembers}</Text>
                     </View>
-                    <View className="flex-1 bg-sand-50 p-3 rounded-lg border border-sand-100">
+                    <View className="flex-1 bg-[#C5A059]/5 p-3 rounded-lg border border-[#C5A059]/20">
                         <View className="flex-row items-center mb-1">
-                            <Clock size={14} color="hsl(40 30% 50%)" />
+                            <Clock size={14} color="#C5A059" />
                             <Text className="text-xs text-muted-foreground ml-1 font-medium">PENDING</Text>
                         </View>
                         <Text className="text-foreground text-lg font-bold">{data.currentTrip.pendingMembers}</Text>
@@ -161,24 +278,24 @@ function OverviewTab({ data }: { data: typeof MOCK_ADMIN_DATA }) {
             {/* Quick Actions */}
             <View className="mb-4">
                 <Text className="text-lg font-bold text-foreground mb-3">Quick Actions</Text>
-                <View className="bg-card rounded-xl border border-sand-200 overflow-hidden">
+                <View className="bg-card rounded-xl border border-[#C5A059]/20 overflow-hidden">
                     <QuickActionItem
                         icon={MessageSquare}
                         title="Group Chat"
                         subtitle={`${data.unreadMessages} unread messages`}
-                        onPress={() => Alert.alert('Group Chat', 'Opening group chat...')}
+                        onPress={() => onNavigate('communication')}
                     />
                     <QuickActionItem
                         icon={Bell}
                         title="Send Announcement"
                         subtitle="Notify all members"
-                        onPress={() => Alert.alert('Announcement', 'Opening announcement composer...')}
+                        onPress={() => onNavigate('communication')}
                     />
                     <QuickActionItem
                         icon={UserPlus}
                         title="Add Member"
                         subtitle="Invite new travelers"
-                        onPress={() => Alert.alert('Add Member', 'Opening member invite...')}
+                        onPress={onAddMember}
                         last
                     />
                 </View>
@@ -203,7 +320,7 @@ function OverviewTab({ data }: { data: typeof MOCK_ADMIN_DATA }) {
             {/* Stats Overview */}
             <View className="bg-gradient-to-br from-primary/10 to-primary/5 rounded-xl p-4 border border-primary/20 mb-4">
                 <View className="flex-row items-center mb-3">
-                    <BarChart3 size={20} color="hsl(140 40% 45%)" />
+                    <BarChart3 size={20} color="#4A6741" />
                     <Text className="text-lg font-bold text-foreground ml-2">Group Health</Text>
                 </View>
                 <View className="flex-row justify-between">
@@ -246,30 +363,30 @@ function GroupCodeCard({ code }: { code: string }) {
     };
 
     return (
-        <View className="bg-card rounded-xl p-4 border border-sand-200 mb-4 shadow-sm">
+        <View className="bg-card rounded-xl p-4 border border-[#C5A059]/20 mb-4 shadow-sm">
             <View className="flex-row items-center justify-between mb-3">
                 <Text className="text-lg font-bold text-foreground">Group Join Code</Text>
-                <Shield size={18} color="hsl(140 40% 45%)" />
+                <Shield size={18} color="#C5A059" />
             </View>
 
-            <View className="bg-sand-50 p-4 rounded-lg border border-sand-200 mb-3">
-                <Text className="text-center text-3xl font-bold text-primary tracking-wider">{code}</Text>
+            <View className="bg-[#4A6741]/5 p-4 rounded-lg border border-[#4A6741]/20 mb-3">
+                <Text className="text-center text-3xl font-bold text-[#4A6741] tracking-wider">{code}</Text>
             </View>
 
             <View className="flex-row gap-2">
                 <TouchableOpacity
                     onPress={handleCopy}
-                    className="flex-1 flex-row items-center justify-center bg-sand-100 p-3 rounded-lg border border-sand-200"
+                    className="flex-1 flex-row items-center justify-center bg-[#4A6741]/10 p-3 rounded-lg border border-[#4A6741]/20"
                 >
-                    <Copy size={16} color="hsl(140 40% 45%)" />
-                    <Text className="text-primary font-medium ml-2">Copy</Text>
+                    <Copy size={16} color="#4A6741" />
+                    <Text className="text-[#4A6741] font-medium ml-2">Copy</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                     onPress={handleShare}
-                    className="flex-1 flex-row items-center justify-center bg-primary/10 p-3 rounded-lg border border-primary/20"
+                    className="flex-1 flex-row items-center justify-center bg-[#C5A059]/10 p-3 rounded-lg border border-[#C5A059]/30"
                 >
-                    <Share2 size={16} color="hsl(140 40% 45%)" />
-                    <Text className="text-primary font-medium ml-2">Share</Text>
+                    <Share2 size={16} color="#C5A059" />
+                    <Text className="text-[#C5A059] font-medium ml-2">Share</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                     onPress={handleRegenerate}
@@ -282,28 +399,12 @@ function GroupCodeCard({ code }: { code: string }) {
     );
 }
 
-function MembersTab({ members, groupCode }: { members: typeof MOCK_ADMIN_DATA.members; groupCode: string }) {
+function MembersTab({ members, groupCode, onAddMember }: { members: typeof MOCK_ADMIN_DATA.members; groupCode: string; onAddMember: () => void }) {
     const [searchQuery, setSearchQuery] = useState('');
 
     const filteredMembers = members.filter(m =>
         m.name.toLowerCase().includes(searchQuery.toLowerCase())
     );
-
-    const handleAddMember = () => {
-        Alert.alert('Add Member', 'Share this code with new members:\n\n' + groupCode);
-    };
-
-    const handleChangeRole = (memberId: string, currentRole: string) => {
-        Alert.alert(
-            'Change Role',
-            'Select new role:',
-            [
-                { text: 'Cancel', style: 'cancel' },
-                { text: 'Traveler', onPress: () => Alert.alert('Role Updated', 'Member is now a Traveler') },
-                { text: 'Group Admin', onPress: () => Alert.alert('Role Updated', 'Member is now a Group Admin') },
-            ]
-        );
-    };
 
     const handleRemoveMember = (memberId: string, name: string) => {
         Alert.alert(
@@ -323,8 +424,8 @@ function MembersTab({ members, groupCode }: { members: typeof MOCK_ADMIN_DATA.me
     return (
         <View className="p-4">
             {/* Search */}
-            <View className="flex-row items-center bg-card rounded-xl px-4 py-3 border border-sand-200 mb-4">
-                <Users size={20} color="hsl(40 5% 55%)" />
+            <View className="flex-row items-center bg-card rounded-xl px-4 py-3 border border-[#C5A059]/20 mb-4">
+                <Users size={20} color="#C5A059" />
                 <TextInput
                     placeholder="Search members..."
                     placeholderTextColor="hsl(40 5% 55%)"
@@ -336,15 +437,15 @@ function MembersTab({ members, groupCode }: { members: typeof MOCK_ADMIN_DATA.me
 
             {/* Add Member Button */}
             <TouchableOpacity
-                onPress={handleAddMember}
-                className="bg-primary rounded-xl p-4 mb-4 flex-row items-center justify-center"
+                onPress={onAddMember}
+                className="bg-[#4A6741] rounded-xl p-4 mb-4 flex-row items-center justify-center"
             >
                 <UserPlus size={20} color="white" />
-                <Text className="text-primary-foreground font-semibold ml-2">Add New Member</Text>
+                <Text className="text-white font-semibold ml-2">Add New Member</Text>
             </TouchableOpacity>
 
             {/* Members List */}
-            <View className="bg-card rounded-xl border border-sand-200 overflow-hidden">
+            <View className="bg-card rounded-xl border border-[#C5A059]/20 overflow-hidden">
                 {filteredMembers.map((member, index) => (
                     <View
                         key={member.id}
@@ -355,8 +456,8 @@ function MembersTab({ members, groupCode }: { members: typeof MOCK_ADMIN_DATA.me
                                 <View className="flex-row items-center gap-2 mb-1">
                                     <Text className="text-foreground font-semibold text-base">{member.name}</Text>
                                     {member.role === 'group_admin' && (
-                                        <View className="bg-primary/10 px-2 py-0.5 rounded">
-                                            <Text className="text-primary text-xs font-medium">ADMIN</Text>
+                                        <View className="bg-[#C5A059]/10 px-2 py-0.5 rounded border border-[#C5A059]/30">
+                                            <Text className="text-[#C5A059] text-xs font-medium">ADMIN</Text>
                                         </View>
                                     )}
                                     {member.status === 'pending' && (
@@ -373,15 +474,8 @@ function MembersTab({ members, groupCode }: { members: typeof MOCK_ADMIN_DATA.me
 
                         <View className="flex-row gap-2 mt-2">
                             <TouchableOpacity
-                                onPress={() => handleChangeRole(member.id, member.role)}
-                                className="flex-1 flex-row items-center justify-center bg-sand-100 p-2 rounded-lg"
-                            >
-                                <Shield size={14} color="hsl(140 40% 45%)" />
-                                <Text className="text-primary text-xs font-medium ml-1">Change Role</Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity
                                 onPress={() => handleRemoveMember(member.id, member.name)}
-                                className="flex-row items-center justify-center bg-red-50 p-2 rounded-lg border border-red-200"
+                                className="flex-1 flex-row items-center justify-center bg-red-50 p-2 rounded-lg border border-red-200"
                             >
                                 <UserMinus size={14} color="hsl(0 84% 60%)" />
                                 <Text className="text-red-600 text-xs font-medium ml-1">Remove</Text>
@@ -392,11 +486,11 @@ function MembersTab({ members, groupCode }: { members: typeof MOCK_ADMIN_DATA.me
             </View>
 
             {/* Member Stats */}
-            <View className="mt-4 p-4 bg-sand-50 rounded-xl border border-sand-200">
+            <View className="mt-4 p-4 bg-sand-50 rounded-xl border border-[#C5A059]/20">
                 <Text className="text-sm font-semibold text-foreground mb-2">Member Statistics</Text>
                 <View className="flex-row justify-between">
                     <View>
-                        <Text className="text-2xl font-bold text-primary">{members.filter(m => m.status === 'active').length}</Text>
+                        <Text className="text-2xl font-bold text-[#4A6741]">{members.filter(m => m.status === 'active').length}</Text>
                         <Text className="text-xs text-muted-foreground">Active</Text>
                     </View>
                     <View>
@@ -404,7 +498,7 @@ function MembersTab({ members, groupCode }: { members: typeof MOCK_ADMIN_DATA.me
                         <Text className="text-xs text-muted-foreground">Pending</Text>
                     </View>
                     <View>
-                        <Text className="text-2xl font-bold text-foreground">{members.filter(m => m.role === 'group_admin').length}</Text>
+                        <Text className="text-2xl font-bold text-[#C5A059]">{members.filter(m => m.role === 'group_admin').length}</Text>
                         <Text className="text-xs text-muted-foreground">Admins</Text>
                     </View>
                 </View>
@@ -453,7 +547,7 @@ function CommunicationTab({ unreadMessages }: { unreadMessages: number }) {
                 <View className="flex-row items-center justify-between">
                     <View className="flex-1">
                         <View className="flex-row items-center gap-2 mb-1">
-                            <MessageSquare size={20} color="hsl(140 40% 45%)" />
+                            <MessageSquare size={20} color="#4A6741" />
                             <Text className="text-lg font-bold text-foreground">Group Chat</Text>
                         </View>
                         <Text className="text-sm text-muted-foreground">
@@ -472,7 +566,7 @@ function CommunicationTab({ unreadMessages }: { unreadMessages: number }) {
             {/* Send Announcement */}
             <View className="bg-card rounded-xl p-4 border border-sand-200 mb-4">
                 <View className="flex-row items-center gap-2 mb-3">
-                    <Bell size={20} color="hsl(140 40% 45%)" />
+                    <Bell size={20} color="#4A6741" />
                     <Text className="text-lg font-bold text-foreground">Send Announcement</Text>
                 </View>
 
@@ -495,17 +589,18 @@ function CommunicationTab({ unreadMessages }: { unreadMessages: number }) {
                     <Switch
                         value={isPriority}
                         onValueChange={setIsPriority}
-                        trackColor={{ false: '#e0d8cc', true: 'hsl(140 40% 75%)' }}
-                        thumbColor={isPriority ? 'hsl(140 40% 45%)' : '#f4f3f1'}
+                        trackColor={{ false: '#e0d8cc', true: '#6B9465' }}
+                        thumbColor={isPriority ? '#4A6741' : '#f4f3f1'}
                     />
                 </View>
 
                 <TouchableOpacity
                     onPress={handleSendAnnouncement}
-                    className="bg-primary rounded-lg p-4 flex-row items-center justify-center"
+                    style={{ backgroundColor: '#4A6741' }}
+                    className="rounded-lg p-4 flex-row items-center justify-center"
                 >
                     <Send size={18} color="white" />
-                    <Text className="text-primary-foreground font-semibold ml-2">Send to All Members</Text>
+                    <Text className="text-white font-semibold ml-2">Send to All Members</Text>
                 </TouchableOpacity>
             </View>
 
@@ -527,7 +622,7 @@ function CommunicationTab({ unreadMessages }: { unreadMessages: number }) {
                             <View className="flex-row items-center justify-between">
                                 <Text className="text-xs text-muted-foreground">{announcement.time}</Text>
                                 <View className="flex-row items-center gap-1">
-                                    <Eye size={12} color="hsl(140 40% 45%)" />
+                                    <Eye size={12} color="#4A6741" />
                                     <Text className="text-xs text-primary font-medium">{announcement.opens} opened</Text>
                                 </View>
                             </View>
@@ -559,7 +654,7 @@ function TripDetailsTab({ trip }: { trip: typeof MOCK_ADMIN_DATA.currentTrip }) 
                 <View className="flex-row items-center justify-between mb-3">
                     <Text className="text-lg font-bold text-foreground">Trip Details</Text>
                     <TouchableOpacity onPress={() => setIsEditing(!isEditing)}>
-                        <Edit size={18} color="hsl(140 40% 45%)" />
+                        <Edit size={18} color="#4A6741" />
                     </TouchableOpacity>
                 </View>
 
@@ -669,7 +764,7 @@ function QuickActionItem({
         >
             <View className="flex-row items-center flex-1">
                 <View className="h-10 w-10 bg-sand-100 rounded-full items-center justify-center mr-3">
-                    <Icon size={18} color="hsl(140 40% 45%)" />
+                    <Icon size={18} color="#4A6741" />
                 </View>
                 <View className="flex-1">
                     <Text className="text-foreground font-medium">{title}</Text>

@@ -2,6 +2,7 @@
 
 # dependencies
 node_modules/
+mobile/node_modules/
 
 # Expo
 .expo/
@@ -40,8 +41,17 @@ yarn-error.*
 # generated native folders
 /ios
 /android
+mobile/ios
+mobile/android
 
 # Package lock files
 package-lock.json
 yarn.lock
 pnpm-lock.yaml
+mobile/package-lock.json
+mobile/yarn.lock
+mobile/pnpm-lock.yaml
+
+# IDE
+.vscode/
+.idea/

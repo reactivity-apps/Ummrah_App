@@ -15,13 +15,13 @@ export default function NameStep({ name, setName, handleJoinGroup, isNameValid, 
   return (
     <>
       <TouchableOpacity onPress={() => goToStep(3)} className="flex-row items-center mb-4">
-        <ChevronLeft size={24} color="hsl(140 40% 45%)" />
+        <ChevronLeft size={24} color="#4A6741" />
         <Text className="text-primary font-medium ml-1">Back</Text>
       </TouchableOpacity>
 
       <View className="items-center mb-12 mt-4">
         <View className="h-20 w-20 bg-primary/10 rounded-full items-center justify-center mb-4 border-2 border-primary/20">
-          <User size={40} color="hsl(140 40% 45%)" />
+          <User size={40} color="#4A6741" />
         </View>
         <Text className="text-3xl font-bold text-foreground mb-2">Your Details</Text>
         <Text className="text-muted-foreground text-center">Tell us about yourself</Text>

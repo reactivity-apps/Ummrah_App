@@ -1,9 +1,14 @@
-import { View, Text, TouchableOpacity, ScrollView, Alert } from "react-native";
+import { View, Text, TouchableOpacity, ScrollView, Alert, Animated } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { PROFILE } from "../../data/mock";
-import { User, Settings, LogOut, ChevronRight, CreditCard, Bell, Shield, Calendar, Phone, Globe } from "lucide-react-native";
+import { User, Settings, LogOut, ChevronRight, CreditCard, Bell, Shield, Calendar, Phone, Globe, ArrowLeft } from "lucide-react-native";
+import { useRouter } from "expo-router";
+import { useFadeIn } from "../../lib/sharedElementTransitions";
 
 export default function ProfileScreen() {
+    const router = useRouter();
+    const fadeInStyle = useFadeIn(0);
+
     const handleLogout = () => {
         Alert.alert(
             "Logout",
@@ -17,8 +22,17 @@ export default function ProfileScreen() {
 
     return (
         <SafeAreaView className="flex-1 bg-sand-50">
-            <ScrollView className="flex-1">
+            <Animated.ScrollView style={fadeInStyle} className="flex-1">
                 <View className="bg-card pb-6 pt-2 border-b border-sand-200">
+                    {/* Back Button */}
+                    <TouchableOpacity
+                        onPress={() => router.push('/(tabs)')}
+                        className="p-2 -ml-2 mb-2"
+                        activeOpacity={0.7}
+                    >
+                        <ArrowLeft size={24} color="#4A6741" />
+                    </TouchableOpacity>
+
                     <View className="items-center">
                         <View className="h-24 w-24 bg-primary/10 rounded-full items-center justify-center mb-4 border-2 border-primary/20">
                             <Text className="text-primary font-bold text-3xl">
@@ -47,7 +61,7 @@ export default function ProfileScreen() {
                         <View className="h-16 w-[1px] bg-border" />
                         <View className="items-center px-4">
                             <View className="bg-primary/10 w-12 h-12 rounded-full items-center justify-center mb-2">
-                                <Calendar size={20} color="hsl(140 40% 45%)" />
+                                <Calendar size={20} color="#4A6741" />
                             </View>
                             <Text className="text-muted-foreground text-sm">Next Trip</Text>
                         </View>
@@ -95,7 +109,7 @@ export default function ProfileScreen() {
                         Version 1.0.0
                     </Text>
                 </View>
-            </ScrollView>
+            </Animated.ScrollView>
         </SafeAreaView>
     );
 }
@@ -117,7 +131,7 @@ function ProfileMenuItem({
         >
             <View className="flex-row items-center flex-1">
                 <View className="h-9 w-9 bg-sand-100 rounded-full items-center justify-center mr-3">
-                    <Icon size={18} color="hsl(140 40% 45%)" />
+                    <Icon size={18} color="#4A6741" />
                 </View>
                 <View className="flex-1">
                     <Text className="text-foreground font-medium">{title}</Text>

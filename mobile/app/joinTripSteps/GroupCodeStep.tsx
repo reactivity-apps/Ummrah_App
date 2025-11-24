@@ -19,7 +19,7 @@ export default function GroupCodeStep({ groupCode, inputRefs, handleCodeChange, 
       {/* Header */}
       <View className="items-center mb-10 mt-8">
         <View className="h-20 w-20 bg-primary/10 rounded-full items-center justify-center mb-4 border-2 border-primary/20">
-          <Hash size={40} color="hsl(140 40% 45%)" />
+          <Hash size={40} color="#4A6741" />
         </View>
         <Text className="text-3xl font-bold text-foreground mb-2">Enter Group Code</Text>
         <Text className="text-muted-foreground text-center">Enter the code shared by your group leader</Text>
@@ -27,7 +27,7 @@ export default function GroupCodeStep({ groupCode, inputRefs, handleCodeChange, 
 
       {/* Loading & error: show right after header and before the form */}
       {loading && (
-        <View className="mb-6 w-full items-center"><ActivityIndicator size="small" color="hsl(140 40% 45%)" /></View>
+        <View className="mb-6 w-full items-center"><ActivityIndicator size="small" color="#4A6741" /></View>
       )}
 
       {errorMessage && (
@@ -40,7 +40,7 @@ export default function GroupCodeStep({ groupCode, inputRefs, handleCodeChange, 
         <View className="mb-4 w-full items-center">
           <View className="flex-row justify-center gap-3">
             {groupCode.map((char, index) => (
-              <View key={index} className="w-10 h-14 bg-card rounded-lg border-2 items-center justify-center" style={{ borderColor: char ? 'hsl(140 40% 45%)' : 'hsl(40 15% 85%)' }}>
+              <View key={index} className="w-10 h-14 bg-card rounded-lg border-2 items-center justify-center" style={{ borderColor: char ? '#4A6741' : 'hsl(40 15% 85%)' }}>
                 <TextInput
                   ref={(ref) => { inputRefs.current[index] = ref; }}
                   value={char}
@@ -63,7 +63,7 @@ export default function GroupCodeStep({ groupCode, inputRefs, handleCodeChange, 
           <ArrowRight size={20} color={isStep1Valid ? "hsl(140 80% 95%)" : "hsl(40 5% 55%)"} />
         </TouchableOpacity>
 
-        
+
 
         <View className="bg-sand-50 rounded-xl p-4 border border-sand-200 mt-8">
           <Text className="text-sm font-semibold text-foreground mb-2">Don't have a group code?</Text>

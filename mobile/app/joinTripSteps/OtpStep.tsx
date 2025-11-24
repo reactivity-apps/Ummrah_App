@@ -21,13 +21,13 @@ export default function OtpStep({ otpChars, otpInputRefs, handleOtpChange, handl
   return (
     <>
       <TouchableOpacity onPress={() => goToStep(2)} className="flex-row items-center mb-4">
-        <ChevronLeft size={24} color="hsl(140 40% 45%)" />
+        <ChevronLeft size={24} color="#4A6741" />
         <Text className="text-primary font-medium ml-1">Back</Text>
       </TouchableOpacity>
 
       <View className="items-center mb-10 mt-4">
         <View className="h-20 w-20 bg-primary/10 rounded-full items-center justify-center mb-4 border-2 border-primary/20">
-          <Phone size={40} color="hsl(140 40% 45%)" />
+          <Phone size={40} color="#4A6741" />
         </View>
         <Text className="text-3xl font-bold text-foreground mb-2">Enter Verification Code</Text>
         <Text className="text-muted-foreground text-center">Enter the code we sent via SMS to {phoneDisplay}</Text>
@@ -35,16 +35,16 @@ export default function OtpStep({ otpChars, otpInputRefs, handleOtpChange, handl
       </View>
 
 
-    {loading && (<View className="mb-6 items-center"><ActivityIndicator size="small" color="hsl(140 40% 45%)" /></View>)}
+      {loading && (<View className="mb-6 items-center"><ActivityIndicator size="small" color="#4A6741" /></View>)}
 
-    {errorMessage && (<View className="mb-6 d bg-red-50 border border-red-200 rounded-xl p-3"><Text className="text-sm text-red-700">{errorMessage}</Text></View>)}
+      {errorMessage && (<View className="mb-6 d bg-red-50 border border-red-200 rounded-xl p-3"><Text className="text-sm text-red-700">{errorMessage}</Text></View>)}
 
       <View className="space-y-4">
         <View className="mb-4">
           <Text className="text-sm font-medium text-foreground mb-2 text-center">Verification Code</Text>
           <View className="flex-row items-center justify-center gap-3">
             {otpChars.map((ch, idx) => (
-              <View key={idx} className="w-10 h-14 bg-card rounded-lg border-2 items-center justify-center" style={{ borderColor: ch ? 'hsl(140 40% 45%)' : 'hsl(40 15% 85%)' }}>
+              <View key={idx} className="w-10 h-14 bg-card rounded-lg border-2 items-center justify-center" style={{ borderColor: ch ? '#4A6741' : 'hsl(40 15% 85%)' }}>
                 <TextInput ref={(ref) => { otpInputRefs.current[idx] = ref; }} value={ch} onChangeText={(t) => handleOtpChange(t, idx)} onKeyPress={(e) => handleOtpKeyPress(e, idx)} className="w-full h-full text-center text-foreground font-bold text-xl" maxLength={1} keyboardType="numeric" autoFocus={idx === 0} selectTextOnFocus />
               </View>
             ))}

@@ -20,14 +20,14 @@ export default function PhoneStep({ areaCode, setAreaCode, phoneNumber, setPhone
     <>
       {/* Back Button */}
       <TouchableOpacity onPress={handleBack} className="flex-row items-center mb-4">
-        <ChevronLeft size={24} color="hsl(140 40% 45%)" />
+        <ChevronLeft size={24} color="#4A6741" />
         <Text className="text-primary font-medium ml-1">Back</Text>
       </TouchableOpacity>
 
       {/* Header */}
       <View className="items-center mb-12 mt-4">
         <View className="h-20 w-20 bg-primary/10 rounded-full items-center justify-center mb-4 border-2 border-primary/20">
-          <Phone size={40} color="hsl(140 40% 45%)" />
+          <Phone size={40} color="#4A6741" />
         </View>
         <Text className="text-3xl font-bold text-foreground mb-2">Verify Phone</Text>
         <Text className="text-muted-foreground text-center">We'll use this to create your account</Text>
@@ -55,7 +55,7 @@ export default function PhoneStep({ areaCode, setAreaCode, phoneNumber, setPhone
           <ArrowRight size={20} color={isPhoneValid ? "hsl(140 80% 95%)" : "hsl(40 5% 55%)"} />
         </TouchableOpacity>
 
-        {loading && (<View className="mt-4 items-center"><ActivityIndicator size="small" color="hsl(140 40% 45%)" /></View>)}
+        {loading && (<View className="mt-4 items-center"><ActivityIndicator size="small" color="#4A6741" /></View>)}
 
         {errorMessage && (<View className="mt-4 bg-red-50 border border-red-200 rounded-xl p-3"><Text className="text-sm text-red-700">{errorMessage}</Text></View>)}
       </View>

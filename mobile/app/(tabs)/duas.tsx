@@ -1,21 +1,51 @@
 import { View, Text, FlatList, TouchableOpacity, TextInput } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { DUAS } from "../../data/mock";
-import { Search } from "lucide-react-native";
+import { Search, ArrowLeft } from "lucide-react-native";
+import { useRouter } from "expo-router";
+import { DuasSkeleton } from "../../components/SkeletonLoader";
 
 export default function DuasScreen() {
+    const router = useRouter();
     const [selectedCategory, setSelectedCategory] = useState("All");
+    const [isLoading, setIsLoading] = useState(true);
     const categories = ["All", "Tawaf", "Sa'i", "Morning", "Evening", "Mosque", "Kaaba", "General"];
+
+    // Prevent white flash during navigation
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setIsLoading(false);
+        }, 150);
+
+        return () => clearTimeout(timer);
+    }, []);
 
     const filteredDuas = selectedCategory === "All"
         ? DUAS
         : DUAS.filter(dua => dua.category === selectedCategory);
 
+    // Show skeleton while loading
+    if (isLoading) {
+        return (
+            <SafeAreaView className="flex-1 bg-sand-50">
+                <DuasSkeleton />
+            </SafeAreaView>
+        );
+    }
+
     return (
         <SafeAreaView className="flex-1 bg-sand-50">
             <View className="px-4 py-4 bg-card border-b border-sand-200">
-                <Text className="text-2xl font-bold text-foreground mb-4">Duas & Supplications</Text>
+                <View className="flex-row items-center mb-4">
+                    <TouchableOpacity
+                        onPress={() => router.push('/(tabs)')}
+                        className="mr-3 p-2 -ml-2"
+                    >
+                        <ArrowLeft size={24} color="#4A6741" />
+                    </TouchableOpacity>
+                    <Text className="text-2xl font-bold text-foreground">Duas & Supplications</Text>
+                </View>
                 <View className="flex-row items-center bg-sand-50 rounded-xl px-4 py-3 border border-sand-200">
                     <Search size={20} color="hsl(40 5% 55%)" />
                     <TextInput
@@ -37,8 +67,8 @@ export default function DuasScreen() {
                         <TouchableOpacity
                             onPress={() => setSelectedCategory(item)}
                             className={`mr-2 px-4 py-2 rounded-full border ${selectedCategory === item
-                                    ? 'bg-primary border-primary'
-                                    : 'bg-card border-sand-200'
+                                ? 'bg-primary border-primary'
+                                : 'bg-card border-sand-200'
                                 }`}
                         >
                             <Text className={selectedCategory === item ? 'text-primary-foreground font-medium' : 'text-muted-foreground'}>

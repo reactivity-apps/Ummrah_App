@@ -75,4 +75,10 @@
         --input: 140 20% 20%;
         --ring: 140 40% 55%;
     }
+
+    /* Remove blue outline from text inputs and textareas */
+    input:focus,
+    textarea:focus {
+        outline: none;
+    }
 }
