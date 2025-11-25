@@ -7,9 +7,9 @@
  */
 
 // ENUMS
-export type GroupRole = 'admin' | 'sub_admin' | 'traveler';
+export type GroupRole = 'super_admin' | 'group_owner' | 'user';
 export type TripVisibility = 'draft' | 'published';
-export type ProfileRole = 'admin' | 'sub_admin' | 'traveler'
+export type ProfileRole = 'super_admin' | 'group_owner' | 'user'
 
 // ========== PROFILES ==========
 export type Profile = {

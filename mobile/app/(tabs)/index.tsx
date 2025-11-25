@@ -3,7 +3,6 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Link, useRouter } from "expo-router";
 import { Bell, Book, Compass, Info, FileText, User, MessageCircle, MapPin, Clock, ChevronRight, CalendarDays, Quote, Moon } from "lucide-react-native";
 import PrayerTimesWidget from "../../components/PrayerTimesWidget";
-import NewUserModal from "../components/NewUserModal";
 import Svg, { Path, Rect } from "react-native-svg";
 import { useFadeIn } from "../../lib/sharedElementTransitions";
 
@@ -22,7 +21,6 @@ export default function HomeScreen() {
 
     return (
         <SafeAreaView className="flex-1 bg-background">
-            <NewUserModal />
             <Animated.ScrollView style={fadeInStyle} className="flex-1 px-4 py-4">
                 {/* Mobile Header */}
                 <View className="flex-row items-center justify-between py-2 mb-6">
