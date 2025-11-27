@@ -8,7 +8,8 @@
 
 // ENUMS
 export type GroupRole = 'super_admin' | 'group_owner' | 'user';
-export type TripVisibility = 'draft' | 'published';
+export type TripMemberRole = 'super_admin' | 'group_owner' | 'user';
+export type TripVisibility = 'draft' | 'published' | 'active';
 export type ProfileRole = 'super_admin' | 'group_owner' | 'user'
 
 // ========== PROFILES ==========
@@ -44,6 +45,8 @@ export interface TripRow {
   end_date?: string | null; // date as 'YYYY-MM-DD'
   base_city?: string | null;
   visibility?: TripVisibility;
+  status?: string; // 'active' | 'draft' | 'completed'
+  group_code?: string | null; // Join code for the trip
   created_by?: string | null; // uuid → auth.users(id)
   created_at?: string; // timestamptz
   updated_at?: string; // timestamptz
@@ -54,7 +57,7 @@ export interface TripMembershipRow {
   id?: string; // uuid PK
   trip_id: string; // uuid → trips(id)
   user_id: string; // uuid → auth.users(id)
-  role?: GroupRole;
+  role?: TripMemberRole; // 'admin' | 'sub_admin' | 'traveler'
   joined_at?: string; // timestamptz
   left_at?: string | null; // timestamptz
 }

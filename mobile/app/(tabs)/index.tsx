@@ -1,10 +1,12 @@
-import { View, Text, ScrollView, TouchableOpacity, Animated } from "react-native";
+import { View, Text, ScrollView, TouchableOpacity, Animated, ActivityIndicator } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Link, useRouter } from "expo-router";
 import { Bell, Book, Compass, Info, FileText, User, MessageCircle, MapPin, Clock, ChevronRight, CalendarDays, Quote, Moon } from "lucide-react-native";
 import PrayerTimesWidget from "../../components/PrayerTimesWidget";
 import Svg, { Path, Rect } from "react-native-svg";
 import { useFadeIn } from "../../lib/sharedElementTransitions";
+import { useTrip } from "../../lib/context/TripContext";
+import { useItinerary } from "../../lib/api/hooks/useItinerary";
 
 // Kaaba Icon Component
 const KaabaIcon = ({ size = 24, color = "#4A6741" }) => (
@@ -79,6 +81,44 @@ export default function HomeScreen() {
 }
 
 function TripStatus() {
+    const { currentTrip, loading } = useTrip();
+
+    // Get next activity
+    const { items, loading: itemsLoading } = useItinerary({
+        tripId: currentTrip?.id || '',
+        enableRealtime: false,
+    });
+
+    if (loading || itemsLoading) {
+        return (
+            <View className="bg-card rounded-xl p-4 shadow-sm border border-[#C5A059]/20">
+                <ActivityIndicator size="small" color="#C5A059" />
+            </View>
+        );
+    }
+
+    if (!currentTrip) {
+        return (
+            <View className="bg-card rounded-xl p-4 shadow-sm border border-[#C5A059]/20">
+                <Text className="text-muted-foreground text-center">No active trip</Text>
+            </View>
+        );
+    }
+
+    // Calculate current day
+    const startDate = currentTrip.start_date ? new Date(currentTrip.start_date) : null;
+    const endDate = currentTrip.end_date ? new Date(currentTrip.end_date) : null;
+    const today = new Date();
+    const currentDay = startDate ? Math.ceil((today.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)) + 1 : null;
+    const totalDays = startDate && endDate ? Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)) + 1 : null;
+
+    // Find next activity
+    const now = new Date();
+    const upcomingItems = items
+        .filter(item => item.starts_at && new Date(item.starts_at) > now)
+        .sort((a, b) => new Date(a.starts_at!).getTime() - new Date(b.starts_at!).getTime());
+    const nextActivity = upcomingItems[0];
+
     return (
         <View className="bg-card rounded-xl p-4 shadow-sm border border-[#C5A059]/20">
             <View className="flex-row justify-between items-start mb-3">
@@ -87,25 +127,35 @@ function TripStatus() {
                         <Moon size={12} color="#C5A059" />
                         <Text className="text-[#C5A059] text-xs font-medium">Current Trip</Text>
                     </View>
-                    <Text className="font-bold text-foreground">Umrah February 2025</Text>
+                    <Text className="font-bold text-foreground">{currentTrip.name}</Text>
                 </View>
                 <View>
-                    <Text className="text-xs text-muted-foreground text-right">Day 3 of 10</Text>
-                    <Text className="font-semibold text-[#C5A059] text-right">Makkah</Text>
+                    {currentDay && totalDays && (
+                        <Text className="text-xs text-muted-foreground text-right">Day {currentDay} of {totalDays}</Text>
+                    )}
+                    {currentTrip.base_city && (
+                        <Text className="font-semibold text-[#C5A059] text-right">{currentTrip.base_city}</Text>
+                    )}
                 </View>
             </View>
 
-            <View className="p-3 bg-sand-50 rounded-lg border border-[#C5A059]/20 mb-3">
-                <View className="flex-row items-center">
-                    <View className="h-10 w-10 rounded-full bg-[#C5A059]/10 items-center justify-center mr-3 border border-[#C5A059]/20">
-                        <Text className="text-[#C5A059] font-bold text-sm">08</Text>
-                    </View>
-                    <View className="flex-1">
-                        <Text className="text-xs text-muted-foreground font-medium uppercase">Next Activity • 08:30 PM</Text>
-                        <Text className="text-sm font-semibold text-foreground">Group Dinner at Hotel</Text>
+            {nextActivity && (
+                <View className="p-3 bg-sand-50 rounded-lg border border-[#C5A059]/20 mb-3">
+                    <View className="flex-row items-center">
+                        <View className="h-10 w-10 rounded-full bg-[#C5A059]/10 items-center justify-center mr-3 border border-[#C5A059]/20">
+                            <Text className="text-[#C5A059] font-bold text-sm">
+                                {new Date(nextActivity.starts_at!).getHours().toString().padStart(2, '0')}
+                            </Text>
+                        </View>
+                        <View className="flex-1">
+                            <Text className="text-xs text-muted-foreground font-medium uppercase">
+                                Next Activity • {new Date(nextActivity.starts_at!).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
+                            </Text>
+                            <Text className="text-sm font-semibold text-foreground">{nextActivity.title}</Text>
+                        </View>
                     </View>
                 </View>
-            </View>
+            )}
 
             <Link href="/itinerary" asChild>
                 <TouchableOpacity className="flex-row items-center justify-between p-3 border border-sand-200 rounded-lg bg-transparent">

@@ -1,37 +1,20 @@
-import { View, Text, ScrollView, TouchableOpacity, TextInput, Alert, Switch, Modal, Animated } from "react-native";
+import { View, Text, ScrollView, TouchableOpacity, Animated, ActivityIndicator, Alert } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useState } from "react";
-import {
-    Calendar,
-    Users,
-    Share2,
-    MessageSquare,
-    Bell,
-    ChevronRight,
-    Copy,
-    RefreshCw,
-    UserPlus,
-    UserMinus,
-    Eye,
-    Edit,
-    Send,
-    BarChart3,
-    Shield,
-    Clock,
-    X
-} from "lucide-react-native";
+import { Shield, AlertCircle, Plus } from "lucide-react-native";
 import { useFadeIn } from "../../lib/sharedElementTransitions";
-import Svg, { Path } from "react-native-svg";
+import { useTrip } from "../../lib/context/TripContext";
+import { getOrCreateDefaultGroup } from "../../lib/api/services/group.service";
 
-// Crescent Icon Component
-const CrescentIcon = ({ size = 20, color = "#C5A059" }) => (
-    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-        <Path
-            d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"
-            fill={color}
-        />
-    </Svg>
-);
+// Import admin components
+import { AdminHeader } from "../../components/admin/AdminHeader";
+import { AdminTabButton } from "../../components/admin/AdminTabButton";
+import { AdminModals } from "../../components/admin/AdminModals";
+import { OverviewTab } from "../../components/admin/OverviewTab";
+import { MembersTab } from "../../components/admin/MembersTab";
+import { ItineraryTab } from "../../components/admin/ItineraryTab";
+import { CommunicationTab } from "../../components/admin/CommunicationTab";
+import { TripDetailsTab } from "../../components/admin/TripDetailsTab";
 
 // Mock data for admin
 const MOCK_ADMIN_DATA = {
@@ -61,12 +44,33 @@ const MOCK_ADMIN_DATA = {
 };
 
 export default function AdminScreen() {
-    const [activeTab, setActiveTab] = useState<'overview' | 'members' | 'communication' | 'trip'>('overview');
+    const [activeTab, setActiveTab] = useState<'overview' | 'members' | 'communication' | 'trip' | 'itinerary'>('overview');
     const [showAddMemberModal, setShowAddMemberModal] = useState(false);
+    const [showCreateTripModal, setShowCreateTripModal] = useState(false);
+    const [showTripSwitcher, setShowTripSwitcher] = useState(false);
     const [newMemberPhone, setNewMemberPhone] = useState('');
     const [newMemberFirstName, setNewMemberFirstName] = useState('');
     const [newMemberLastName, setNewMemberLastName] = useState('');
+    const [newTripName, setNewTripName] = useState('');
+    const [newTripStartDate, setNewTripStartDate] = useState<Date | null>(null);
+    const [newTripEndDate, setNewTripEndDate] = useState<Date | null>(null);
+    const [showStartDatePicker, setShowStartDatePicker] = useState(false);
+    const [showEndDatePicker, setShowEndDatePicker] = useState(false);
+    const [newTripCity, setNewTripCity] = useState('');
+    const [creatingTrip, setCreatingTrip] = useState(false);
     const fadeInStyle = useFadeIn(0);
+
+    // Use trip context
+    const {
+        currentTrip,
+        currentTripRole,
+        allTrips,
+        loading,
+        error,
+        setCurrentTrip,
+        createNewTrip,
+        refreshTrips,
+    } = useTrip();
 
     const handleAddMember = () => {
         if (!newMemberPhone.trim() || !newMemberFirstName.trim() || !newMemberLastName.trim()) {
@@ -74,134 +78,203 @@ export default function AdminScreen() {
             return;
         }
 
-        // Here you would send the invitation
         Alert.alert('Success', `Invitation sent to ${newMemberFirstName} ${newMemberLastName} at ${newMemberPhone}`);
 
-        // Reset and close
         setNewMemberPhone('');
         setNewMemberFirstName('');
         setNewMemberLastName('');
         setShowAddMemberModal(false);
     };
 
-    return (
-        <SafeAreaView className="flex-1 bg-sand-50">
-            {/* Add Member Modal */}
-            <Modal
-                visible={showAddMemberModal}
-                transparent={true}
-                animationType="fade"
-                onRequestClose={() => setShowAddMemberModal(false)}
-            >
-                <View className="flex-1 bg-black/50 justify-center items-center px-6">
-                    <View className="bg-card rounded-2xl w-full max-w-md p-6 border border-[#C5A059]/20">
-                        {/* Header */}
-                        <View className="flex-row items-center justify-between mb-4">
-                            <View className="flex-row items-center gap-2">
-                                <UserPlus size={24} color="#4A6741" />
-                                <Text className="text-xl font-bold text-foreground">Add New Member</Text>
-                            </View>
-                            <TouchableOpacity onPress={() => setShowAddMemberModal(false)} className="p-1">
-                                <X size={24} color="#718096" />
-                            </TouchableOpacity>
-                        </View>
+    const handleCreateTrip = async () => {
+        if (!newTripName.trim()) {
+            Alert.alert('Error', 'Please enter a trip name');
+            return;
+        }
 
-                        <Text className="text-sm text-muted-foreground mb-4">
-                            Enter member details to send them an invitation
-                        </Text>
+        setCreatingTrip(true);
 
-                        {/* Phone Number */}
-                        <View className="mb-4">
-                            <Text className="text-sm font-medium text-foreground mb-2">Phone Number</Text>
-                            <TextInput
-                                placeholder="+1 555-123-4567"
-                                placeholderTextColor="#A0AEC0"
-                                value={newMemberPhone}
-                                onChangeText={setNewMemberPhone}
-                                className="bg-sand-50 border border-sand-200 rounded-xl px-4 py-3 text-foreground"
-                                keyboardType="phone-pad"
-                            />
-                        </View>
+        try {
+            const { success: groupSuccess, group, error: groupError } = await getOrCreateDefaultGroup();
 
-                        {/* First Name */}
-                        <View className="mb-4">
-                            <Text className="text-sm font-medium text-foreground mb-2">First Name</Text>
-                            <TextInput
-                                placeholder="Ahmed"
-                                placeholderTextColor="#A0AEC0"
-                                value={newMemberFirstName}
-                                onChangeText={setNewMemberFirstName}
-                                className="bg-sand-50 border border-sand-200 rounded-xl px-4 py-3 text-foreground"
-                            />
-                        </View>
+            if (!groupSuccess || !group) {
+                Alert.alert('Error', groupError || 'Failed to get group');
+                return;
+            }
 
-                        {/* Last Name */}
-                        <View className="mb-6">
-                            <Text className="text-sm font-medium text-foreground mb-2">Last Name</Text>
-                            <TextInput
-                                placeholder="Hassan"
-                                placeholderTextColor="#A0AEC0"
-                                value={newMemberLastName}
-                                onChangeText={setNewMemberLastName}
-                                className="bg-sand-50 border border-sand-200 rounded-xl px-4 py-3 text-foreground"
-                            />
-                        </View>
+            const { success, error } = await createNewTrip({
+                group_id: group.id!,
+                name: newTripName,
+                start_date: newTripStartDate ? newTripStartDate.toISOString().split('T')[0] : null,
+                end_date: newTripEndDate ? newTripEndDate.toISOString().split('T')[0] : null,
+                base_city: newTripCity || null,
+                visibility: 'draft',
+            });
 
-                        {/* Buttons */}
-                        <View className="flex-row gap-3">
-                            <TouchableOpacity
-                                onPress={() => setShowAddMemberModal(false)}
-                                className="flex-1 bg-sand-100 rounded-xl p-4"
-                            >
-                                <Text className="text-muted-foreground font-semibold text-center">Cancel</Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity
-                                onPress={handleAddMember}
-                                className="flex-1 bg-[#4A6741] rounded-xl p-4"
-                            >
-                                <Text className="text-white font-semibold text-center">Send Invite</Text>
-                            </TouchableOpacity>
-                        </View>
-                    </View>
+            if (success) {
+                Alert.alert('Success', `Trip "${newTripName}" created successfully`);
+                setNewTripName('');
+                setNewTripStartDate(null);
+                setNewTripEndDate(null);
+                setNewTripCity('');
+                setShowCreateTripModal(false);
+            } else {
+                Alert.alert('Error', error || 'Failed to create trip');
+            }
+        } finally {
+            setCreatingTrip(false);
+        }
+    };
+
+    const handleSwitchTrip = async (tripId: string) => {
+        await setCurrentTrip(tripId);
+        setShowTripSwitcher(false);
+    };
+
+    // Loading state
+    if (loading) {
+        return (
+            <SafeAreaView className="flex-1 bg-sand-50">
+                <View className="flex-1 items-center justify-center">
+                    <ActivityIndicator size="large" color="#4A6741" />
+                    <Text className="text-muted-foreground mt-4">Loading your trips...</Text>
                 </View>
-            </Modal>
+            </SafeAreaView>
+        );
+    }
 
-            {/* Header */}
-            <View className="px-4 py-4 bg-card border-b border-[#C5A059]/20">
-                <View className="flex-row items-center justify-between mb-2">
+    // Error state
+    if (error) {
+        return (
+            <SafeAreaView className="flex-1 bg-sand-50">
+                <View className="flex-1 items-center justify-center p-8">
+                    <AlertCircle size={64} color="#EF4444" />
+                    <Text className="text-foreground font-semibold text-lg mt-4">Error Loading Trips</Text>
+                    <Text className="text-muted-foreground text-center mt-2">{error}</Text>
+                    <TouchableOpacity
+                        onPress={refreshTrips}
+                        className="bg-[#4A6741] px-6 py-3 rounded-lg mt-6"
+                    >
+                        <Text className="text-white font-semibold">Retry</Text>
+                    </TouchableOpacity>
+                </View>
+            </SafeAreaView>
+        );
+    }
+
+    // No admin trips or current trip
+    if (!currentTrip) {
+        return (
+            <SafeAreaView className="flex-1 bg-sand-50">
+                <View className="px-4 py-4 bg-card border-b border-[#C5A059]/20">
                     <View className="flex-row items-center gap-2">
                         <Shield size={24} color="#C5A059" />
-                        <View>
-                            <Text className="text-2xl font-bold text-foreground">Group Admin</Text>
-                            <Text className="text-sm text-muted-foreground mt-1">Manage your Umrah group</Text>
-                        </View>
-                    </View>
-                    <View className="bg-[#C5A059]/10 px-3 py-1.5 rounded-full border border-[#C5A059]/30">
-                        <Text className="text-[#C5A059] text-xs font-semibold">ADMIN</Text>
+                        <Text className="text-2xl font-bold text-foreground">Group Admin</Text>
                     </View>
                 </View>
-            </View>
+                <View className="flex-1 items-center justify-center p-8">
+                    <Shield size={64} color="#CBD5E0" />
+                    <Text className="text-foreground font-semibold text-lg mt-4">No Trips Yet</Text>
+                    <Text className="text-muted-foreground text-center mt-2">
+                        Create your first trip to get started managing your Umrah group.
+                    </Text>
+                    <TouchableOpacity
+                        onPress={() => setShowCreateTripModal(true)}
+                        className="bg-[#4A6741] px-6 py-3 rounded-lg mt-6 flex-row items-center"
+                    >
+                        <Plus size={20} color="white" />
+                        <Text className="text-white font-semibold ml-2">Create Trip</Text>
+                    </TouchableOpacity>
+                </View>
+            </SafeAreaView>
+        );
+    }
+
+    // Mock data based on current trip
+    const ADMIN_DATA = {
+        currentTrip: {
+            id: currentTrip.id!,
+            name: currentTrip.name,
+            status: 'active',
+            startDate: currentTrip.start_date || '2025-02-08',
+            endDate: currentTrip.end_date || '2025-02-18',
+            totalMembers: 45,
+            joinedMembers: 42,
+            pendingMembers: 3,
+        },
+        groupCode: 'UMR2025FEB',
+        members: MOCK_ADMIN_DATA.members,
+        recentActivity: MOCK_ADMIN_DATA.recentActivity,
+        unreadMessages: 8,
+    };
+
+    return (
+        <SafeAreaView className="flex-1 bg-sand-50">
+            <AdminModals
+                showAddMemberModal={showAddMemberModal}
+                setShowAddMemberModal={setShowAddMemberModal}
+                newMemberPhone={newMemberPhone}
+                setNewMemberPhone={setNewMemberPhone}
+                newMemberFirstName={newMemberFirstName}
+                setNewMemberFirstName={setNewMemberFirstName}
+                newMemberLastName={newMemberLastName}
+                setNewMemberLastName={setNewMemberLastName}
+                handleAddMember={handleAddMember}
+                showCreateTripModal={showCreateTripModal}
+                setShowCreateTripModal={setShowCreateTripModal}
+                newTripName={newTripName}
+                setNewTripName={setNewTripName}
+                newTripStartDate={newTripStartDate}
+                setNewTripStartDate={setNewTripStartDate}
+                newTripEndDate={newTripEndDate}
+                setNewTripEndDate={setNewTripEndDate}
+                showStartDatePicker={showStartDatePicker}
+                setShowStartDatePicker={setShowStartDatePicker}
+                showEndDatePicker={showEndDatePicker}
+                setShowEndDatePicker={setShowEndDatePicker}
+                newTripCity={newTripCity}
+                setNewTripCity={setNewTripCity}
+                creatingTrip={creatingTrip}
+                handleCreateTrip={handleCreateTrip}
+                showTripSwitcher={showTripSwitcher}
+                setShowTripSwitcher={setShowTripSwitcher}
+                allTrips={allTrips}
+                currentTripId={currentTrip?.id}
+                handleSwitchTrip={handleSwitchTrip}
+            />
+
+            <AdminHeader
+                currentTripName={currentTrip.name}
+                currentTripStartDate={currentTrip.start_date}
+                currentTripEndDate={currentTrip.end_date}
+                onTripSelectorPress={() => setShowTripSwitcher(true)}
+            />
 
             {/* Tab Navigation */}
             <View className="px-4 py-3 bg-card border-b border-sand-200">
                 <ScrollView horizontal showsHorizontalScrollIndicator={false}>
                     <View className="flex-row gap-2">
-                        <TabButton
+                        <AdminTabButton
                             active={activeTab === 'overview'}
                             onPress={() => setActiveTab('overview')}
                             label="Overview"
                         />
-                        <TabButton
+                        <AdminTabButton
                             active={activeTab === 'members'}
                             onPress={() => setActiveTab('members')}
                             label="Members"
                         />
-                        <TabButton
+                        <AdminTabButton
+                            active={activeTab === 'itinerary'}
+                            onPress={() => setActiveTab('itinerary')}
+                            label="Itinerary"
+                        />
+                        <AdminTabButton
                             active={activeTab === 'communication'}
                             onPress={() => setActiveTab('communication')}
                             label="Communication"
                         />
-                        <TabButton
+                        <AdminTabButton
                             active={activeTab === 'trip'}
                             onPress={() => setActiveTab('trip')}
                             label="Trip Details"
@@ -211,567 +284,19 @@ export default function AdminScreen() {
             </View>
 
             <Animated.ScrollView style={fadeInStyle} className="flex-1" contentContainerStyle={{ paddingBottom: 16 }}>
-                {activeTab === 'overview' && <OverviewTab data={MOCK_ADMIN_DATA} onNavigate={setActiveTab} onAddMember={() => setShowAddMemberModal(true)} />}
-                {activeTab === 'members' && <MembersTab members={MOCK_ADMIN_DATA.members} groupCode={MOCK_ADMIN_DATA.groupCode} onAddMember={() => setShowAddMemberModal(true)} />}
-                {activeTab === 'communication' && <CommunicationTab unreadMessages={MOCK_ADMIN_DATA.unreadMessages} />}
-                {activeTab === 'trip' && <TripDetailsTab trip={MOCK_ADMIN_DATA.currentTrip} />}
+                {activeTab === 'overview' && (
+                    <OverviewTab
+                        data={ADMIN_DATA}
+                        onNavigate={setActiveTab}
+                        onAddMember={() => setShowAddMemberModal(true)}
+                        tripId={currentTrip?.id}
+                    />
+                )}
+                {activeTab === 'members' && <MembersTab members={ADMIN_DATA.members} groupCode={ADMIN_DATA.groupCode} onAddMember={() => setShowAddMemberModal(true)} />}
+                {activeTab === 'itinerary' && <ItineraryTab tripId={ADMIN_DATA.currentTrip.id} tripName={ADMIN_DATA.currentTrip.name} />}
+                {activeTab === 'communication' && <CommunicationTab tripId={currentTrip?.id} />}
+                {activeTab === 'trip' && <TripDetailsTab trip={ADMIN_DATA.currentTrip} />}
             </Animated.ScrollView>
         </SafeAreaView>
-    );
-}
-
-function TabButton({ active, onPress, label }: { active: boolean; onPress: () => void; label: string }) {
-    return (
-        <TouchableOpacity
-            onPress={onPress}
-            className={`px-4 py-2 rounded-full border ${active ? 'bg-[#4A6741] border-[#4A6741]' : 'bg-card border-sand-200'
-                }`}
-        >
-            <Text className={`font-medium ${active ? 'text-white' : 'text-muted-foreground'}`}>
-                {label}
-            </Text>
-        </TouchableOpacity>
-    );
-}
-
-function OverviewTab({ data, onNavigate, onAddMember }: { data: typeof MOCK_ADMIN_DATA; onNavigate: (tab: 'overview' | 'members' | 'communication' | 'trip') => void; onAddMember: () => void }) {
-    return (
-        <View className="p-4">
-            {/* Current Trip Status */}
-            <View className="bg-card rounded-xl p-4 border border-[#C5A059]/20 mb-4 shadow-sm">
-                <View className="flex-row items-center justify-between mb-3">
-                    <Text className="text-lg font-bold text-foreground">Current Trip</Text>
-                    <View className="bg-[#4A6741]/10 px-2.5 py-1 rounded-md">
-                        <Text className="text-[#4A6741] text-xs font-semibold uppercase">{data.currentTrip.status}</Text>
-                    </View>
-                </View>
-                <Text className="text-xl font-bold text-foreground mb-2">{data.currentTrip.name}</Text>
-                <View className="flex-row items-center gap-2 mb-4">
-                    <Calendar size={14} color="#C5A059" />
-                    <Text className="text-sm text-muted-foreground">
-                        {new Date(data.currentTrip.startDate).toLocaleDateString()} - {new Date(data.currentTrip.endDate).toLocaleDateString()}
-                    </Text>
-                </View>
-
-                {/* Stats Grid */}
-                <View className="flex-row gap-2">
-                    <View className="flex-1 bg-[#4A6741]/5 p-3 rounded-lg border border-[#4A6741]/20">
-                        <View className="flex-row items-center mb-1">
-                            <Users size={14} color="#4A6741" />
-                            <Text className="text-xs text-muted-foreground ml-1 font-medium">JOINED</Text>
-                        </View>
-                        <Text className="text-foreground text-lg font-bold">{data.currentTrip.joinedMembers}/{data.currentTrip.totalMembers}</Text>
-                    </View>
-                    <View className="flex-1 bg-[#C5A059]/5 p-3 rounded-lg border border-[#C5A059]/20">
-                        <View className="flex-row items-center mb-1">
-                            <Clock size={14} color="#C5A059" />
-                            <Text className="text-xs text-muted-foreground ml-1 font-medium">PENDING</Text>
-                        </View>
-                        <Text className="text-foreground text-lg font-bold">{data.currentTrip.pendingMembers}</Text>
-                    </View>
-                </View>
-            </View>
-
-            {/* Group Code Card */}
-            <GroupCodeCard code={data.groupCode} />
-
-            {/* Quick Actions */}
-            <View className="mb-4">
-                <Text className="text-lg font-bold text-foreground mb-3">Quick Actions</Text>
-                <View className="bg-card rounded-xl border border-[#C5A059]/20 overflow-hidden">
-                    <QuickActionItem
-                        icon={MessageSquare}
-                        title="Group Chat"
-                        subtitle={`${data.unreadMessages} unread messages`}
-                        onPress={() => onNavigate('communication')}
-                    />
-                    <QuickActionItem
-                        icon={Bell}
-                        title="Send Announcement"
-                        subtitle="Notify all members"
-                        onPress={() => onNavigate('communication')}
-                    />
-                    <QuickActionItem
-                        icon={UserPlus}
-                        title="Add Member"
-                        subtitle="Invite new travelers"
-                        onPress={onAddMember}
-                        last
-                    />
-                </View>
-            </View>
-
-            {/* Recent Activity */}
-            <View className="mb-4">
-                <Text className="text-lg font-bold text-foreground mb-3">Recent Activity</Text>
-                <View className="bg-card rounded-xl border border-sand-200 overflow-hidden">
-                    {data.recentActivity.map((activity, index) => (
-                        <View
-                            key={index}
-                            className={`p-4 ${index !== data.recentActivity.length - 1 ? 'border-b border-sand-100' : ''}`}
-                        >
-                            <Text className="text-foreground font-medium mb-1">{activity.message}</Text>
-                            <Text className="text-xs text-muted-foreground">{activity.time}</Text>
-                        </View>
-                    ))}
-                </View>
-            </View>
-
-            {/* Stats Overview */}
-            <View className="bg-gradient-to-br from-primary/10 to-primary/5 rounded-xl p-4 border border-primary/20 mb-4">
-                <View className="flex-row items-center mb-3">
-                    <BarChart3 size={20} color="#4A6741" />
-                    <Text className="text-lg font-bold text-foreground ml-2">Group Health</Text>
-                </View>
-                <View className="flex-row justify-between">
-                    <View>
-                        <Text className="text-2xl font-bold text-primary">93%</Text>
-                        <Text className="text-xs text-muted-foreground">Join Rate</Text>
-                    </View>
-                    <View>
-                        <Text className="text-2xl font-bold text-primary">98%</Text>
-                        <Text className="text-xs text-muted-foreground">Active Users</Text>
-                    </View>
-                    <View>
-                        <Text className="text-2xl font-bold text-primary">24h</Text>
-                        <Text className="text-xs text-muted-foreground">Avg Response</Text>
-                    </View>
-                </View>
-            </View>
-        </View>
-    );
-}
-
-function GroupCodeCard({ code }: { code: string }) {
-    const handleCopy = () => {
-        Alert.alert('Copied!', `Group code "${code}" copied to clipboard`);
-    };
-
-    const handleShare = () => {
-        Alert.alert('Share Code', `Share group code: ${code}`);
-    };
-
-    const handleRegenerate = () => {
-        Alert.alert(
-            'Regenerate Code',
-            'This will invalidate the current code. Are you sure?',
-            [
-                { text: 'Cancel', style: 'cancel' },
-                { text: 'Regenerate', style: 'destructive', onPress: () => Alert.alert('Code Regenerated', 'New code: UMR2025MAR') }
-            ]
-        );
-    };
-
-    return (
-        <View className="bg-card rounded-xl p-4 border border-[#C5A059]/20 mb-4 shadow-sm">
-            <View className="flex-row items-center justify-between mb-3">
-                <Text className="text-lg font-bold text-foreground">Group Join Code</Text>
-                <Shield size={18} color="#C5A059" />
-            </View>
-
-            <View className="bg-[#4A6741]/5 p-4 rounded-lg border border-[#4A6741]/20 mb-3">
-                <Text className="text-center text-3xl font-bold text-[#4A6741] tracking-wider">{code}</Text>
-            </View>
-
-            <View className="flex-row gap-2">
-                <TouchableOpacity
-                    onPress={handleCopy}
-                    className="flex-1 flex-row items-center justify-center bg-[#4A6741]/10 p-3 rounded-lg border border-[#4A6741]/20"
-                >
-                    <Copy size={16} color="#4A6741" />
-                    <Text className="text-[#4A6741] font-medium ml-2">Copy</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                    onPress={handleShare}
-                    className="flex-1 flex-row items-center justify-center bg-[#C5A059]/10 p-3 rounded-lg border border-[#C5A059]/30"
-                >
-                    <Share2 size={16} color="#C5A059" />
-                    <Text className="text-[#C5A059] font-medium ml-2">Share</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                    onPress={handleRegenerate}
-                    className="flex-row items-center justify-center bg-sand-100 p-3 rounded-lg border border-sand-200"
-                >
-                    <RefreshCw size={16} color="hsl(40 5% 55%)" />
-                </TouchableOpacity>
-            </View>
-        </View>
-    );
-}
-
-function MembersTab({ members, groupCode, onAddMember }: { members: typeof MOCK_ADMIN_DATA.members; groupCode: string; onAddMember: () => void }) {
-    const [searchQuery, setSearchQuery] = useState('');
-
-    const filteredMembers = members.filter(m =>
-        m.name.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-
-    const handleRemoveMember = (memberId: string, name: string) => {
-        Alert.alert(
-            'Remove Member',
-            `Are you sure you want to remove ${name} from the group?`,
-            [
-                { text: 'Cancel', style: 'cancel' },
-                {
-                    text: 'Remove',
-                    style: 'destructive',
-                    onPress: () => Alert.alert('Member Removed', `${name} has been removed from the group`)
-                }
-            ]
-        );
-    };
-
-    return (
-        <View className="p-4">
-            {/* Search */}
-            <View className="flex-row items-center bg-card rounded-xl px-4 py-3 border border-[#C5A059]/20 mb-4">
-                <Users size={20} color="#C5A059" />
-                <TextInput
-                    placeholder="Search members..."
-                    placeholderTextColor="hsl(40 5% 55%)"
-                    value={searchQuery}
-                    onChangeText={setSearchQuery}
-                    className="ml-2 flex-1 text-foreground"
-                />
-            </View>
-
-            {/* Add Member Button */}
-            <TouchableOpacity
-                onPress={onAddMember}
-                className="bg-[#4A6741] rounded-xl p-4 mb-4 flex-row items-center justify-center"
-            >
-                <UserPlus size={20} color="white" />
-                <Text className="text-white font-semibold ml-2">Add New Member</Text>
-            </TouchableOpacity>
-
-            {/* Members List */}
-            <View className="bg-card rounded-xl border border-[#C5A059]/20 overflow-hidden">
-                {filteredMembers.map((member, index) => (
-                    <View
-                        key={member.id}
-                        className={`p-4 ${index !== filteredMembers.length - 1 ? 'border-b border-sand-100' : ''}`}
-                    >
-                        <View className="flex-row items-start justify-between mb-2">
-                            <View className="flex-1">
-                                <View className="flex-row items-center gap-2 mb-1">
-                                    <Text className="text-foreground font-semibold text-base">{member.name}</Text>
-                                    {member.role === 'group_admin' && (
-                                        <View className="bg-[#C5A059]/10 px-2 py-0.5 rounded border border-[#C5A059]/30">
-                                            <Text className="text-[#C5A059] text-xs font-medium">ADMIN</Text>
-                                        </View>
-                                    )}
-                                    {member.status === 'pending' && (
-                                        <View className="bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
-                                            <Text className="text-amber-700 text-xs font-medium">PENDING</Text>
-                                        </View>
-                                    )}
-                                </View>
-                                <Text className="text-xs text-muted-foreground">
-                                    Joined {new Date(member.joinedAt).toLocaleDateString()}
-                                </Text>
-                            </View>
-                        </View>
-
-                        <View className="flex-row gap-2 mt-2">
-                            <TouchableOpacity
-                                onPress={() => handleRemoveMember(member.id, member.name)}
-                                className="flex-1 flex-row items-center justify-center bg-red-50 p-2 rounded-lg border border-red-200"
-                            >
-                                <UserMinus size={14} color="hsl(0 84% 60%)" />
-                                <Text className="text-red-600 text-xs font-medium ml-1">Remove</Text>
-                            </TouchableOpacity>
-                        </View>
-                    </View>
-                ))}
-            </View>
-
-            {/* Member Stats */}
-            <View className="mt-4 p-4 bg-sand-50 rounded-xl border border-[#C5A059]/20">
-                <Text className="text-sm font-semibold text-foreground mb-2">Member Statistics</Text>
-                <View className="flex-row justify-between">
-                    <View>
-                        <Text className="text-2xl font-bold text-[#4A6741]">{members.filter(m => m.status === 'active').length}</Text>
-                        <Text className="text-xs text-muted-foreground">Active</Text>
-                    </View>
-                    <View>
-                        <Text className="text-2xl font-bold text-amber-600">{members.filter(m => m.status === 'pending').length}</Text>
-                        <Text className="text-xs text-muted-foreground">Pending</Text>
-                    </View>
-                    <View>
-                        <Text className="text-2xl font-bold text-[#C5A059]">{members.filter(m => m.role === 'group_admin').length}</Text>
-                        <Text className="text-xs text-muted-foreground">Admins</Text>
-                    </View>
-                </View>
-            </View>
-        </View>
-    );
-}
-
-function CommunicationTab({ unreadMessages }: { unreadMessages: number }) {
-    const [announcementText, setAnnouncementText] = useState('');
-    const [isPriority, setIsPriority] = useState(false);
-
-    const handleSendAnnouncement = () => {
-        if (!announcementText.trim()) {
-            Alert.alert('Error', 'Please enter an announcement message');
-            return;
-        }
-        Alert.alert(
-            'Send Announcement',
-            `Send this announcement to all members?${isPriority ? '\n\n⚠️ This is a priority message.' : ''}`,
-            [
-                { text: 'Cancel', style: 'cancel' },
-                {
-                    text: 'Send',
-                    onPress: () => {
-                        Alert.alert('Sent!', 'Announcement sent to 42 members');
-                        setAnnouncementText('');
-                        setIsPriority(false);
-                    }
-                }
-            ]
-        );
-    };
-
-    const handleOpenChat = () => {
-        Alert.alert('Group Chat', 'Opening group chat with 8 unread messages...');
-    };
-
-    return (
-        <View className="p-4">
-            {/* Group Chat Card */}
-            <TouchableOpacity
-                onPress={handleOpenChat}
-                className="bg-card rounded-xl p-4 border border-sand-200 mb-4 shadow-sm"
-            >
-                <View className="flex-row items-center justify-between">
-                    <View className="flex-1">
-                        <View className="flex-row items-center gap-2 mb-1">
-                            <MessageSquare size={20} color="#4A6741" />
-                            <Text className="text-lg font-bold text-foreground">Group Chat</Text>
-                        </View>
-                        <Text className="text-sm text-muted-foreground">
-                            Two-way communication with all members
-                        </Text>
-                    </View>
-                    {unreadMessages > 0 && (
-                        <View className="bg-red-500 rounded-full w-8 h-8 items-center justify-center ml-3">
-                            <Text className="text-white text-xs font-bold">{unreadMessages}</Text>
-                        </View>
-                    )}
-                    <ChevronRight size={20} color="hsl(40 5% 70%)" className="ml-2" />
-                </View>
-            </TouchableOpacity>
-
-            {/* Send Announcement */}
-            <View className="bg-card rounded-xl p-4 border border-sand-200 mb-4">
-                <View className="flex-row items-center gap-2 mb-3">
-                    <Bell size={20} color="#4A6741" />
-                    <Text className="text-lg font-bold text-foreground">Send Announcement</Text>
-                </View>
-
-                <TextInput
-                    placeholder="Write your announcement..."
-                    placeholderTextColor="hsl(40 5% 55%)"
-                    value={announcementText}
-                    onChangeText={setAnnouncementText}
-                    multiline
-                    numberOfLines={4}
-                    className="bg-sand-50 p-3 rounded-lg border border-sand-200 text-foreground mb-3"
-                    style={{ minHeight: 100, textAlignVertical: 'top' }}
-                />
-
-                <View className="flex-row items-center justify-between mb-3">
-                    <View className="flex-row items-center">
-                        <Text className="text-sm text-foreground font-medium mr-2">Priority Message</Text>
-                        <Text className="text-xs text-muted-foreground">(Send push notification)</Text>
-                    </View>
-                    <Switch
-                        value={isPriority}
-                        onValueChange={setIsPriority}
-                        trackColor={{ false: '#e0d8cc', true: '#6B9465' }}
-                        thumbColor={isPriority ? '#4A6741' : '#f4f3f1'}
-                    />
-                </View>
-
-                <TouchableOpacity
-                    onPress={handleSendAnnouncement}
-                    style={{ backgroundColor: '#4A6741' }}
-                    className="rounded-lg p-4 flex-row items-center justify-center"
-                >
-                    <Send size={18} color="white" />
-                    <Text className="text-white font-semibold ml-2">Send to All Members</Text>
-                </TouchableOpacity>
-            </View>
-
-            {/* Recent Announcements */}
-            <View className="mb-4">
-                <Text className="text-lg font-bold text-foreground mb-3">Recent Announcements</Text>
-                <View className="bg-card rounded-xl border border-sand-200 overflow-hidden">
-                    {[
-                        { title: 'Important: Passport Check', message: 'Please ensure your passport is valid for at least 6 months', time: '2 hours ago', opens: 38 },
-                        { title: 'Welcome to the Group!', message: 'Assalamu Alaykum everyone! Welcome to our Umrah group.', time: '1 day ago', opens: 42 },
-                        { title: 'Meeting Reminder', message: 'Pre-trip orientation meeting tomorrow at 7 PM', time: '3 days ago', opens: 40 },
-                    ].map((announcement, index) => (
-                        <View
-                            key={index}
-                            className={`p-4 ${index !== 2 ? 'border-b border-sand-100' : ''}`}
-                        >
-                            <Text className="text-foreground font-semibold mb-1">{announcement.title}</Text>
-                            <Text className="text-sm text-muted-foreground mb-2">{announcement.message}</Text>
-                            <View className="flex-row items-center justify-between">
-                                <Text className="text-xs text-muted-foreground">{announcement.time}</Text>
-                                <View className="flex-row items-center gap-1">
-                                    <Eye size={12} color="#4A6741" />
-                                    <Text className="text-xs text-primary font-medium">{announcement.opens} opened</Text>
-                                </View>
-                            </View>
-                        </View>
-                    ))}
-                </View>
-            </View>
-        </View>
-    );
-}
-
-function TripDetailsTab({ trip }: { trip: typeof MOCK_ADMIN_DATA.currentTrip }) {
-    const [isEditing, setIsEditing] = useState(false);
-    const [tripName, setTripName] = useState(trip.name);
-
-    const handleSaveTrip = () => {
-        Alert.alert('Trip Updated', 'Trip details have been saved successfully');
-        setIsEditing(false);
-    };
-
-    const handleEditItinerary = () => {
-        Alert.alert('Edit Itinerary', 'Opening itinerary editor...');
-    };
-
-    return (
-        <View className="p-4">
-            {/* Trip Name */}
-            <View className="bg-card rounded-xl p-4 border border-sand-200 mb-4">
-                <View className="flex-row items-center justify-between mb-3">
-                    <Text className="text-lg font-bold text-foreground">Trip Details</Text>
-                    <TouchableOpacity onPress={() => setIsEditing(!isEditing)}>
-                        <Edit size={18} color="#4A6741" />
-                    </TouchableOpacity>
-                </View>
-
-                {isEditing ? (
-                    <>
-                        <Text className="text-sm text-muted-foreground mb-2">Trip Name</Text>
-                        <TextInput
-                            value={tripName}
-                            onChangeText={setTripName}
-                            className="bg-sand-50 p-3 rounded-lg border border-sand-200 text-foreground mb-3"
-                        />
-
-                        <View className="flex-row gap-2">
-                            <TouchableOpacity
-                                onPress={() => setIsEditing(false)}
-                                className="flex-1 bg-sand-100 p-3 rounded-lg"
-                            >
-                                <Text className="text-muted-foreground font-medium text-center">Cancel</Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity
-                                onPress={handleSaveTrip}
-                                className="flex-1 bg-primary p-3 rounded-lg"
-                            >
-                                <Text className="text-primary-foreground font-semibold text-center">Save</Text>
-                            </TouchableOpacity>
-                        </View>
-                    </>
-                ) : (
-                    <>
-                        <Text className="text-2xl font-bold text-foreground mb-3">{tripName}</Text>
-                        <View className="flex-row items-center gap-2">
-                            <Calendar size={16} color="hsl(40 5% 55%)" />
-                            <Text className="text-sm text-muted-foreground">
-                                {new Date(trip.startDate).toLocaleDateString()} - {new Date(trip.endDate).toLocaleDateString()}
-                            </Text>
-                        </View>
-                    </>
-                )}
-            </View>
-
-            {/* Quick Edit Options */}
-            <View className="bg-card rounded-xl border border-sand-200 overflow-hidden mb-4">
-                <QuickActionItem
-                    icon={Calendar}
-                    title="Edit Itinerary"
-                    subtitle="Manage daily activities"
-                    onPress={handleEditItinerary}
-                />
-                <QuickActionItem
-                    icon={Users}
-                    title="Update Dates"
-                    subtitle="Change trip duration"
-                    onPress={() => Alert.alert('Update Dates', 'Opening date picker...')}
-                />
-                <QuickActionItem
-                    icon={Eye}
-                    title="Trip Visibility"
-                    subtitle="Currently: Active"
-                    onPress={() => Alert.alert('Trip Visibility', 'Change trip status (Active, Draft, Completed)')}
-                    last
-                />
-            </View>
-
-            {/* Itinerary Summary */}
-            <View className="bg-gradient-to-br from-primary/10 to-primary/5 rounded-xl p-4 border border-primary/20">
-                <Text className="text-lg font-bold text-foreground mb-3">Itinerary Summary</Text>
-                <View className="space-y-2">
-                    <View className="flex-row items-center justify-between mb-2">
-                        <Text className="text-muted-foreground">Total Days</Text>
-                        <Text className="text-foreground font-semibold">10 days</Text>
-                    </View>
-                    <View className="flex-row items-center justify-between mb-2">
-                        <Text className="text-muted-foreground">Cities</Text>
-                        <Text className="text-foreground font-semibold">Madinah, Makkah</Text>
-                    </View>
-                    <View className="flex-row items-center justify-between mb-2">
-                        <Text className="text-muted-foreground">Total Activities</Text>
-                        <Text className="text-foreground font-semibold">42 activities</Text>
-                    </View>
-                    <View className="flex-row items-center justify-between">
-                        <Text className="text-muted-foreground">Last Updated</Text>
-                        <Text className="text-foreground font-semibold">2 days ago</Text>
-                    </View>
-                </View>
-            </View>
-        </View>
-    );
-}
-
-function QuickActionItem({
-    icon: Icon,
-    title,
-    subtitle,
-    onPress,
-    last = false
-}: {
-    icon: any;
-    title: string;
-    subtitle: string;
-    onPress: () => void;
-    last?: boolean;
-}) {
-    return (
-        <TouchableOpacity
-            onPress={onPress}
-            className={`flex-row items-center justify-between p-4 ${!last ? 'border-b border-sand-100' : ''}`}
-        >
-            <View className="flex-row items-center flex-1">
-                <View className="h-10 w-10 bg-sand-100 rounded-full items-center justify-center mr-3">
-                    <Icon size={18} color="#4A6741" />
-                </View>
-                <View className="flex-1">
-                    <Text className="text-foreground font-medium">{title}</Text>
-                    <Text className="text-xs text-muted-foreground mt-0.5">{subtitle}</Text>
-                </View>
-            </View>
-            <ChevronRight size={18} color="hsl(40 5% 70%)" />
-        </TouchableOpacity>
     );
 }
