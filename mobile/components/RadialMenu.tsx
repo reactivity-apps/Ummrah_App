@@ -15,6 +15,7 @@ import { useState, useEffect } from "react";
 import { Home, Calendar, LayoutGrid, MessageCircle, Clock, Map, Phone, User, Shield, X } from "lucide-react-native";
 import { useRouter } from "expo-router";
 import Svg, { Path, Rect } from "react-native-svg";
+import { useTrip } from "../lib/context/TripContext";
 
 // ============================================================================
 // CONSTANTS
@@ -116,6 +117,16 @@ export default function RadialMenu() {
     const router = useRouter();
     const rotation = useSharedValue(0);
     const breathing = useSharedValue(1);
+    const { currentTrip, currentTripRole } = useTrip();
+
+    // Filter menu items based on user role
+    const isAdmin = currentTripRole === 'group_owner' || currentTripRole === 'super_admin';
+    const visibleMenuItems = MENU_ITEMS.filter(item => {
+        if (item.id === 'admin') {
+            return isAdmin;
+        }
+        return true;
+    });
 
     // Breathing animation for FAB when closed
 
@@ -169,12 +180,12 @@ export default function RadialMenu() {
 
             {/* Menu Items Container */}
             <View style={styles.itemsContainer} pointerEvents="box-none">
-                {MENU_ITEMS.map((item, index) => (
+                {visibleMenuItems.map((item, index) => (
                     <RadialMenuItem
                         key={item.id}
                         item={item}
                         index={index}
-                        totalItems={MENU_ITEMS.length}
+                        totalItems={visibleMenuItems.length}
                         isOpen={isOpen}
                         onPress={() => handlePress(item.route)}
                         delay={index * 30}

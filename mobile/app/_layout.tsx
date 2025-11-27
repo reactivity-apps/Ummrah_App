@@ -4,7 +4,8 @@ import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { getStackScreenOptions } from "../lib/navigationConfig";
-import { requestPushNotificationPermissions, configureNotifications } from "../lib/api/services/pushNotification.service.js";
+import { requestPushNotificationPermissions, configureNotifications } from "../lib/api/services/pushNotification.service";
+import { TripProvider } from "../lib/context/TripContext";
 
 export default function RootLayout() {
     useEffect(() => {
@@ -22,18 +23,21 @@ export default function RootLayout() {
 
     return (
         <SafeAreaProvider>
-            <Stack screenOptions={getStackScreenOptions}>
-                <Stack.Screen name="join-trip" />
-                <Stack.Screen name="login" />
+            <TripProvider>
+                <Stack screenOptions={getStackScreenOptions}>
+                    <Stack.Screen name="join-trip" options={{ headerShown: false }} />
+                    <Stack.Screen name="login" options={{ headerShown: false }} />
 
-                <Stack.Screen name="(tabs)" />
+                    <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
 
-                <Stack.Screen name="itinerary" />
-                <Stack.Screen name="prayers" />
-                <Stack.Screen name="guide/[id]" />
-                <Stack.Screen name="map/[id]" />
-            </Stack>
-            <StatusBar style="auto" />
+                    <Stack.Screen name="itinerary" options={{ headerShown: false }} />
+                    <Stack.Screen name="announcements" options={{ headerShown: false }} />
+                    <Stack.Screen name="prayers" options={{ headerShown: false }} />
+                    <Stack.Screen name="guide/[id]" options={{ headerShown: false }} />
+                    <Stack.Screen name="map/[id]" options={{ headerShown: false }} />
+                </Stack>
+                <StatusBar style="auto" />
+            </TripProvider>
         </SafeAreaProvider>
     );
 }

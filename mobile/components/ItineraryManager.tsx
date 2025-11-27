@@ -254,7 +254,7 @@ export default function ItineraryManager({ tripId, tripName }: ItineraryManagerP
                 </TouchableOpacity>
                 <TouchableOpacity
                     onPress={() => setShowTemplateModal(true)}
-                    className="flex-1 bg-teal-600 rounded-lg py-2.5 flex-row items-center justify-center"
+                    className="flex-1 bg-[#C5A059] rounded-lg py-2.5 flex-row items-center justify-center"
                 >
                     <Calendar size={18} color="white" />
                     <Text className="text-white font-semibold ml-2">Templates</Text>

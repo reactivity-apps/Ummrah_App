@@ -1,7 +1,9 @@
-import { View, Text, TextInput, TouchableOpacity, Alert } from "react-native";
+import { View, Text, TextInput, TouchableOpacity, Alert, Modal, Platform } from "react-native";
 import { useState } from "react";
-import { Calendar, Users, Eye, Edit } from "lucide-react-native";
+import { Calendar, Edit, X } from "lucide-react-native";
 import { QuickActionItem } from "./QuickActionItem";
+import DateTimePicker from '@react-native-community/datetimepicker';
+import { updateTrip } from "../../lib/api/services/trip.service";
 
 interface TripDetailsTabProps {
     trip: {
@@ -11,19 +13,46 @@ interface TripDetailsTabProps {
         startDate: string;
         endDate: string;
     };
+    onNavigateToItinerary?: () => void;
 }
 
-export function TripDetailsTab({ trip }: TripDetailsTabProps) {
+export function TripDetailsTab({ trip, onNavigateToItinerary }: TripDetailsTabProps) {
     const [isEditing, setIsEditing] = useState(false);
     const [tripName, setTripName] = useState(trip.name);
+    const [showDateModal, setShowDateModal] = useState(false);
+    const [startDate, setStartDate] = useState(new Date(trip.startDate));
+    const [endDate, setEndDate] = useState(new Date(trip.endDate));
+    const [showStartPicker, setShowStartPicker] = useState(false);
+    const [showEndPicker, setShowEndPicker] = useState(false);
 
-    const handleSaveTrip = () => {
-        Alert.alert('Trip Updated', 'Trip details have been saved successfully');
-        setIsEditing(false);
+    const handleSaveTrip = async () => {
+        const result = await updateTrip(trip.id, { name: tripName });
+        if (result.success) {
+            Alert.alert('Success', 'Trip name updated successfully');
+            setIsEditing(false);
+        } else {
+            Alert.alert('Error', result.error || 'Failed to update trip name');
+        }
     };
 
     const handleEditItinerary = () => {
-        Alert.alert('Edit Itinerary', 'Opening itinerary editor...');
+        if (onNavigateToItinerary) {
+            onNavigateToItinerary();
+        }
+    };
+
+    const handleSaveDates = async () => {
+        const result = await updateTrip(trip.id, {
+            start_date: startDate.toISOString().split('T')[0],
+            end_date: endDate.toISOString().split('T')[0],
+        });
+
+        if (result.success) {
+            Alert.alert('Success', 'Trip dates updated successfully');
+            setShowDateModal(false);
+        } else {
+            Alert.alert('Error', result.error || 'Failed to update dates');
+        }
     };
 
     return (
@@ -83,16 +112,10 @@ export function TripDetailsTab({ trip }: TripDetailsTabProps) {
                     onPress={handleEditItinerary}
                 />
                 <QuickActionItem
-                    icon={Users}
+                    icon={Calendar}
                     title="Update Dates"
                     subtitle="Change trip duration"
-                    onPress={() => Alert.alert('Update Dates', 'Opening date picker...')}
-                />
-                <QuickActionItem
-                    icon={Eye}
-                    title="Trip Visibility"
-                    subtitle="Currently: Active"
-                    onPress={() => Alert.alert('Trip Visibility', 'Change trip status (Active, Draft, Completed)')}
+                    onPress={() => setShowDateModal(true)}
                     last
                 />
             </View>
@@ -103,22 +126,107 @@ export function TripDetailsTab({ trip }: TripDetailsTabProps) {
                 <View className="space-y-2">
                     <View className="flex-row items-center justify-between mb-2">
                         <Text className="text-muted-foreground">Total Days</Text>
-                        <Text className="text-foreground font-semibold">10 days</Text>
+                        <Text className="text-foreground font-semibold">
+                            {Math.ceil((new Date(trip.endDate).getTime() - new Date(trip.startDate).getTime()) / (1000 * 60 * 60 * 24))} days
+                        </Text>
                     </View>
                     <View className="flex-row items-center justify-between mb-2">
-                        <Text className="text-muted-foreground">Cities</Text>
-                        <Text className="text-foreground font-semibold">Madinah, Makkah</Text>
-                    </View>
-                    <View className="flex-row items-center justify-between mb-2">
-                        <Text className="text-muted-foreground">Total Activities</Text>
-                        <Text className="text-foreground font-semibold">42 activities</Text>
+                        <Text className="text-muted-foreground">Start Date</Text>
+                        <Text className="text-foreground font-semibold">{new Date(trip.startDate).toLocaleDateString()}</Text>
                     </View>
                     <View className="flex-row items-center justify-between">
-                        <Text className="text-muted-foreground">Last Updated</Text>
-                        <Text className="text-foreground font-semibold">2 days ago</Text>
+                        <Text className="text-muted-foreground">End Date</Text>
+                        <Text className="text-foreground font-semibold">{new Date(trip.endDate).toLocaleDateString()}</Text>
                     </View>
                 </View>
             </View>
+
+            {/* Date Picker Modal */}
+            <Modal
+                visible={showDateModal}
+                transparent
+                animationType="fade"
+                onRequestClose={() => setShowDateModal(false)}
+            >
+                <View className="flex-1 bg-black/50 items-center justify-center p-4">
+                    <View className="bg-card rounded-xl p-6 w-full max-w-md border border-sand-200">
+                        <View className="flex-row items-center justify-between mb-4">
+                            <Text className="text-xl font-bold text-foreground">Update Trip Dates</Text>
+                            <TouchableOpacity onPress={() => setShowDateModal(false)}>
+                                <X size={24} color="hsl(40 5% 55%)" />
+                            </TouchableOpacity>
+                        </View>
+
+                        {/* Start Date */}
+                        <View className="mb-4">
+                            <Text className="text-sm font-medium text-foreground mb-2">Start Date</Text>
+                            <TouchableOpacity
+                                onPress={() => setShowStartPicker(true)}
+                                className="bg-sand-50 p-3 rounded-lg border border-sand-200"
+                            >
+                                <Text className="text-foreground">{startDate.toLocaleDateString()}</Text>
+                            </TouchableOpacity>
+                            {showStartPicker && (
+                                <DateTimePicker
+                                    value={startDate}
+                                    mode="date"
+                                    display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                                    onChange={(event, selectedDate) => {
+                                        setShowStartPicker(Platform.OS === 'ios');
+                                        if (selectedDate) {
+                                            setStartDate(selectedDate);
+                                            if (selectedDate > endDate) {
+                                                setEndDate(new Date(selectedDate.getTime() + 7 * 24 * 60 * 60 * 1000));
+                                            }
+                                        }
+                                    }}
+                                />
+                            )}
+                        </View>
+
+                        {/* End Date */}
+                        <View className="mb-6">
+                            <Text className="text-sm font-medium text-foreground mb-2">End Date</Text>
+                            <TouchableOpacity
+                                onPress={() => setShowEndPicker(true)}
+                                className="bg-sand-50 p-3 rounded-lg border border-sand-200"
+                            >
+                                <Text className="text-foreground">{endDate.toLocaleDateString()}</Text>
+                            </TouchableOpacity>
+                            {showEndPicker && (
+                                <DateTimePicker
+                                    value={endDate}
+                                    mode="date"
+                                    display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                                    minimumDate={startDate}
+                                    onChange={(event, selectedDate) => {
+                                        setShowEndPicker(Platform.OS === 'ios');
+                                        if (selectedDate) {
+                                            setEndDate(selectedDate);
+                                        }
+                                    }}
+                                />
+                            )}
+                        </View>
+
+                        {/* Action Buttons */}
+                        <View className="flex-row gap-2">
+                            <TouchableOpacity
+                                onPress={() => setShowDateModal(false)}
+                                className="flex-1 bg-sand-100 p-3 rounded-lg"
+                            >
+                                <Text className="text-muted-foreground font-medium text-center">Cancel</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                                onPress={handleSaveDates}
+                                className="flex-1 bg-[#4A6741] p-3 rounded-lg"
+                            >
+                                <Text className="text-white font-semibold text-center">Save</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+                </View>
+            </Modal>
         </View>
     );
 }

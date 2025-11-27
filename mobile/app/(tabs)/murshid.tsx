@@ -124,10 +124,10 @@ const MessageItem = ({ message }: { message: Message }) => {
             </View>
 
             {/* Footer / Filigree */}
-            <View className="bg-sand-50 px-4 py-2 flex-row justify-between items-center border-t border-sand-100">
+            <View className="px-4 py-2 flex-row justify-between items-center border-t border-sand-100">
                 <View className="flex-row items-center">
                     <Sparkles size={12} color={COLORS.gold} />
-                    <Text className="text-[10px] text-sand-400 uppercase tracking-widest ml-2">Guidance</Text>
+                    <Text className="text-[10px] text-[#4A6741] uppercase tracking-widest ml-2 font-semibold">Guidance</Text>
                 </View>
                 <View className="opacity-20">
                     <GeometricPattern size={20} color={COLORS.primary} />

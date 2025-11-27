@@ -20,10 +20,16 @@ const KaabaIcon = ({ size = 24, color = "#4A6741" }) => (
 
 export default function HomeScreen() {
     const fadeInStyle = useFadeIn(0);
+    const router = useRouter();
+    const { currentTrip } = useTrip();
 
     return (
-        <SafeAreaView className="flex-1 bg-background">
-            <Animated.ScrollView style={fadeInStyle} className="flex-1 px-4 py-4">
+        <SafeAreaView className="flex-1 bg-background" edges={['top']}>
+            <Animated.ScrollView
+                style={fadeInStyle}
+                className="flex-1"
+                contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 8, paddingBottom: 20 }}
+            >
                 {/* Mobile Header */}
                 <View className="flex-row items-center justify-between py-2 mb-6">
                     <View className="flex-row items-center gap-3">
@@ -35,7 +41,10 @@ export default function HomeScreen() {
                             <Text className="text-lg font-bold text-foreground">Ahmed Hassan</Text>
                         </View>
                     </View>
-                    <TouchableOpacity className="relative p-2">
+                    <TouchableOpacity
+                        className="relative p-2"
+                        onPress={() => router.push('/announcements')}
+                    >
                         <Bell size={24} color="#C5A059" />
                         <View className="absolute top-2 right-2 h-2.5 w-2.5 rounded-full bg-red-500 border-2 border-white" />
                     </TouchableOpacity>
@@ -161,7 +170,7 @@ function TripStatus() {
                 <TouchableOpacity className="flex-row items-center justify-between p-3 border border-sand-200 rounded-lg bg-transparent">
                     <View className="flex-row items-center gap-2">
                         <CalendarDays size={16} color="#4A6741" />
-                        <Text className="text-primary font-medium">View Full Itinerary</Text>
+                        <Text className="text-[#4A6741] font-medium">View Full Itinerary</Text>
                     </View>
                     <ChevronRight size={16} color="#4A6741" />
                 </TouchableOpacity>

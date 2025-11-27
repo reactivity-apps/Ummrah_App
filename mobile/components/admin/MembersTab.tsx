@@ -1,30 +1,49 @@
-import { View, Text, TextInput, TouchableOpacity } from "react-native";
-import { useState } from "react";
-import { Users, UserPlus, UserMinus } from "lucide-react-native";
+import { View, Text, TextInput, TouchableOpacity, ActivityIndicator } from "react-native";
+import { useState, useEffect } from "react";
+import { Users, UserMinus } from "lucide-react-native";
 import { Alert } from "react-native";
+import { getTripMembers, removeTripMember } from "../../lib/api/services/trip.service";
+import { TripMemberRole } from "../../types/db";
 
 interface Member {
     id: string;
+    user_id: string;
     name: string;
-    role: string;
-    status: string;
-    joinedAt: string;
+    role: TripMemberRole;
+    joined_at: string;
 }
 
 interface MembersTabProps {
-    members: Member[];
-    groupCode: string;
-    onAddMember: () => void;
+    tripId: string;
 }
 
-export function MembersTab({ members, groupCode, onAddMember }: MembersTabProps) {
+export function MembersTab({ tripId }: MembersTabProps) {
     const [searchQuery, setSearchQuery] = useState('');
+    const [members, setMembers] = useState<Member[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [refreshing, setRefreshing] = useState(false);
+
+    useEffect(() => {
+        loadMembers();
+    }, [tripId]);
+
+    const loadMembers = async () => {
+        setLoading(true);
+        const result = await getTripMembers(tripId);
+        if (result.success && result.members) {
+            setMembers(result.members);
+        } else {
+            Alert.alert('Error', result.error || 'Failed to load members');
+        }
+        setLoading(false);
+        setRefreshing(false);
+    };
 
     const filteredMembers = members.filter(m =>
         m.name.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
-    const handleRemoveMember = (memberId: string, name: string) => {
+    const handleRemoveMember = (userId: string, name: string) => {
         Alert.alert(
             'Remove Member',
             `Are you sure you want to remove ${name} from the group?`,
@@ -33,11 +52,27 @@ export function MembersTab({ members, groupCode, onAddMember }: MembersTabProps)
                 {
                     text: 'Remove',
                     style: 'destructive',
-                    onPress: () => Alert.alert('Member Removed', `${name} has been removed from the group`)
+                    onPress: async () => {
+                        const result = await removeTripMember(tripId, userId);
+                        if (result.success) {
+                            Alert.alert('Success', `${name} has been removed from the group`);
+                            loadMembers(); // Refresh the list
+                        } else {
+                            Alert.alert('Error', result.error || 'Failed to remove member');
+                        }
+                    }
                 }
             ]
         );
     };
+
+    if (loading) {
+        return (
+            <View className="flex-1 items-center justify-center p-8">
+                <ActivityIndicator size="large" color="#4A6741" />
+            </View>
+        );
+    }
 
     return (
         <View className="p-4">
@@ -53,17 +88,8 @@ export function MembersTab({ members, groupCode, onAddMember }: MembersTabProps)
                 />
             </View>
 
-            {/* Add Member Button */}
-            <TouchableOpacity
-                onPress={onAddMember}
-                className="bg-[#4A6741] rounded-xl p-4 mb-4 flex-row items-center justify-center"
-            >
-                <UserPlus size={20} color="white" />
-                <Text className="text-white font-semibold ml-2">Add New Member</Text>
-            </TouchableOpacity>
-
             {/* Members List */}
-            <View className="bg-card rounded-xl border border-[#C5A059]/20 overflow-hidden">
+            <View className="bg-card rounded-xl border border-[#C5A059]/20 overflow-hidden mb-4">
                 {filteredMembers.map((member, index) => (
                     <View
                         key={member.id}
@@ -73,26 +99,21 @@ export function MembersTab({ members, groupCode, onAddMember }: MembersTabProps)
                             <View className="flex-1">
                                 <View className="flex-row items-center gap-2 mb-1">
                                     <Text className="text-foreground font-semibold text-base">{member.name}</Text>
-                                    {member.role === 'group_admin' && (
+                                    {member.role === 'group_owner' && (
                                         <View className="bg-[#C5A059]/10 px-2 py-0.5 rounded border border-[#C5A059]/30">
                                             <Text className="text-[#C5A059] text-xs font-medium">ADMIN</Text>
                                         </View>
                                     )}
-                                    {member.status === 'pending' && (
-                                        <View className="bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
-                                            <Text className="text-amber-700 text-xs font-medium">PENDING</Text>
-                                        </View>
-                                    )}
                                 </View>
                                 <Text className="text-xs text-muted-foreground">
-                                    Joined {new Date(member.joinedAt).toLocaleDateString()}
+                                    Joined {new Date(member.joined_at).toLocaleDateString()}
                                 </Text>
                             </View>
                         </View>
 
                         <View className="flex-row gap-2 mt-2">
                             <TouchableOpacity
-                                onPress={() => handleRemoveMember(member.id, member.name)}
+                                onPress={() => handleRemoveMember(member.user_id, member.name)}
                                 className="flex-1 flex-row items-center justify-center bg-red-50 p-2 rounded-lg border border-red-200"
                             >
                                 <UserMinus size={14} color="hsl(0 84% 60%)" />
@@ -108,15 +129,11 @@ export function MembersTab({ members, groupCode, onAddMember }: MembersTabProps)
                 <Text className="text-sm font-semibold text-foreground mb-2">Member Statistics</Text>
                 <View className="flex-row justify-between">
                     <View>
-                        <Text className="text-2xl font-bold text-[#4A6741]">{members.filter(m => m.status === 'active').length}</Text>
-                        <Text className="text-xs text-muted-foreground">Active</Text>
+                        <Text className="text-2xl font-bold text-[#4A6741]">{members.length}</Text>
+                        <Text className="text-xs text-muted-foreground">Total</Text>
                     </View>
                     <View>
-                        <Text className="text-2xl font-bold text-amber-600">{members.filter(m => m.status === 'pending').length}</Text>
-                        <Text className="text-xs text-muted-foreground">Pending</Text>
-                    </View>
-                    <View>
-                        <Text className="text-2xl font-bold text-[#C5A059]">{members.filter(m => m.role === 'group_admin').length}</Text>
+                        <Text className="text-2xl font-bold text-[#C5A059]">{members.filter(m => m.role === 'group_owner').length}</Text>
                         <Text className="text-xs text-muted-foreground">Admins</Text>
                     </View>
                 </View>

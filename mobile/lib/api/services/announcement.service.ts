@@ -9,7 +9,7 @@
 import { supabase } from '../../supabase';
 import type { AnnouncementRow } from '../../../types/db';
 import { verifyAdminPermission } from '../utils/helpers';
-import { sendAnnouncementPushNotifications } from './pushNotification.service.js';
+import { sendAnnouncementPushNotifications } from './pushNotification.service';
 
 export interface AnnouncementInput {
     trip_id: string;

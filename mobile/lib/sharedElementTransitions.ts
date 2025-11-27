@@ -22,7 +22,14 @@ import Animated, {
     withSpring,
     Easing,
 } from 'react-native-reanimated';
-import { NAVIGATION_TIMING } from './navigationConfig';
+
+/**
+ * Navigation timing constants
+ */
+const NAVIGATION_TIMING = {
+    STANDARD: 300,
+    SHARED_ELEMENT: 350,
+};
 
 /**
  * Shared element transition configuration

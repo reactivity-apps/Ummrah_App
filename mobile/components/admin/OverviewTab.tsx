@@ -1,4 +1,5 @@
 import { View, Text, ActivityIndicator } from "react-native";
+import { useState, useEffect } from "react";
 import {
     Calendar,
     Users,
@@ -12,6 +13,7 @@ import {
     BarChart3,
 } from "lucide-react-native";
 import { useActivity } from "../../lib/api/hooks/useActivity";
+import { getTripMembers } from "../../lib/api/services/trip.service";
 import { QuickActionItem } from "./QuickActionItem";
 import { GroupCodeCard } from "./GroupCodeCard";
 
@@ -46,12 +48,35 @@ export function OverviewTab({
     onAddMember,
     tripId
 }: OverviewTabProps) {
+    const [memberCount, setMemberCount] = useState(0);
+    const [adminCount, setAdminCount] = useState(0);
+    const [loadingMembers, setLoadingMembers] = useState(true);
+
     // Fetch real activity data if we have a trip ID
     const { activities, loading: activitiesLoading } = useActivity({
         tripId: tripId || '',
         limit: 10,
         enableRealtime: true,
     });
+
+    // Fetch real member stats
+    useEffect(() => {
+        if (!tripId) {
+            setLoadingMembers(false);
+            return;
+        }
+
+        async function loadMemberStats() {
+            const result = await getTripMembers(tripId!);
+            if (result.success && result.members) {
+                setMemberCount(result.members.length);
+                setAdminCount(result.members.filter(m => m.role === 'group_owner' || m.role === 'super_admin').length);
+            }
+            setLoadingMembers(false);
+        }
+
+        loadMemberStats();
+    }, [tripId]);
 
     // Use real activities if available, otherwise fallback to mock data
     const displayActivities = tripId && activities.length > 0 ? activities : data.recentActivity;
@@ -79,16 +104,20 @@ export function OverviewTab({
                     <View className="flex-1 bg-[#4A6741]/5 p-3 rounded-lg border border-[#4A6741]/20">
                         <View className="flex-row items-center mb-1">
                             <Users size={14} color="#4A6741" />
-                            <Text className="text-xs text-muted-foreground ml-1 font-medium">JOINED</Text>
+                            <Text className="text-xs text-muted-foreground ml-1 font-medium">MEMBERS</Text>
                         </View>
-                        <Text className="text-foreground text-lg font-bold">{data.currentTrip.joinedMembers}/{data.currentTrip.totalMembers}</Text>
+                        <Text className="text-foreground text-lg font-bold">
+                            {loadingMembers ? '...' : memberCount}
+                        </Text>
                     </View>
                     <View className="flex-1 bg-[#C5A059]/5 p-3 rounded-lg border border-[#C5A059]/20">
                         <View className="flex-row items-center mb-1">
-                            <Clock size={14} color="#C5A059" />
-                            <Text className="text-xs text-muted-foreground ml-1 font-medium">PENDING</Text>
+                            <UserPlus size={14} color="#C5A059" />
+                            <Text className="text-xs text-muted-foreground ml-1 font-medium">ADMINS</Text>
                         </View>
-                        <Text className="text-foreground text-lg font-bold">{data.currentTrip.pendingMembers}</Text>
+                        <Text className="text-foreground text-lg font-bold">
+                            {loadingMembers ? '...' : adminCount}
+                        </Text>
                     </View>
                 </View>
             </View>
@@ -184,16 +213,22 @@ export function OverviewTab({
                 </View>
                 <View className="flex-row justify-between">
                     <View>
-                        <Text className="text-2xl font-bold text-primary">93%</Text>
-                        <Text className="text-xs text-muted-foreground">Join Rate</Text>
+                        <Text className="text-2xl font-bold text-[#4A6741]">
+                            {loadingMembers ? '...' : `${memberCount}`}
+                        </Text>
+                        <Text className="text-xs text-muted-foreground">Total Members</Text>
                     </View>
                     <View>
-                        <Text className="text-2xl font-bold text-primary">98%</Text>
-                        <Text className="text-xs text-muted-foreground">Active Users</Text>
+                        <Text className="text-2xl font-bold text-[#C5A059]">
+                            {loadingMembers ? '...' : `${adminCount}`}
+                        </Text>
+                        <Text className="text-xs text-muted-foreground">Admins</Text>
                     </View>
                     <View>
-                        <Text className="text-2xl font-bold text-primary">24h</Text>
-                        <Text className="text-xs text-muted-foreground">Avg Response</Text>
+                        <Text className="text-2xl font-bold text-[#4A6741]">
+                            {activitiesLoading ? '...' : `${activities.length}`}
+                        </Text>
+                        <Text className="text-xs text-muted-foreground">Recent Activity</Text>
                     </View>
                 </View>
             </View>

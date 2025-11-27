@@ -292,10 +292,10 @@ export default function AdminScreen() {
                         tripId={currentTrip?.id}
                     />
                 )}
-                {activeTab === 'members' && <MembersTab members={ADMIN_DATA.members} groupCode={ADMIN_DATA.groupCode} onAddMember={() => setShowAddMemberModal(true)} />}
+                {activeTab === 'members' && <MembersTab tripId={ADMIN_DATA.currentTrip.id} />}
                 {activeTab === 'itinerary' && <ItineraryTab tripId={ADMIN_DATA.currentTrip.id} tripName={ADMIN_DATA.currentTrip.name} />}
                 {activeTab === 'communication' && <CommunicationTab tripId={currentTrip?.id} />}
-                {activeTab === 'trip' && <TripDetailsTab trip={ADMIN_DATA.currentTrip} />}
+                {activeTab === 'trip' && <TripDetailsTab trip={ADMIN_DATA.currentTrip} onNavigateToItinerary={() => setActiveTab('itinerary')} />}
             </Animated.ScrollView>
         </SafeAreaView>
     );

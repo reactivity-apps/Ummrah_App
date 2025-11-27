@@ -169,7 +169,7 @@ export function AnnouncementsManager({ tripId }: AnnouncementsManagerProps) {
                     </View>
                     <TouchableOpacity
                         onPress={() => handleOpenModal()}
-                        className="bg-primary px-4 py-2 rounded-lg flex-row items-center"
+                        className="bg-[#4A6741] px-4 py-2 rounded-lg flex-row items-center"
                     >
                         <Plus size={16} color="white" />
                         <Text className="text-white font-semibold ml-1">New</Text>
@@ -208,16 +208,16 @@ export function AnnouncementsManager({ tripId }: AnnouncementsManagerProps) {
                                                     </View>
                                                 )}
                                                 <View className={`px-2 py-0.5 rounded ${status === 'sent'
-                                                        ? 'bg-green-100'
-                                                        : status === 'scheduled'
-                                                            ? 'bg-blue-100'
-                                                            : 'bg-sand-100'
+                                                    ? 'bg-[#4A6741]/10'
+                                                    : status === 'scheduled'
+                                                        ? 'bg-blue-100'
+                                                        : 'bg-sand-100'
                                                     }`}>
                                                     <Text className={`text-xs font-semibold ${status === 'sent'
-                                                            ? 'text-green-700'
-                                                            : status === 'scheduled'
-                                                                ? 'text-blue-700'
-                                                                : 'text-muted-foreground'
+                                                        ? 'text-[#4A6741]'
+                                                        : status === 'scheduled'
+                                                            ? 'text-blue-700'
+                                                            : 'text-muted-foreground'
                                                         }`}>
                                                         {status.toUpperCase()}
                                                     </Text>
@@ -250,10 +250,10 @@ export function AnnouncementsManager({ tripId }: AnnouncementsManagerProps) {
                                         {status === 'scheduled' && (
                                             <TouchableOpacity
                                                 onPress={() => handleSendNow(announcement.id!)}
-                                                className="flex-row items-center bg-primary/10 px-3 py-2 rounded-lg flex-1"
+                                                className="flex-row items-center bg-[#4A6741]/10 px-3 py-2 rounded-lg flex-1"
                                             >
                                                 <Send size={14} color="#4A6741" />
-                                                <Text className="text-primary font-semibold text-sm ml-1">Send Now</Text>
+                                                <Text className="text-[#4A6741] font-semibold text-sm ml-1">Send Now</Text>
                                             </TouchableOpacity>
                                         )}
                                         {!announcement.sent_at && (
@@ -294,7 +294,7 @@ export function AnnouncementsManager({ tripId }: AnnouncementsManagerProps) {
                                 {editingId ? 'Edit' : 'New'} Announcement
                             </Text>
                             <TouchableOpacity onPress={() => setShowModal(false)}>
-                                <Text className="text-primary font-semibold">Cancel</Text>
+                                <Text className="text-[#C5A059] font-semibold">Cancel</Text>
                             </TouchableOpacity>
                         </View>
 
@@ -394,7 +394,7 @@ export function AnnouncementsManager({ tripId }: AnnouncementsManagerProps) {
                         {/* Save Button */}
                         <TouchableOpacity
                             onPress={handleSave}
-                            className="bg-primary p-4 rounded-xl items-center"
+                            className="bg-[#4A6741] p-4 rounded-xl items-center"
                         >
                             <Text className="text-white font-bold text-base">
                                 {editingId ? 'Update' : formData.scheduled_for ? 'Schedule' : 'Send'} Announcement

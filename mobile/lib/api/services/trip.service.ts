@@ -10,7 +10,7 @@
  */
 
 import { supabase } from '../../supabase';
-import { TripRow } from '../../../types/db';
+import { TripRow, TripMemberRole } from '../../../types/db';
 
 export interface TripInput {
     group_id: string;
@@ -306,6 +306,100 @@ export async function getTripWithMembership(tripId: string): Promise<{
         };
     } catch (err) {
         console.error('Error in getTripWithMembership:', err);
+        return { success: false, error: err instanceof Error ? err.message : 'Unknown error' };
+    }
+}
+
+/**
+ * Remove a member from a trip
+ * Only group owners can remove members
+ */
+export async function removeTripMember(
+    tripId: string,
+    userIdToRemove: string
+): Promise<{ success: boolean; error?: string }> {
+    try {
+        const { data: { user } } = await supabase.auth.getUser();
+
+        if (!user) {
+            return { success: false, error: 'Not authenticated' };
+        }
+
+        // Verify current user is group_owner
+        const hasPermission = await verifyTripAdmin(tripId, user.id);
+        if (!hasPermission) {
+            return { success: false, error: 'Only group owners can remove members' };
+        }
+
+        // Don't allow removing yourself
+        if (user.id === userIdToRemove) {
+            return { success: false, error: 'Cannot remove yourself from the trip' };
+        }
+
+        // Set left_at timestamp instead of deleting
+        const { error } = await supabase
+            .from('trip_memberships')
+            .update({ left_at: new Date().toISOString() })
+            .eq('trip_id', tripId)
+            .eq('user_id', userIdToRemove)
+            .is('left_at', null);
+
+        if (error) {
+            console.error('Error removing member:', error);
+            return { success: false, error: error.message };
+        }
+
+        return { success: true };
+    } catch (err) {
+        console.error('Error in removeTripMember:', err);
+        return { success: false, error: err instanceof Error ? err.message : 'Unknown error' };
+    }
+}
+
+/**
+ * Get all members of a trip
+ */
+export async function getTripMembers(tripId: string): Promise<{
+    success: boolean;
+    members?: Array<{
+        id: string;
+        user_id: string;
+        name: string;
+        role: TripMemberRole;
+        joined_at: string;
+    }>;
+    error?: string;
+}> {
+    try {
+        const { data: memberships, error } = await supabase
+            .from('trip_memberships')
+            .select(`
+                id,
+                user_id,
+                role,
+                joined_at,
+                profile:profiles(name)
+            `)
+            .eq('trip_id', tripId)
+            .is('left_at', null)
+            .order('joined_at', { ascending: true });
+
+        if (error) {
+            console.error('Error fetching trip members:', error);
+            return { success: false, error: error.message };
+        }
+
+        const members = memberships?.map((m: any) => ({
+            id: m.id,
+            user_id: m.user_id,
+            name: m.profile?.name || 'Unknown',
+            role: m.role,
+            joined_at: m.joined_at,
+        })) || [];
+
+        return { success: true, members };
+    } catch (err) {
+        console.error('Error in getTripMembers:', err);
         return { success: false, error: err instanceof Error ? err.message : 'Unknown error' };
     }
 }

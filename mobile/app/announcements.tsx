@@ -12,14 +12,12 @@ import { useAnnouncements } from '../lib/api/hooks/useAnnouncements';
 import { formatTimeAgo } from '../lib/api/utils/helpers';
 import { AnnouncementRow } from '../types/db';
 import { router } from 'expo-router';
+import { useTrip } from '../lib/context/TripContext';
 
-interface AnnouncementsScreenProps {
-    tripId: string;
-}
-
-export default function AnnouncementsScreen({ tripId }: AnnouncementsScreenProps) {
+export default function AnnouncementsScreen() {
+    const { currentTrip } = useTrip();
     const { announcements, loading } = useAnnouncements({
-        tripId,
+        tripId: currentTrip?.id || '',
         adminView: false, // Users only see sent announcements
         enableRealtime: true
     });
