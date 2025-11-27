@@ -18,12 +18,12 @@ export default function NameStep({ name, setName, setStep, groupCodeText }: Prop
 
   return (
     <>
-      <TouchableOpacity onPress={() => setStep(1)} className="flex-row items-center mb-4">
-        <ChevronLeft size={24} color="#4A6741" />
+      <TouchableOpacity onPress={() => setStep(1)} className="flex-row items-center">
+        <ChevronLeft size={24} color="#000" />
         <Text className="text-primary font-medium ml-1">Back</Text>
       </TouchableOpacity>
 
-      <View className="items-center mb-12 mt-4">
+      <View className="items-center mb-5 mt-4">
         <View className="h-20 w-20 bg-primary/10 rounded-full items-center justify-center mb-4 border-2 border-primary/20">
           <User size={40} color="#4A6741" />
         </View>

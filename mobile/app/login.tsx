@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Mail, Lock, ArrowRight, ChevronLeft } from 'lucide-react-native';
+import { Mail, Lock, ArrowRight } from 'lucide-react-native';
 import { supabase } from '../lib/supabase';
 import { useRouter, Link } from 'expo-router';
+import { contentContainerConfig } from '../lib/navigationConfig';
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -72,23 +73,23 @@ export default function LoginScreen() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-background">
+    <SafeAreaView className="flex-1 bg-background" edges={['top', 'bottom']}>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         className="flex-1"
       >
         <ScrollView
           className="flex-1"
-          contentContainerStyle={{ flexGrow: 1, paddingHorizontal: 16, paddingVertical: 32 }}
+          contentContainerStyle={contentContainerConfig}
           keyboardShouldPersistTaps="handled"
         >
-          <View className="flex-1 px-6 py-8">
-            <TouchableOpacity onPress={() => router.back()} className="flex-row items-center mb-4">
-              <ChevronLeft size={24} color="#4A6741" />
-              <Text className="text-primary font-medium ml-1">Back</Text>
-            </TouchableOpacity>
+          <View className="flex-1 bg">
+          {/* <TouchableOpacity onPress={() => router.back()} className="flex-row items-center mb-4">
+            <ChevronLeft size={24} color="#4A6741" />
+            <Text className="text-primary font-medium ml-1">Back</Text>
+          </TouchableOpacity> */}
 
-            <View className="items-center mb-12 mt-4">
+          <View className="items-center mb-12">
               <View className="h-20 w-20 bg-primary/10 rounded-full items-center justify-center mb-4 border-2 border-primary/20">
                 <Lock size={40} color="#4A6741" />
               </View>
@@ -110,7 +111,6 @@ export default function LoginScreen() {
                     keyboardType="email-address"
                     autoCapitalize="none"
                     autoCorrect={false}
-                    autoFocus
                   />
                 </View>
               </View>
@@ -133,14 +133,14 @@ export default function LoginScreen() {
               </View>
 
               {error && (
-                <View className="mb-4 bg-red-50 border border-red-200 rounded-xl p-3">
+                <View className="mb-1 bg-red-50 border border-red-200 rounded-xl p-3">
                   <Text className="text-sm text-red-700">{error}</Text>
                 </View>
               )}
 
               <TouchableOpacity
                 onPress={handleLogin}
-                disabled={!(isEmailValid(email) && password.length > 0) || loading}
+                disabled={!(isEmailValid(email) && isPasswordValid(password)) || loading}
                 className={`rounded-xl p-4 items-center mt-6 flex-row justify-center ${
                   (isEmailValid(email) && password.length > 0) ? 'bg-primary' : 'bg-sand-200'
                 }`}
@@ -180,7 +180,7 @@ export default function LoginScreen() {
             </View>
 
             {/* Footer */}
-            <View className="mt-auto pt-8">
+            <View className="mt-5">
               <Text className="text-center text-xs text-muted-foreground">
                 By continuing, you agree to our{'\n'}
                 <Text className="text-primary">Terms of Service</Text> and{' '}

@@ -1,10 +1,9 @@
 import { Tabs } from "expo-router";
-import { View } from "react-native";
 import RadialMenu from "../../components/RadialMenu";
 
 export default function TabLayout() {
     return (
-        <View style={{ flex: 1 }}>
+        <>
             {/* 
                 Tab Navigator with minimal, fast transitions
                 - Hidden tab bar (using RadialMenu instead)
@@ -30,6 +29,6 @@ export default function TabLayout() {
             </Tabs>
 
             <RadialMenu />
-        </View>
+        </>
     );
 }

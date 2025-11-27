@@ -7,6 +7,7 @@ import GroupCodeStep from './components/joinTripSteps/GroupCodeStep';
 import NameStep from './components/joinTripSteps/NameStep';
 import EmailPasswordStep from './components/joinTripSteps/EmailPasswordStep';
 import AccountCreatedStep from "./components/joinTripSteps/AccountCreatedStep";
+import { contentContainerConfig } from "../lib/navigationConfig";
 
 export default function JoinTripScreen() {
     const router = useRouter();
@@ -183,20 +184,20 @@ export default function JoinTripScreen() {
     };
    
     return (
-        <SafeAreaView className="flex-1 bg-background">
+    <SafeAreaView className="flex-1 bg-background" edges={['top', 'bottom']}>
             <KeyboardAvoidingView
                 behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
                 className="flex-1"
             >
                 <ScrollView
                     className="flex-1"
-                    contentContainerStyle={{ flexGrow: 1, paddingHorizontal: 16, paddingVertical: 32 }}
+                    contentContainerStyle={contentContainerConfig}
                     keyboardShouldPersistTaps="handled"
                 >
-                    <View className="flex-1 px-6 py-8">
+                    <View>
                         {/*
-                        Old multi-step flow (commented out):
-                        1: GroupCodeStep -> 2: PhoneStep -> 3: OtpStep -> 4: NameStep
+                            Old multi-step flow (commented out):
+                            1: GroupCodeStep -> 2: PhoneStep -> 3: OtpStep -> 4: NameStep
                         */}
 
                         {/* New flow: 1: GroupCodeStep -> 2: NameStep -> 3: EmailPasswordStep -> 4: AccountCreatedStep */}
@@ -223,16 +224,16 @@ export default function JoinTripScreen() {
                             />
                           
                         ) : (
-                            <AccountCreatedStep
-                            />
+                            <AccountCreatedStep />
                         )}
 
+                        
                         {/* Already have account / Footer */}
-                        <View className="items-center mt-6">
+                        {step !== 4 && <View className="items-center mt-6">
                             <Text className="text-sm text-muted-foreground">Already have an account?{' '}
                                 <Link href="/login" className="text-primary font-medium">Log in</Link>
                             </Text>
-                        </View>
+                        </View>}
 
                         {/* Footer */}
                         <View className="mt-auto pt-8">

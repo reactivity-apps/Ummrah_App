@@ -79,8 +79,8 @@ export default function EmailPasswordStep({ onEmailEntered, setStep, handleSignU
 
   return (
     <>
-      <TouchableOpacity onPress={() => setStep(1)} className="flex-row items-center mb-4">
-        <ChevronLeft size={24} color="#4A6741" />
+      <TouchableOpacity onPress={() => setStep(1)} className="flex-row items-center">
+        <ChevronLeft size={24} color="#000" />
         <Text className="text-primary font-medium ml-1">Back</Text>
       </TouchableOpacity>
 
