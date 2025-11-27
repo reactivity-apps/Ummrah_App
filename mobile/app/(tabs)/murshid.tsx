@@ -1,11 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { View, Text, ScrollView, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, Dimensions } from 'react-native';
+import { View, Text, ScrollView, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, Dimensions, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Send, Sparkles, BookOpen, MapPin, Moon, Info, ChevronRight, ArrowLeft } from 'lucide-react-native';
 import Animated, { useSharedValue, useAnimatedStyle, withRepeat, withTiming, withSequence, Easing, FadeIn, FadeInUp } from 'react-native-reanimated';
 import Svg, { Circle, Path, G } from 'react-native-svg';
 import { useRouter } from 'expo-router';
 import { useFadeIn } from '../../lib/sharedElementTransitions';
+import { sendChatMessage } from '../../lib/api/services/openai.service';
 
 // --- Constants & Theme ---
 const COLORS = {
@@ -83,9 +84,9 @@ const MessageItem = ({ message }: { message: Message }) => {
             <Animated.View
                 entering={FadeInUp.duration(300)}
                 className="self-end rounded-2xl rounded-tr-none px-5 py-3.5 max-w-[85%] my-2"
-                style={{ backgroundColor: '#4A6741' }}
+                style={{ backgroundColor: 'transparent' }}
             >
-                <Text className="text-white text-base leading-6">{message.content}</Text>
+                <Text className="text-[#4A6741] text-base leading-6">{message.content}</Text>
             </Animated.View>
         );
     }
@@ -162,7 +163,7 @@ export default function MurshidScreen() {
         { id: '4', text: "Historical ziyarat in Madinah", icon: <MapPin size={14} color="#4A6741" /> },
     ];
 
-    const handleSend = (text: string) => {
+    const handleSend = async (text: string) => {
         if (!text.trim()) return;
 
         const userMsg: Message = { id: Date.now().toString(), role: 'user', content: text };
@@ -170,20 +171,48 @@ export default function MurshidScreen() {
         setInputText('');
         setIsTyping(true);
 
-        // Mock Response Logic
-        setTimeout(() => {
-            let responseContent = "I am here to guide you. Please consult with your group scholars for specific rulings.";
+        try {
+            // Prepare conversation history for OpenAI
+            const conversationHistory = [...messages, userMsg].map(m => ({
+                role: m.role,
+                content: m.content,
+            }));
 
-            if (text.toLowerCase().includes('dua') || text.toLowerCase().includes('tawaf')) {
-                responseContent = "Here is a beautiful supplication for your Tawaf:\n\n---\n\nرَبَّنَا آتِنَا فِي الدُّنْيَا حَسَنَةً وَفِي الآخِرَةِ حَسَنَةً وَقِنَا عَذَابَ النَّارِ\n\n---\n\n\"Our Lord, give us in this world [that which is] good and in the Hereafter [that which is] good and protect us from the punishment of the Fire.\"\n\nRecite this with presence of heart between the Yemeni Corner and the Black Stone.";
-            } else if (text.toLowerCase().includes('ihram')) {
-                responseContent = "Entering the state of Ihram involves both physical and spiritual preparation.\n\n1. Perform Ghusl (ritual bath).\n2. Wear the two white sheets (for men).\n3. Pray two rakat Nafl.\n4. Make the Niyyah (intention) and recite the Talbiyah:\n\nلَبَّيْكَ اللَّهُمَّ لَبَّيْكَ\n\nMay Allah accept your intention.";
+            // Call OpenAI API
+            const result = await sendChatMessage(conversationHistory);
+
+            if (result.success && result.response) {
+                const murshidMsg: Message = {
+                    id: (Date.now() + 1).toString(),
+                    role: 'assistant',
+                    content: result.response,
+                };
+                setMessages(prev => [...prev, murshidMsg]);
+            } else {
+                // Show error message
+                const errorMsg: Message = {
+                    id: (Date.now() + 1).toString(),
+                    role: 'assistant',
+                    content: `I apologize, but I'm having trouble connecting right now. ${result.error || 'Please try again in a moment.'}\n\nIn the meantime, please consult with your group scholars for guidance.`,
+                };
+                setMessages(prev => [...prev, errorMsg]);
+
+                // Optional: Show alert for critical errors
+                if (result.error?.includes('API key')) {
+                    Alert.alert('Configuration Error', result.error);
+                }
             }
-
-            const murshidMsg: Message = { id: (Date.now() + 1).toString(), role: 'assistant', content: responseContent };
-            setMessages(prev => [...prev, murshidMsg]);
+        } catch (err) {
+            console.error('Error sending message:', err);
+            const errorMsg: Message = {
+                id: (Date.now() + 1).toString(),
+                role: 'assistant',
+                content: 'I apologize, but I encountered an unexpected error. Please try again or consult with your group scholars.',
+            };
+            setMessages(prev => [...prev, errorMsg]);
+        } finally {
             setIsTyping(false);
-        }, 2000);
+        }
     };
 
     useEffect(() => {
