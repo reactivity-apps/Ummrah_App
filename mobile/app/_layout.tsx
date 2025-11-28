@@ -24,17 +24,21 @@ export default function RootLayout() {
     return (
         <SafeAreaProvider>
             <TripProvider>
-                <Stack screenOptions={getStackScreenOptions}>
-                    <Stack.Screen name="join-trip" options={{ headerShown: false }} />
-                    <Stack.Screen name="login" options={{ headerShown: false }} />
-
-                    <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-
-                    <Stack.Screen name="itinerary" options={{ headerShown: false }} />
-                    <Stack.Screen name="announcements" options={{ headerShown: false }} />
-                    <Stack.Screen name="prayers" options={{ headerShown: false }} />
-                    <Stack.Screen name="guide/[id]" options={{ headerShown: false }} />
-                    <Stack.Screen name="map/[id]" options={{ headerShown: false }} />
+                <Stack screenOptions={{ headerShown: false }}>
+                    <Stack.Screen name="index" />
+                    <Stack.Screen name="join-trip" />
+                    <Stack.Screen name="login" />
+                    <Stack.Screen name="(tabs)" />
+                    <Stack.Screen name="itinerary" />
+                    <Stack.Screen name="announcements" />
+                    <Stack.Screen name="prayers" />
+                    <Stack.Screen name="guide/[id]" />
+                    <Stack.Screen name="map/[id]" />
+                    <Stack.Screen name="settings/personal-info" />
+                    <Stack.Screen name="settings/emergency-contact" />
+                    <Stack.Screen name="settings/trip-history" />
+                    <Stack.Screen name="settings/notifications" />
+                    <Stack.Screen name="settings/privacy-security" />
                 </Stack>
                 <StatusBar style="auto" />
             </TripProvider>
