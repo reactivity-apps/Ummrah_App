@@ -9,11 +9,10 @@
  * - Alternating green and gold color scheme
  */
 
-import { View, TouchableOpacity, StyleSheet, Text } from "react-native";
-import Animated, { useSharedValue, useAnimatedStyle, withSpring, withTiming, withDelay, withRepeat, withSequence, Easing } from "react-native-reanimated";
-import { useState, useEffect } from "react";
+import { View, TouchableOpacity, StyleSheet, Text, Animated } from "react-native";
+import { useState, useEffect, useRef } from "react";
 import { Home, Calendar, LayoutGrid, MessageCircle, Clock, Map, Phone, User, Shield, X } from "lucide-react-native";
-import { useRouter } from "expo-router";
+import { useRouter, usePathname } from "expo-router";
 import Svg, { Path, Rect } from "react-native-svg";
 import { useTrip } from "../lib/context/TripContext";
 
@@ -28,9 +27,9 @@ const COLORS = {
     backdrop: 'rgba(253, 251, 247, 0.95)',
 };
 
-const FAB_SIZE = 80;
-const ITEM_SIZE = 75;
-const RADIUS = 210; // Increased for better spacing
+const FAB_SIZE = 64;
+const ITEM_SIZE = 60;
+const RADIUS = 150; // Reduced for mobile screens
 const KaabaIcon = ({ size = 32, color = "white" }) => (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
         <Rect x="4" y="5" width="16" height="15" rx="2" fill={color} />
@@ -73,30 +72,57 @@ const RadialMenuItem = ({ item, index, isOpen, totalItems, onPress, delay }: any
     const x = RADIUS * Math.cos(angleRad);
     const y = RADIUS * Math.sin(angleRad);
 
-    // Animated style for expand/collapse
+    // Animated values
+    const animatedScale = useRef(new Animated.Value(0)).current;
+    const animatedOpacity = useRef(new Animated.Value(0)).current;
+    const animatedX = useRef(new Animated.Value(0)).current;
+    const animatedY = useRef(new Animated.Value(0)).current;
 
-    const animatedStyle = useAnimatedStyle(() => {
-        const scale = withDelay(delay, withSpring(isOpen ? 1 : 0));
-        const opacity = withDelay(delay, withTiming(isOpen ? 1 : 0));
-        const translateX = withDelay(delay, withSpring(isOpen ? x : 0));
-        const translateY = withDelay(delay, withSpring(isOpen ? y : 0));
-
-        return {
-            opacity,
-            transform: [
-                { translateX },
-                { translateY },
-                { scale }
-            ]
-        };
-    });
+    // Animate when isOpen changes
+    useEffect(() => {
+        Animated.parallel([
+            Animated.spring(animatedScale, {
+                toValue: isOpen ? 1 : 0,
+                delay,
+                useNativeDriver: true,
+            }),
+            Animated.timing(animatedOpacity, {
+                toValue: isOpen ? 1 : 0,
+                delay,
+                duration: 200,
+                useNativeDriver: true,
+            }),
+            Animated.spring(animatedX, {
+                toValue: isOpen ? x : 0,
+                delay,
+                useNativeDriver: true,
+            }),
+            Animated.spring(animatedY, {
+                toValue: isOpen ? y : 0,
+                delay,
+                useNativeDriver: true,
+            }),
+        ]).start();
+    }, [isOpen]);
 
     return (
-        <Animated.View style={[styles.menuItemContainer, animatedStyle]}>
+        <Animated.View
+            style={[
+                styles.menuItemContainer,
+                {
+                    opacity: animatedOpacity,
+                    transform: [
+                        { translateX: animatedX },
+                        { translateY: animatedY },
+                        { scale: animatedScale },
+                    ],
+                },
+            ]}
+        >
             <TouchableOpacity onPress={onPress} style={styles.menuItem}>
                 {/* Icon Circle */}
                 <View style={[styles.iconContainer, { backgroundColor: item.color }]}>
-                    <item.icon size={22} color="white" />
+                    <item.icon size={18} color="white" />
                 </View>
 
                 {/* Label */}
@@ -115,9 +141,15 @@ const RadialMenuItem = ({ item, index, isOpen, totalItems, onPress, delay }: any
 export default function RadialMenu() {
     const [isOpen, setIsOpen] = useState(false);
     const router = useRouter();
-    const rotation = useSharedValue(0);
-    const breathing = useSharedValue(1);
+    const pathname = usePathname();
+    const rotation = useRef(new Animated.Value(0)).current;
+    const breathing = useRef(new Animated.Value(1)).current;
     const { currentTrip, currentTripRole } = useTrip();
+
+    // Hide RadialMenu on murshid screen
+    if (pathname === '/(tabs)/murshid') {
+        return null;
+    }
 
     // Filter menu items based on user role
     const isAdmin = currentTripRole === 'group_owner' || currentTripRole === 'super_admin';
@@ -129,23 +161,34 @@ export default function RadialMenu() {
     });
 
     // Breathing animation for FAB when closed
-
     useEffect(() => {
-        breathing.value = withRepeat(
-            withSequence(
-                withTiming(1.05, { duration: 2000, easing: Easing.inOut(Easing.ease) }),
-                withTiming(1, { duration: 2000, easing: Easing.inOut(Easing.ease) })
-            ),
-            -1,
-            true
+        const breathingAnimation = Animated.loop(
+            Animated.sequence([
+                Animated.timing(breathing, {
+                    toValue: 1.05,
+                    duration: 2000,
+                    useNativeDriver: true,
+                }),
+                Animated.timing(breathing, {
+                    toValue: 1,
+                    duration: 2000,
+                    useNativeDriver: true,
+                }),
+            ])
         );
+        breathingAnimation.start();
+
+        return () => breathingAnimation.stop();
     }, []);
 
     // Toggle menu open/closed
     const toggleMenu = () => {
         const newValue = !isOpen;
         setIsOpen(newValue);
-        rotation.value = withSpring(newValue ? 45 : 0);
+        Animated.spring(rotation, {
+            toValue: newValue ? 45 : 0,
+            useNativeDriver: true,
+        }).start();
     };
 
     // Handle menu item press
@@ -155,17 +198,6 @@ export default function RadialMenu() {
             router.push(route as any);
         }, 100);
     };
-
-    // FAB rotation and breathing animation
-
-    const fabStyle = useAnimatedStyle(() => {
-        return {
-            transform: [
-                { rotate: `${rotation.value}deg` },
-                { scale: isOpen ? 1 : breathing.value }
-            ]
-        };
-    });
 
     return (
         <View style={styles.container} pointerEvents="box-none">
@@ -199,12 +231,27 @@ export default function RadialMenu() {
                 onPress={toggleMenu}
                 style={styles.fabContainer}
             >
-                <Animated.View style={[styles.fab, fabStyle]}>
+                <Animated.View
+                    style={[
+                        styles.fab,
+                        {
+                            transform: [
+                                {
+                                    rotate: rotation.interpolate({
+                                        inputRange: [0, 45],
+                                        outputRange: ['0deg', '45deg'],
+                                    }),
+                                },
+                                { scale: isOpen ? 1 : breathing },
+                            ],
+                        },
+                    ]}
+                >
                     <View style={styles.fabIcon}>
                         {isOpen ? (
-                            <X size={36} color="white" />
+                            <X size={28} color="white" />
                         ) : (
-                            <KaabaIcon size={36} color="white" />
+                            <KaabaIcon size={28} color="white" />
                         )}
                     </View>
                 </Animated.View>
@@ -223,7 +270,7 @@ const styles = StyleSheet.create({
         bottom: 0,
         left: 0,
         right: 0,
-        height: RADIUS * 2 + 120,
+        height: RADIUS * 2 + 80,
         alignItems: 'center',
         justifyContent: 'flex-end',
         zIndex: 999,
@@ -238,7 +285,7 @@ const styles = StyleSheet.create({
     },
     itemsContainer: {
         position: 'absolute',
-        bottom: 50,
+        bottom: 35,
         alignItems: 'center',
         justifyContent: 'center',
         width: 0,
@@ -258,45 +305,45 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
     },
     iconContainer: {
-        width: 56,
-        height: 56,
-        borderRadius: 28,
+        width: 46,
+        height: 46,
+        borderRadius: 23,
         alignItems: 'center',
         justifyContent: 'center',
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 3 },
-        shadowOpacity: 0.2,
-        shadowRadius: 4,
-        elevation: 6,
-        borderWidth: 3,
-        borderColor: 'rgba(255, 255, 255, 0.3)',
-    },
-    labelContainer: {
-        position: 'absolute',
-        top: 62,
-        backgroundColor: 'white',
-        paddingHorizontal: 10,
-        paddingVertical: 4,
-        borderRadius: 10,
         shadowColor: "#000",
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.15,
         shadowRadius: 3,
-        elevation: 3,
+        elevation: 5,
+        borderWidth: 2,
+        borderColor: 'rgba(255, 255, 255, 0.3)',
+    },
+    labelContainer: {
+        position: 'absolute',
+        top: 50,
+        backgroundColor: 'white',
+        paddingHorizontal: 8,
+        paddingVertical: 3,
+        borderRadius: 8,
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.1,
+        shadowRadius: 2,
+        elevation: 2,
         borderWidth: 1,
         borderColor: 'rgba(74, 103, 65, 0.1)',
-        minWidth: 70,
+        minWidth: 60,
         alignItems: 'center',
     },
     label: {
-        fontSize: 10.5,
+        fontSize: 9,
         fontWeight: '700',
         color: '#4A6741',
         letterSpacing: 0.2,
         textAlign: 'center',
     },
     fabContainer: {
-        marginBottom: 30,
+        marginBottom: 20,
         alignItems: 'center',
         justifyContent: 'center',
     },

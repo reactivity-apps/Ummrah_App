@@ -1,8 +1,7 @@
-import { View, Text, ScrollView, TouchableOpacity } from "react-native";
+import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Animated } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useLocalSearchParams, router } from "expo-router";
 import { useState, useEffect } from "react";
-import Animated from "react-native-reanimated";
 import { GUIDES } from "../../data/mock";
 import {
     ArrowLeft,
@@ -33,6 +32,7 @@ export default function GuideDetailScreen() {
     const guide = GUIDES.find(g => g.id === id);
     const [isLoading, setIsLoading] = useState(true);
     const [expandedSteps, setExpandedSteps] = useState<Set<number>>(new Set([0])); // First step expanded by default
+    const [completedSteps, setCompletedSteps] = useState<Set<number>>(new Set()); // Track completed steps (resets on leave)
 
     // Smooth entrance animations
     const heroStyle = useFadeIn(0);
@@ -47,6 +47,18 @@ export default function GuideDetailScreen() {
 
     const toggleStep = (index: number) => {
         setExpandedSteps(prev => {
+            const next = new Set(prev);
+            if (next.has(index)) {
+                next.delete(index);
+            } else {
+                next.add(index);
+            }
+            return next;
+        });
+    };
+
+    const toggleStepCompletion = (index: number) => {
+        setCompletedSteps(prev => {
             const next = new Set(prev);
             if (next.has(index)) {
                 next.delete(index);
@@ -120,16 +132,16 @@ export default function GuideDetailScreen() {
                     {/* Status Badge */}
                     <View className="mt-6 mb-6">
                         <View className={`self-start px-4 py-2.5 rounded-full border shadow-sm ${guide.status === 'completed'
-                                ? 'bg-emerald-50 border-emerald-200'
-                                : guide.status === 'current'
-                                    ? 'bg-amber-50 border-amber-200'
-                                    : 'bg-sand-100 border-sand-200'
+                            ? 'bg-emerald-50 border-emerald-200'
+                            : guide.status === 'current'
+                                ? 'bg-amber-50 border-amber-200'
+                                : 'bg-sand-100 border-sand-200'
                             }`}>
                             <Text className={`font-bold text-sm ${guide.status === 'completed'
-                                    ? 'text-emerald-700'
-                                    : guide.status === 'current'
-                                        ? 'text-amber-700'
-                                        : 'text-muted-foreground'
+                                ? 'text-emerald-700'
+                                : guide.status === 'current'
+                                    ? 'text-amber-700'
+                                    : 'text-muted-foreground'
                                 }`}>
                                 {guide.status === 'completed' ? '✓ Completed' : guide.status === 'current' ? '● In Progress' : '○ Upcoming'}
                             </Text>
@@ -162,26 +174,40 @@ export default function GuideDetailScreen() {
 
                         {guide.steps.map((step, index) => {
                             const isExpanded = expandedSteps.has(index);
+                            const isCompleted = completedSteps.has(index);
 
                             return (
                                 <View key={index} className="mb-3">
                                     <TouchableOpacity
                                         onPress={() => toggleStep(index)}
                                         activeOpacity={0.7}
-                                        className={`bg-card rounded-xl border shadow-sm ${isExpanded ? 'border-primary/30' : 'border-sand-200'
+                                        className={`bg-card rounded-xl border shadow-sm ${isExpanded ? 'border-primary/30' : isCompleted ? 'border-emerald-200' : 'border-sand-200'
                                             }`}
                                     >
                                         {/* Step Header */}
                                         <View className="p-4">
                                             <View className="flex-row items-start">
-                                                <View className="h-9 w-9 bg-primary/10 rounded-full items-center justify-center mr-3 mt-0.5 border border-primary/20">
-                                                    <Text className="text-primary font-bold text-base">{index + 1}</Text>
-                                                </View>
+                                                <TouchableOpacity
+                                                    onPress={() => toggleStepCompletion(index)}
+                                                    activeOpacity={0.7}
+                                                    className={`h-9 w-9 rounded-full items-center justify-center mr-3 mt-0.5 border-2 ${isCompleted
+                                                        ? 'bg-emerald-500 border-emerald-600'
+                                                        : 'bg-primary/10 border-primary/20'
+                                                        }`}
+                                                >
+                                                    {isCompleted ? (
+                                                        <CheckCircle2 size={20} color="white" />
+                                                    ) : (
+                                                        <Text className="text-primary font-bold text-base">{index + 1}</Text>
+                                                    )}
+                                                </TouchableOpacity>
                                                 <View className="flex-1">
-                                                    <Text className="text-base font-bold text-foreground mb-1">
+                                                    <Text className={`text-base font-bold mb-1 ${isCompleted ? 'text-emerald-700 line-through' : 'text-foreground'
+                                                        }`}>
                                                         {step.title}
                                                     </Text>
-                                                    <Text className="text-sm text-muted-foreground leading-relaxed">
+                                                    <Text className={`text-sm leading-relaxed ${isCompleted ? 'text-emerald-600/70' : 'text-muted-foreground'
+                                                        }`}>
                                                         {step.description}
                                                     </Text>
                                                 </View>
@@ -291,29 +317,33 @@ export default function GuideDetailScreen() {
 
                     {/* Action Buttons */}
                     <View className="space-y-3">
-                        {guide.status === 'current' && (
-                            <TouchableOpacity className="bg-primary p-4 rounded-xl flex-row items-center justify-center shadow-sm">
-                                <CheckCircle2 size={20} color="white" />
-                                <Text className="text-white font-bold ml-2 text-base">Mark as Complete</Text>
-                            </TouchableOpacity>
-                        )}
-
-                        {nextGuide && guide.status === 'completed' && (
-                            <TouchableOpacity
-                                onPress={() => router.push(`/guide/${nextGuide.id}`)}
-                                className="bg-card border-2 border-primary p-4 rounded-xl flex-row items-center justify-center"
-                            >
-                                <Text className="text-primary font-bold mr-2 text-base">Continue to {nextGuide.title}</Text>
-                                <ArrowRight size={20} color="#4A6741" />
-                            </TouchableOpacity>
-                        )}
-
-                        {guide.status === 'upcoming' && (
-                            <View className="bg-sand-100 p-4 rounded-xl border border-sand-200">
-                                <Text className="text-center text-muted-foreground font-medium">
-                                    Complete previous steps to unlock this section
+                        {/* Progress Summary */}
+                        <View className="bg-card border border-sand-200 p-4 rounded-xl">
+                            <View className="flex-row items-center justify-between mb-3">
+                                <Text className="text-base font-bold text-foreground">Your Progress</Text>
+                                <Text className="text-sm font-semibold text-primary">
+                                    {completedSteps.size} / {guide.steps.length} steps
                                 </Text>
                             </View>
+                            <View className="bg-sand-100 h-2 rounded-full overflow-hidden">
+                                <View
+                                    className="bg-emerald-500 h-full rounded-full"
+                                    style={{ width: `${(completedSteps.size / guide.steps.length) * 100}%` }}
+                                />
+                            </View>
+                            <Text className="text-xs text-muted-foreground mt-2 italic">
+                                Note: Progress resets when you leave this page
+                            </Text>
+                        </View>
+
+                        {nextGuide && (
+                            <TouchableOpacity
+                                onPress={() => router.push(`/guide/${nextGuide.id}`)}
+                                className="bg-primary p-4 rounded-xl flex-row items-center justify-center shadow-sm"
+                            >
+                                <Text className="text-white font-bold mr-2 text-base">Continue to {nextGuide.title}</Text>
+                                <ArrowRight size={20} color="white" />
+                            </TouchableOpacity>
                         )}
                     </View>
                 </Animated.View>

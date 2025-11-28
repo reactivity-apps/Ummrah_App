@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, Animated } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { ArrowLeft, MapPin, Bell, Clock, ChevronRight, Sunrise, Sun, Cloud, Sunset, Moon } from 'lucide-react-native';
-import Animated from 'react-native-reanimated';
 import RadialMenu from '../components/RadialMenu';
 import PrayerTimesWidget from '../components/PrayerTimesWidget';
 import { useFadeIn } from '../lib/sharedElementTransitions';

@@ -1,7 +1,6 @@
-import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator } from "react-native";
+import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, Animated } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
-import Animated from "react-native-reanimated";
 import { ArrowLeft, Calendar, MapPin, Clock, Users, Utensils, Plane, Hotel, AlertCircle } from "lucide-react-native";
 import RadialMenu from "../components/RadialMenu";
 import { useFadeIn } from "../lib/sharedElementTransitions";

@@ -1,9 +1,8 @@
-import { View, Text, FlatList, TouchableOpacity } from "react-native";
+import { View, Text, FlatList, TouchableOpacity, Animated } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Link, useRouter } from "expo-router";
 import { ZIYARAT } from "../../data/mock";
 import { MapPin, Clock, Info, ArrowLeft } from "lucide-react-native";
-import Animated from "react-native-reanimated";
 import { useStaggeredFadeIn, usePressScale } from "../../lib/sharedElementTransitions";
 
 // Animated card with staggered entrance and press feedback

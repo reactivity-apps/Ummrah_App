@@ -11,16 +11,8 @@
  * - Gentle pulse animation (not distracting)
  */
 
-import { View, StyleSheet } from 'react-native';
-import Animated, {
-    useSharedValue,
-    useAnimatedStyle,
-    withRepeat,
-    withSequence,
-    withTiming,
-    Easing,
-} from 'react-native-reanimated';
-import { useEffect } from 'react';
+import { View, StyleSheet, Animated, Easing } from 'react-native';
+import { useEffect, useRef } from 'react';
 
 /**
  * Base skeleton item with gentle pulse animation
@@ -36,30 +28,31 @@ export function SkeletonItem({
     borderRadius?: number;
     style?: any;
 }) {
-    const opacity = useSharedValue(0.3);
+    const opacity = useRef(new Animated.Value(0.3)).current;
 
     useEffect(() => {
         // Gentle pulse: 0.3 → 0.6 → 0.3 over 1.5 seconds
         // Slow enough to be calming, not distracting
-        opacity.value = withRepeat(
-            withSequence(
-                withTiming(0.6, {
+        const animation = Animated.loop(
+            Animated.sequence([
+                Animated.timing(opacity, {
+                    toValue: 0.6,
                     duration: 750,
-                    easing: Easing.inOut(Easing.ease)
+                    easing: Easing.inOut(Easing.ease),
+                    useNativeDriver: true,
                 }),
-                withTiming(0.3, {
+                Animated.timing(opacity, {
+                    toValue: 0.3,
                     duration: 750,
-                    easing: Easing.inOut(Easing.ease)
-                })
-            ),
-            -1, // Infinite repeat
-            false
+                    easing: Easing.inOut(Easing.ease),
+                    useNativeDriver: true,
+                }),
+            ])
         );
-    }, []);
+        animation.start();
 
-    const animatedStyle = useAnimatedStyle(() => ({
-        opacity: opacity.value,
-    }));
+        return () => animation.stop();
+    }, []);
 
     return (
         <Animated.View
@@ -69,8 +62,8 @@ export function SkeletonItem({
                     height,
                     borderRadius,
                     backgroundColor: '#E2E8F0',
+                    opacity,
                 },
-                animatedStyle,
                 style,
             ]}
         />

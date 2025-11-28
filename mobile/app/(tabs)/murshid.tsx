@@ -1,8 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { View, Text, ScrollView, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, Dimensions, Alert } from 'react-native';
+import { View, Text, ScrollView, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, Dimensions, Alert, Animated } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Send, Sparkles, BookOpen, MapPin, Moon, Info, ChevronRight, ArrowLeft } from 'lucide-react-native';
-import Animated, { useSharedValue, useAnimatedStyle, withRepeat, withTiming, withSequence, Easing, FadeIn, FadeInUp } from 'react-native-reanimated';
 import Svg, { Circle, Path, G } from 'react-native-svg';
 import { useRouter } from 'expo-router';
 import { useFadeIn } from '../../lib/sharedElementTransitions';
@@ -48,28 +47,33 @@ const GeometricPattern = ({ size = 100, color = COLORS.gold, opacity = 0.1 }: { 
 
 // 2. Typing Indicator with Pulsing Light
 const TypingIndicator = () => {
-    const opacity = useSharedValue(0.3);
+    const opacity = useRef(new Animated.Value(0.3)).current;
 
     useEffect(() => {
-        opacity.value = withRepeat(
-            withSequence(
-                withTiming(1, { duration: 800, easing: Easing.inOut(Easing.ease) }),
-                withTiming(0.3, { duration: 800, easing: Easing.inOut(Easing.ease) })
-            ),
-            -1,
-            true
+        const animation = Animated.loop(
+            Animated.sequence([
+                Animated.timing(opacity, {
+                    toValue: 1,
+                    duration: 800,
+                    useNativeDriver: true,
+                }),
+                Animated.timing(opacity, {
+                    toValue: 0.3,
+                    duration: 800,
+                    useNativeDriver: true,
+                }),
+            ])
         );
-    }, []);
+        animation.start();
 
-    const animatedStyle = useAnimatedStyle(() => ({
-        opacity: opacity.value,
-    }));
+        return () => animation.stop();
+    }, []);
 
     return (
         <View className="flex-row items-center space-x-2 p-4 bg-white rounded-2xl rounded-tl-none shadow-sm border border-sand-100 self-start mt-2">
-            <Animated.View style={[animatedStyle, { width: 8, height: 8, borderRadius: 4, backgroundColor: COLORS.primary }]} />
-            <Animated.View style={[animatedStyle, { width: 8, height: 8, borderRadius: 4, backgroundColor: COLORS.primary, transform: [{ scale: 0.8 }] }]} />
-            <Animated.View style={[animatedStyle, { width: 8, height: 8, borderRadius: 4, backgroundColor: COLORS.primary, transform: [{ scale: 0.6 }] }]} />
+            <Animated.View style={[{ width: 8, height: 8, borderRadius: 4, backgroundColor: COLORS.primary, opacity }]} />
+            <Animated.View style={[{ width: 8, height: 8, borderRadius: 4, backgroundColor: COLORS.primary, opacity, transform: [{ scale: 0.8 }] }]} />
+            <Animated.View style={[{ width: 8, height: 8, borderRadius: 4, backgroundColor: COLORS.primary, opacity, transform: [{ scale: 0.6 }] }]} />
             <Text className="text-xs text-sand-400 ml-2 font-medium">Murshid is reflecting...</Text>
         </View>
     );
@@ -81,19 +85,18 @@ const MessageItem = ({ message }: { message: Message }) => {
 
     if (isUser) {
         return (
-            <Animated.View
-                entering={FadeInUp.duration(300)}
+            <View
                 className="self-end rounded-2xl rounded-tr-none px-5 py-3.5 max-w-[85%] my-2"
                 style={{ backgroundColor: 'transparent' }}
             >
                 <Text className="text-[#4A6741] text-base leading-6">{message.content}</Text>
-            </Animated.View>
+            </View>
         );
     }
 
     // Murshid Message (Guidance Card)
     return (
-        <Animated.View entering={FadeIn.duration(500)} className="self-start bg-white rounded-2xl rounded-tl-none max-w-[90%] my-3 shadow-sm border border-sand-100 overflow-hidden">
+        <View className="self-start bg-white rounded-2xl rounded-tl-none max-w-[90%] my-3 shadow-sm border border-sand-100 overflow-hidden">
             {/* Decorative Top Border */}
             <View className="h-1 w-full bg-sand-100" />
 
@@ -134,7 +137,7 @@ const MessageItem = ({ message }: { message: Message }) => {
                     <GeometricPattern size={20} color={COLORS.primary} />
                 </View>
             </View>
-        </Animated.View>
+        </View>
     );
 };
 

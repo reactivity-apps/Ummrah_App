@@ -2,26 +2,16 @@
  * Shared Element Transition Utilities
  * 
  * Provides smooth, spiritual transitions between list items and detail screens.
- * Uses React Native Reanimated for GPU-accelerated animations.
+ * Uses React Native's Animated API for smooth animations.
  * 
  * Usage:
- * 1. Wrap shared elements with SharedElement component
- * 2. Use same sharedId on both source and destination screens
+ * 1. Wrap shared elements with Animated component
+ * 2. Apply the returned animated styles
  * 3. Navigation automatically handles the transition
- * 
- * Example:
- * List screen: <SharedElement sharedId={`ziyarat-${item.id}`}>...</SharedElement>
- * Detail screen: <SharedElement sharedId={`ziyarat-${id}`}>...</SharedElement>
  */
 
-import { useEffect } from 'react';
-import Animated, {
-    useSharedValue,
-    useAnimatedStyle,
-    withTiming,
-    withSpring,
-    Easing,
-} from 'react-native-reanimated';
+import { useEffect, useRef } from 'react';
+import { Animated, Easing } from 'react-native';
 
 /**
  * Navigation timing constants
@@ -58,25 +48,30 @@ const SPRING_CONFIG = {
  * Used for detail screens after shared element transition
  */
 export function useFadeIn(delay = 0) {
-    const opacity = useSharedValue(0);
-    const translateY = useSharedValue(10);
+    const opacity = useRef(new Animated.Value(0)).current;
+    const translateY = useRef(new Animated.Value(10)).current;
 
     useEffect(() => {
         // Gentle fade-in from slightly below
-        opacity.value = withTiming(1, {
-            duration: NAVIGATION_TIMING.STANDARD,
-            easing: Easing.out(Easing.ease),
-        });
-
-        translateY.value = withSpring(0, SPRING_CONFIG);
+        Animated.parallel([
+            Animated.timing(opacity, {
+                toValue: 1,
+                duration: NAVIGATION_TIMING.STANDARD,
+                easing: Easing.out(Easing.ease),
+                useNativeDriver: true,
+            }),
+            Animated.spring(translateY, {
+                toValue: 0,
+                ...SPRING_CONFIG,
+                useNativeDriver: true,
+            }),
+        ]).start();
     }, []);
 
-    const animatedStyle = useAnimatedStyle(() => ({
-        opacity: opacity.value,
-        transform: [{ translateY: translateY.value }],
-    }));
-
-    return animatedStyle;
+    return {
+        opacity,
+        transform: [{ translateY }],
+    };
 }
 
 /**
@@ -84,25 +79,29 @@ export function useFadeIn(delay = 0) {
  * Provides tactile feedback before navigation
  */
 export function usePressScale() {
-    const scale = useSharedValue(1);
+    const scale = useRef(new Animated.Value(1)).current;
 
     const onPressIn = () => {
-        scale.value = withSpring(0.97, {
+        Animated.spring(scale, {
+            toValue: 0.97,
             damping: 15,
             stiffness: 150,
-        });
+            useNativeDriver: true,
+        }).start();
     };
 
     const onPressOut = () => {
-        scale.value = withSpring(1, {
+        Animated.spring(scale, {
+            toValue: 1,
             damping: 15,
             stiffness: 150,
-        });
+            useNativeDriver: true,
+        }).start();
     };
 
-    const animatedStyle = useAnimatedStyle(() => ({
-        transform: [{ scale: scale.value }],
-    }));
+    const animatedStyle = {
+        transform: [{ scale }],
+    };
 
     return { animatedStyle, onPressIn, onPressOut };
 }
@@ -112,28 +111,32 @@ export function usePressScale() {
  * Creates smooth transition from card to full hero
  */
 export function useHeroExpansion(isExpanded: boolean) {
-    const height = useSharedValue(isExpanded ? 256 : 192);
-    const opacity = useSharedValue(0);
+    const height = useRef(new Animated.Value(isExpanded ? 256 : 192)).current;
+    const opacity = useRef(new Animated.Value(0)).current;
 
     useEffect(() => {
         if (isExpanded) {
-            height.value = withTiming(256, {
-                duration: NAVIGATION_TIMING.SHARED_ELEMENT,
-                easing: Easing.out(Easing.ease),
-            });
-            opacity.value = withTiming(1, {
-                duration: NAVIGATION_TIMING.STANDARD,
-                easing: Easing.out(Easing.ease),
-            });
+            Animated.parallel([
+                Animated.timing(height, {
+                    toValue: 256,
+                    duration: NAVIGATION_TIMING.SHARED_ELEMENT,
+                    easing: Easing.out(Easing.ease),
+                    useNativeDriver: false, // height animation cannot use native driver
+                }),
+                Animated.timing(opacity, {
+                    toValue: 1,
+                    duration: NAVIGATION_TIMING.STANDARD,
+                    easing: Easing.out(Easing.ease),
+                    useNativeDriver: true,
+                }),
+            ]).start();
         }
     }, [isExpanded]);
 
-    const animatedStyle = useAnimatedStyle(() => ({
-        height: height.value,
-        opacity: opacity.value,
-    }));
-
-    return animatedStyle;
+    return {
+        height,
+        opacity,
+    };
 }
 
 /**
@@ -141,8 +144,8 @@ export function useHeroExpansion(isExpanded: boolean) {
  * Each item fades in sequentially for calm appearance
  */
 export function useStaggeredFadeIn(index: number, totalItems: number) {
-    const opacity = useSharedValue(0);
-    const translateY = useSharedValue(20);
+    const opacity = useRef(new Animated.Value(0)).current;
+    const translateY = useRef(new Animated.Value(20)).current;
 
     useEffect(() => {
         // Stagger delay based on index
@@ -152,21 +155,26 @@ export function useStaggeredFadeIn(index: number, totalItems: number) {
         const delay = index * delayPerItem;
 
         setTimeout(() => {
-            opacity.value = withTiming(1, {
-                duration: 300,
-                easing: Easing.out(Easing.ease),
-            });
-
-            translateY.value = withSpring(0, SPRING_CONFIG);
+            Animated.parallel([
+                Animated.timing(opacity, {
+                    toValue: 1,
+                    duration: 300,
+                    easing: Easing.out(Easing.ease),
+                    useNativeDriver: true,
+                }),
+                Animated.spring(translateY, {
+                    toValue: 0,
+                    ...SPRING_CONFIG,
+                    useNativeDriver: true,
+                }),
+            ]).start();
         }, delay);
     }, [index]);
 
-    const animatedStyle = useAnimatedStyle(() => ({
-        opacity: opacity.value,
-        transform: [{ translateY: translateY.value }],
-    }));
-
-    return animatedStyle;
+    return {
+        opacity,
+        transform: [{ translateY }],
+    };
 }
 
 /**

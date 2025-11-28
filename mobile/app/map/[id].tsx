@@ -1,9 +1,8 @@
-import { View, Text, ScrollView, TouchableOpacity } from "react-native";
+import { View, Text, ScrollView, TouchableOpacity, Animated } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useLocalSearchParams, router } from "expo-router";
 import { ZIYARAT } from "../../data/mock";
 import { ArrowLeft, MapPin, Clock, Info, Bookmark } from "lucide-react-native";
-import Animated, { FadeIn, FadeInDown } from "react-native-reanimated";
 import { useFadeIn } from "../../lib/sharedElementTransitions";
 import { DetailSkeleton } from "../../components/SkeletonLoader";
 import { useState, useEffect } from "react";
