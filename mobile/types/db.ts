@@ -1,112 +1,174 @@
-/**
- * Types generated from the database schema
- * - Enum types are exported as string unions
- * - Table rows mirror database column names (snake_case) and use
- *   `string` for timestamp/date/uuid types since these are typically
- *   transferred as ISO strings to the client.
- */
 
-// ENUMS
-export type GroupRole = 'super_admin' | 'group_owner' | 'user';
-export type TripMemberRole = 'super_admin' | 'group_owner' | 'user';
-export type TripVisibility = 'draft' | 'published' | 'active';
-export type ProfileRole = 'super_admin' | 'group_owner' | 'user'
+export type AuthRole = 'super_admin';
 
-// ========== PROFILES ==========
-export type Profile = {
-  user_id: string
-  name: string
-  phone: string | null
-  email: string | null
-  emergency_name: string | null
-  emergency_phone: string | null
-  emergency_notes: string | null
-  role: ProfileRole
-  created_at: string
-  updated_at: string
+export type TripVisibility =
+  | 'draft'
+  | 'published'
+  | 'hidden';
+
+export type TripStatus =
+  | 'active'
+  | 'completed';
+
+
+// ==========================
+// PROFILE (auth-level roles)
+// ==========================
+
+export interface ProfileRow {
+  user_id: string;
+
+  photo: string | null;
+  country: string | null;
+  city: string | null;
+
+  date_of_birth: string | null;
+  medical_notes: string | null;
+  dietary_restrictions: string | null;
+
+  emergency_contact_name: string | null;
+  emergency_contact_phone: string | null;
+
+  // AUTH-WIDE ROLE — single highest privilege
+  auth_role: AuthRole | null;  // null = normal authenticated user
+
+  profile_visible: boolean;
+
+  updated_at: string;
 }
 
-// ========== GROUPS ==========
+
+// ==========================
+// GROUPS
+// ==========================
+
 export interface GroupRow {
-  id?: string; // uuid PK
+  id: string;
   name: string;
-  logo_url?: string | null;
-  whatsapp_link?: string | null;
-  created_by: string; // uuid → auth.users(id)
-  created_at?: string; // timestamptz
+  logo_url: string | null;
+  phone_number: string | null;
+  whatsapp_link: string | null;
+
+  created_by: string;
+  created_at: string;
+  updated_at: string;
 }
 
-// ========== TRIPS ==========
+
+// ==========================
+// GROUP MEMBERSHIPS
+// (no roles here)
+// ==========================
+
+export interface GroupMembershipRow {
+  id: string;
+  group_id: string;
+  user_id: string;
+
+  created_at: string;
+  updated_at: string;
+}
+
+
+// ==========================
+// TRIPS
+// ==========================
+
 export interface TripRow {
-  id?: string; // uuid PK
-  group_id: string; // uuid → groups(id)
+  id: string;
+  group_id: string;
   name: string;
-  start_date?: string | null; // date as 'YYYY-MM-DD'
-  end_date?: string | null; // date as 'YYYY-MM-DD'
-  base_city?: string | null;
-  visibility?: TripVisibility;
-  status?: string; // 'active' | 'draft' | 'completed'
-  group_code?: string | null; // Join code for the trip
-  created_by?: string | null; // uuid → auth.users(id)
-  created_at?: string; // timestamptz
-  updated_at?: string; // timestamptz
+
+  start_date: string | null;
+  end_date: string | null;
+
+  cities: string[];    // fixed from "array"
+
+  visibility: TripVisibility;
+  status: TripStatus;
+
+  group_size: number;
+
+  created_at: string;
+  updated_at: string;
 }
 
-// ========== TRIP MEMBERSHIPS ==========
+
+// ==========================
+// TRIP MEMBERSHIPS
+// (no roles here)
+// ==========================
+
 export interface TripMembershipRow {
-  id?: string; // uuid PK
-  trip_id: string; // uuid → trips(id)
-  user_id: string; // uuid → auth.users(id)
-  role?: TripMemberRole; // 'admin' | 'sub_admin' | 'traveler'
-  joined_at?: string; // timestamptz
-  left_at?: string | null; // timestamptz
+  id: string;
+  trip_id: string;
+  user_id: string;
+
+  joined_at: string;
+  left_at: string | null;
 }
 
-// ========== TRIP JOIN CODES ==========
+
+// ==========================
+// JOIN CODES
+// ==========================
+
 export interface TripJoinCodeRow {
-  id?: string; // uuid PK
-  trip_id: string; // uuid → trips(id)
-  group_id?: string | null; // uuid → groups(id)
+  id: string;
+  trip_id: string;
+
   code: string;
-  is_active?: boolean;
-  expires_at?: string | null; // timestamptz
-  join_limit?: number | null;
-  uses_count?: number;
-  created_at?: string; // timestamptz
+  is_active: boolean;
+
+  expires_at: string | null;
+  join_limit: number | null;
+
+  uses_count: number;
+
+  created_at: string;
 }
 
-// ========== ITINERARY ITEMS ==========
+
+// ==========================
+// ITINERARY ITEMS
+// ==========================
+
 export interface ItineraryItemRow {
-  id?: string; // uuid PK
-  trip_id: string; // uuid → trips(id)
-  day_date?: string | null; // date
+  id: string;
+  trip_id: string;
+
+  day_date: string | null;
   title: string;
-  description?: string | null;
-  location?: string | null;
-  starts_at?: string | null; // timestamptz
-  ends_at?: string | null; // timestamptz
-  sort_order?: number;
-  created_by?: string | null; // uuid → auth.users(id)
-  created_at?: string; // timestamptz
-  updated_at?: string; // timestamptz
+  description: string | null;
+  link_url: string | null;
+  location: string | null;
+
+  starts_at: string | null;
+  ends_at: string | null;
+
+  created_at: string;
+  updated_at: string;
 }
 
-// ========== ANNOUNCEMENTS ==========
+
+// ==========================
+// ANNOUNCEMENTS
+// ==========================
+
 export interface AnnouncementRow {
-  id?: string; // uuid PK
-  trip_id: string; // uuid → trips(id)
+  id: string;
+  trip_id: string;
+
   title: string;
   body: string;
-  link_url?: string | null;
-  is_high_priority?: boolean;
-  scheduled_for?: string | null; // timestamptz
-  sent_at?: string | null; // timestamptz
-  created_by?: string | null; // uuid → auth.users(id)
-  created_at?: string; // timestamptz
-}
 
-// Optional: grouped export for convenience
-export const DB = {
-  GroupRole: undefined as unknown as GroupRole,
-  TripVisibility: undefined as unknown as TripVisibility,
-};
+  link_url: string | null;
+  is_high_priority: boolean;
+
+  scheduled_for: string | null;
+  sent_at: string | null;
+
+  created_by: string | null;
+
+  created_at: string;
+}
