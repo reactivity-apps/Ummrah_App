@@ -3,10 +3,10 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useState } from "react";
 import { supabase } from "../lib/supabase";
 import { useRouter, Link } from "expo-router";
-import GroupCodeStep from './components/joinTripSteps/GroupCodeStep';
-import NameStep from './components/joinTripSteps/NameStep';
-import EmailPasswordStep from './components/joinTripSteps/EmailPasswordStep';
-import AccountCreatedStep from "./components/joinTripSteps/AccountCreatedStep";
+import GroupCodeStep from './components/auth/GroupCodeStep';
+import NameStep from './components/auth/NameStep';
+import EmailPasswordStep from './components/auth/EmailPasswordStep';
+import AccountCreatedStep from "./components/auth/AccountCreatedStep";
 import { contentContainerConfig } from "../lib/navigationConfig";
 
 export default function JoinTripScreen() {
@@ -32,7 +32,6 @@ export default function JoinTripScreen() {
         creds?: { email?: string; password?: string }
     ) => {
         setError(null);
-        setStep(4);
 
         if (!activeJoinCodeId) {
             setError('Missing join code. Please restart the flow.');
@@ -50,12 +49,18 @@ export default function JoinTripScreen() {
                 const { data: signData, error: signError } = await supabase.auth.signUp({
                     email: creds.email.trim(),
                     password: creds.password,
-                    options: { data: { name: name.trim() } },
+                    options: { 
+                        data: { 
+                            name: name.trim(),
+                            full_name: name.trim()
+                        } 
+                    },
                 });
 
                 if (signError) {
                     console.error('Error signing up user', signError);
-                    setError('Unable to create account with that email. Please try again.');
+                    setError(signError.message || 'Unable to create account with that email. Please try again.');
+                    setLoading(false);
                     return;
                 }
 
@@ -65,29 +70,47 @@ export default function JoinTripScreen() {
                 }
 
                 // store email and immediately finalize the join (no verification step)
-                // NOTE: calling setEmail is async — pass the email directly to finalizeJoin
                 const providedEmail = creds.email.trim();
                 setEmail(providedEmail);
+
                 // Call finalizeJoin directly so the profile is created and membership added
                 // pass providedEmail to ensure the upsert includes it immediately
-                await finalizeJoin(setError, setLoading, providedEmail);
+                // Track if finalization succeeds
+                let finalizationSucceeded = false;
+                
+                try {
+                    await finalizeJoin(setError, setLoading, providedEmail);
+                    finalizationSucceeded = true;
+                } catch (finalizeError: any) {
+                    console.error('Finalization failed', finalizeError);
+                    // Sign out the user since we couldn't complete the process
+                    await supabase.auth.signOut();
+                    setError(finalizeError?.message || 'Failed to complete signup. Please try again.');
+                    return;
+                }
+                
+                // Only move to success step if finalization succeeded
+                if (finalizationSucceeded) {
+                    setStep(4);
+                }
                 return;
             }
-            
+        } catch (error: any) {
+            console.error('handleSignUp exception', error);
+            setError(error?.message || 'An unexpected error occurred');
         } finally {
             setLoading(false);
         }
     };
 
     // finalizeJoin
-    // - Purpose: called after the user verifies their email and signs in.
-    //   This will upsert the profile, claim the join code (increment uses_count)
-    //   and create the trip_membership for the authenticated user.
+   
     const finalizeJoin = async (setError: (m: string | null) => void, setLoading: (b: boolean) => void, emailArg?: string) => {
         setError(null);
         if (!activeJoinCodeId) {
-            setError('Missing join code. Please restart the flow.');
-            return;
+            const errorMsg = 'Missing join code. Please restart the flow.';
+            setError(errorMsg);
+            throw new Error(errorMsg);
         }
 
         try {
@@ -99,8 +122,9 @@ export default function JoinTripScreen() {
                 const { data: userData, error: userError } = await supabase.auth.getUser();
                 if (userError || !userData?.user) {
                     console.error('No authenticated user for finalization', userError);
-                    setError('Please sign in or verify your email first.');
-                    return;
+                    const errorMsg = 'Please sign in or verify your email first.';
+                    setError(errorMsg);
+                    throw new Error(errorMsg);
                 }
                 userId = userData.user.id;
             }
@@ -112,21 +136,46 @@ export default function JoinTripScreen() {
                 console.warn('Unable to update auth user metadata', e);
             }
 
-            // Upsert profile (user_id is PK)
-            const upsertObj: any = { user_id: userId, name: name.trim() };
-            const finalEmail = emailArg ?? email;
-            if (finalEmail) upsertObj.email = finalEmail;
-
-            const { data: profile, error: profileError } = await supabase
+            // Check if profile already exists (might be created by trigger)
+            const { data: existingProfile, error: checkError } = await supabase
                 .from('profiles')
-                .upsert(upsertObj)
-                .select()
+                .select('user_id')
+                .eq('user_id', userId)
                 .maybeSingle();
 
-            if (profileError) {
-                console.error('Profile upsert error', profileError);
-                setError('Unable to create profile. Please try again.');
-                return;
+            // Create or update profile with auth_role as null and updated_at set to now
+            if (existingProfile) {
+                // Profile exists, just update it
+                const { error: updateError } = await supabase
+                    .from('profiles')
+                    .update({
+                        auth_role: null,
+                        updated_at: new Date().toISOString(),
+                    })
+                    .eq('user_id', userId);
+
+                if (updateError) {
+                    console.error('Profile update error', updateError);
+                    const errorMsg = 'Unable to update profile. Please try again.';
+                    setError(errorMsg);
+                    throw new Error(errorMsg);
+                }
+            } else {
+                // Profile doesn't exist, create it
+                const { error: profileError } = await supabase
+                    .from('profiles')
+                    .insert({
+                        user_id: userId,
+                        auth_role: null,
+                        updated_at: new Date().toISOString(),
+                    });
+
+                if (profileError) {
+                    console.error('Profile insert error', profileError);
+                    const errorMsg = 'Unable to create profile. Please try again.';
+                    setError(errorMsg);
+                    throw new Error(errorMsg);
+                }
             }
 
             // Fetch join code row to get trip_id and current uses_count
@@ -138,26 +187,25 @@ export default function JoinTripScreen() {
 
             if (joinFetchError || !joinRow) {
                 console.error('Unable to load join code', joinFetchError);
-                setError('Unable to finalize join. Please try again.');
-                return;
+                const errorMsg = 'Unable to finalize join. Please try again.';
+                setError(errorMsg);
+                throw new Error(errorMsg);
             }
 
             const tripId = joinRow.trip_id;
 
-            // Only increment uses_count here if we haven't already claimed it earlier
+            // Increment uses_count for the join code
             if (!joinCodeClaimed) {
                 try {
-                    const newCount = (joinRow.uses_count ?? 0) + 1;
-                    const { data: updated, error: updateErr } = await supabase
+                    const newUsesCount = (joinRow.uses_count ?? 0) + 1;
+                    const { error: updateErr } = await supabase
                         .from('trip_join_codes')
-                        .update({ uses_count: newCount })
-                        .eq('id', activeJoinCodeId)
-                        .select()
-                        .maybeSingle();
+                        .update({ uses_count: newUsesCount })
+                        .eq('id', activeJoinCodeId);
 
                     if (updateErr) {
                         console.error('Unable to increment join code uses_count', updateErr);
-                        // not fatal: continue, but show a warning
+                        // not fatal: continue
                     } else {
                         setJoinCodeClaimed(true);
                     }
@@ -166,18 +214,51 @@ export default function JoinTripScreen() {
                 }
             }
 
+            // Fetch trip to get current group_size
+            const { data: tripData, error: tripFetchError } = await supabase
+                .from('trips')
+                .select('group_size')
+                .eq('id', tripId)
+                .maybeSingle();
+
+            if (tripFetchError || !tripData) {
+                console.error('Unable to fetch trip data', tripFetchError);
+                const errorMsg = 'Unable to load trip information.';
+                setError(errorMsg);
+                throw new Error(errorMsg);
+            }
+
+            // Increment group_size for the trip
+            const newGroupSize = (tripData.group_size ?? 0) + 1;
+            const { error: tripUpdateError } = await supabase
+                .from('trips')
+                .update({ group_size: newGroupSize })
+                .eq('id', tripId);
+
+            if (tripUpdateError) {
+                console.error('Unable to increment trip group_size', tripUpdateError);
+                // not fatal: continue
+            }
+
             // Create trip membership
             const { data: membership, error: membershipError } = await supabase
                 .from('trip_memberships')
-                .insert({ trip_id: tripId, user_id: userId, role: 'user' })
+                .insert({ 
+                    trip_id: tripId, 
+                    user_id: userId 
+                })
                 .select()
                 .maybeSingle();
 
             if (membershipError) {
                 console.error('Failed to create trip membership', membershipError);
-                setError('Unable to add you to the trip. Please try again.');
-                return;
+                const errorMsg = 'Unable to add you to the trip. Please try again.';
+                setError(errorMsg);
+                throw new Error(errorMsg);
             }
+        } catch (error) {
+            // Re-throw the error so handleSignUp can catch it and sign the user out
+            throw error;
         } finally {
             setLoading(false);
         }

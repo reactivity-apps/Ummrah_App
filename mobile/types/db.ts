@@ -57,7 +57,7 @@ export interface GroupRow {
 
 // ==========================
 // GROUP MEMBERSHIPS
-// (no roles here)
+// If in group membership, is group admin
 // ==========================
 
 export interface GroupMembershipRow {
@@ -82,7 +82,7 @@ export interface TripRow {
   start_date: string | null;
   end_date: string | null;
 
-  cities: string[];    // fixed from "array"
+  cities: string[];    
 
   visibility: TripVisibility;
   status: TripStatus;
@@ -96,7 +96,7 @@ export interface TripRow {
 
 // ==========================
 // TRIP MEMBERSHIPS
-// (no roles here)
+// If in trip membership, is user 
 // ==========================
 
 export interface TripMembershipRow {
