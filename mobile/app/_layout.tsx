@@ -1,50 +1,16 @@
 import "../global.css";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { View, Text, ActivityIndicator } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { requestPushNotificationPermissions, configureNotifications } from "../lib/api/services/pushNotification.service";
+import { AuthProvider, useAuth } from "../lib/context/AuthContext";
 import { TripProvider, useTrip } from "../lib/context/TripContext";
-import { supabase } from "../lib/supabase";
 
 function AppContent() {
     const { loading, authReady } = useTrip();
-    const [userInfo, setUserInfo] = useState<{ email?: string; name?: string } | null>(null);
-
-    useEffect(() => {
-        // Check for current user
-        async function checkUser() {
-            const { data: { user } } = await supabase.auth.getUser();
-            if (user) {
-                const name = user.user_metadata?.name || user.user_metadata?.full_name;
-                setUserInfo({ 
-                    email: user.email, 
-                    name: name 
-                });
-            } else {
-                setUserInfo(null);
-            }
-        }
-        checkUser();
-
-        // Listen for auth changes
-        const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
-            if (session?.user) {
-                const name = session.user.user_metadata?.name || session.user.user_metadata?.full_name;
-                setUserInfo({ 
-                    email: session.user.email, 
-                    name: name 
-                });
-            } else {
-                setUserInfo(null);
-            }
-        });
-
-        return () => {
-            authListener.subscription.unsubscribe();
-        };
-    }, []);
+    const { isAuthenticated, userName, userEmail } = useAuth();
 
     // Show loading screen while auth and trip data are being initialized
     if (authReady && loading) {
@@ -58,10 +24,10 @@ function AppContent() {
 
     return (
         <>
-            {userInfo && (
+            {isAuthenticated && (
                 <View className="bg-green-100 border-b border-green-300 px-4 py-2">
                     <Text className="text-xs text-green-800 text-center">
-                        🟢 Logged in: {userInfo.name ? `${userInfo.name} (${userInfo.email})` : userInfo.email}
+                        🟢 Logged in: {userName} ({userEmail})
                     </Text>
                 </View>
             )}
@@ -99,9 +65,11 @@ export default function RootLayout() {
 
     return (
         <SafeAreaProvider>
-            <TripProvider>
-                <AppContent />
-            </TripProvider>
+            <AuthProvider>
+                <TripProvider>
+                    <AppContent />
+                </TripProvider>
+            </AuthProvider>
         </SafeAreaProvider>
     );
 }

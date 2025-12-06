@@ -4,61 +4,23 @@ import { User, Settings, LogOut, ChevronRight, CreditCard, Bell, Shield, Calenda
 import { useRouter } from "expo-router";
 import { useFadeIn } from "../../lib/sharedElementTransitions";
 import { supabase } from "../../lib/supabase";
-import { useEffect, useState } from "react";
 import { useTrip } from "../../lib/context/TripContext";
+import { useAuth } from "../../lib/context/AuthContext";
 
 export default function ProfileScreen() {
     const router = useRouter();
     const fadeInStyle = useFadeIn(0);
     const { currentTrip, isGroupAdmin } = useTrip();
-    const [userName, setUserName] = useState<string>('');
-    const [userEmail, setUserEmail] = useState<string>('');
-    const [loading, setLoading] = useState(true);
-
-    useEffect(() => {
-        loadUser();
-    }, []);
-
-    const loadUser = async () => {
-        try {
-            const { data: { user } } = await supabase.auth.getUser();
-            
-            if (!user) {
-                router.replace('/login');
-                return;
-            }
-
-            setUserName(user.user_metadata?.full_name || user.user_metadata?.name || 'User');
-            setUserEmail(user.email || '');
-        } catch (error) {
-            console.error('Error loading user data:', error);
-        } finally {
-            setLoading(false);
-        }
-    };
+    const { userName, userEmail } = useAuth();
 
     const handleLogout = async () => {
         try {
-            const { error } = await supabase.auth.signOut();
-            if (error) {
-                console.warn('Logout error', error);
-                Alert.alert('Logout failed', error.message ?? 'Unable to logout');
-                return;
-            }
-            router.replace('/join-trip');
+            await supabase.auth.signOut();
         } catch (e: any) {
-            console.warn('Logout exception', e);
+            console.warn('Logout error', e);
             Alert.alert('Logout failed', e?.message ?? 'Unable to logout');
         }
     };
-
-    if (loading) {
-        return (
-            <SafeAreaView className="flex-1 bg-sand-50 items-center justify-center">
-                <ActivityIndicator size="large" color="#4A6741" />
-            </SafeAreaView>
-        );
-    }
 
     return (
         <SafeAreaView className="flex-1 bg-sand-50">

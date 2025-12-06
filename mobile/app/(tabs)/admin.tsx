@@ -1,7 +1,7 @@
 import { View, Text, ScrollView, TouchableOpacity, Animated, ActivityIndicator, Alert } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useState } from "react";
-import { Shield, AlertCircle, Plus } from "lucide-react-native";
+import { Shield, AlertCircle, Plus, Lock } from "lucide-react-native";
 import { useFadeIn } from "../../lib/sharedElementTransitions";
 import { useTrip } from "../../lib/context/TripContext";
 import { getOrCreateDefaultGroup } from "../../lib/api/services/group.service";
@@ -63,7 +63,7 @@ export default function AdminScreen() {
     // Use trip context
     const {
         currentTrip,
-        currentTripRole,
+        isGroupAdmin,
         allTrips,
         loading,
         error,
@@ -71,6 +71,25 @@ export default function AdminScreen() {
         createNewTrip,
         refreshTrips,
     } = useTrip();
+
+    // Show unauthorized screen if not admin
+    if (!loading && !isGroupAdmin) {
+        return (
+            <SafeAreaView className="flex-1 bg-sand-50">
+                <View className="flex-1 items-center justify-center px-6">
+                    <View className="bg-red-50 p-6 rounded-2xl border border-red-200 items-center">
+                        <Lock size={48} color="#DC2626" />
+                        <Text className="text-xl font-bold text-red-900 mt-4 text-center">
+                            Admin Access Required
+                        </Text>
+                        <Text className="text-red-700 mt-2 text-center">
+                            You don't have permission to access the admin panel. Please contact your group administrator.
+                        </Text>
+                    </View>
+                </View>
+            </SafeAreaView>
+        );
+    }
 
     const handleAddMember = () => {
         if (!newMemberPhone.trim() || !newMemberFirstName.trim() || !newMemberLastName.trim()) {
