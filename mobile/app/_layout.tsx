@@ -6,8 +6,12 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import { getStackScreenOptions } from "../lib/navigationConfig";
 import { requestPushNotificationPermissions, configureNotifications } from "../lib/api/services/pushNotification.service";
 import { TripProvider } from "../lib/context/TripContext";
+import { useRouter, useLocalSearchParams } from 'expo-router';
 
 export default function RootLayout() {
+      const router = useRouter();
+        const params = useLocalSearchParams();
+
     useEffect(() => {
         // Initialize push notifications
         async function initPushNotifications() {
@@ -39,6 +43,9 @@ export default function RootLayout() {
                     <Stack.Screen name="settings/trip-history" />
                     <Stack.Screen name="settings/notifications" />
                     <Stack.Screen name="settings/privacy-security" />
+                    <Stack.Screen name="settings/group-details" />
+                    <Stack.Screen name="settings/app-settings" />
+                    <Stack.Screen name="auth" />
                 </Stack>
                 <StatusBar style="auto" />
             </TripProvider>

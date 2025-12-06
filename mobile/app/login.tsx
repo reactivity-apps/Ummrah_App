@@ -1,19 +1,27 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Mail, Lock, ArrowRight } from 'lucide-react-native';
 import { supabase } from '../lib/supabase';
-import { useRouter, Link } from 'expo-router';
+import { useRouter, Link, useLocalSearchParams } from 'expo-router';
 import { contentContainerConfig } from '../lib/navigationConfig';
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export default function LoginScreen() {
   const router = useRouter();
+  const params = useLocalSearchParams();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Check for error from callback
+  useEffect(() => {
+    if (params.error === 'verification_failed') {
+      setError('Email verification failed. Please try logging in or contact support.');
+    }
+  }, [params.error]);
 
   const isEmailValid = (e: string) => emailRegex.test(e.trim());
   const isPasswordValid = (p: string) => p.length >= 8;

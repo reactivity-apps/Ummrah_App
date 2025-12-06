@@ -64,39 +64,20 @@ export default function GroupCodeStep({ setGroupCodeText, setActiveJoinCodeId, s
         return;
       }
 
-      // All checks passed — increment uses_count (best-effort)
+      // All checks passed - store the join code info
+      // Note: uses_count increment is handled by the database trigger after email verification
+      setActiveJoinCodeId(row.id);
+      setJoinCodeClaimed(false); // Not claimed yet, will be incremented by trigger
+      
+      // notify parent of the plain group code text for downstream steps
       try {
-        const newCount = uses + 1;
-        const { data: updated, error: updateError } = await supabase
-          .from('trip_join_codes')
-          .update({ uses_count: newCount })
-          .eq('id', row.id)
-          .select()
-          .maybeSingle();
-
-        if (updateError) {
-          console.error('Supabase update error', updateError);
-          setLocalError('Unable to claim the code right now. Please try again.');
-          return;
-        }
-
-        // store active join code id in case later steps need it
-        setActiveJoinCodeId(row.id);
-        setJoinCodeClaimed(true);
-        // notify parent of the plain group code text for downstream steps
-        try {
-          setGroupCodeText(code);
-        } catch (e) {
-          // non-fatal
-        }
-
-        // advance to phone verification step
-        setStep(2);
+        setGroupCodeText(code);
       } catch (e) {
-        console.error('Increment uses_count failed', e);
-        setLocalError('Unable to claim the code right now. Please try again.');
-        return;
+        // non-fatal
       }
+
+      // advance to name step
+      setStep(2);
     } finally {
       setLoadingLocal(false);
     }

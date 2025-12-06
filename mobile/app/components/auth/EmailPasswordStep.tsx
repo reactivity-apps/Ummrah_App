@@ -47,20 +47,6 @@ export default function EmailPasswordStep({ onEmailEntered, setStep, handleSignU
     try {
       setLocalLoading(true);
 
-      // Check existing profile by email
-      const { data: existing, error: existingErr } = await supabase
-        .from('profiles')
-        .select('user_id')
-        .eq('email', candidate)
-        .maybeSingle();
-
-      if (existingErr) {
-        console.warn('Error checking existing email', existingErr);
-      } else if (existing) {
-        setLocalError('An account already exists for this email. Please sign in instead.');
-        return;
-      }
-
       // Optionally notify parent
       if (onEmailEntered) onEmailEntered(candidate);
 
