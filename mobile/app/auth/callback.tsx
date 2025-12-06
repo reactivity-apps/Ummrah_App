@@ -33,6 +33,10 @@ export default function AuthCallback() {
           // Successfully verified and logged in
           router.replace('/(tabs)');
           return;
+        } else if (data.user && data.user.email_confirmed_at) {
+          // Email verified but no active session - redirect to login with success message
+          router.replace('/login?verified=success');
+          return;
         }
       }
 
@@ -41,7 +45,7 @@ export default function AuthCallback() {
 
       if (error) {
         console.error('Error getting session after verification', error);
-        router.replace('/join-trip');
+        router.replace('/login?error=verification_failed');
         return;
       }
 
@@ -49,8 +53,15 @@ export default function AuthCallback() {
         // User is verified and logged in, redirect to tabs
         router.replace('/(tabs)');
       } else {
-        // No session, redirect to login with error
-        router.replace('/login?error=verification_failed');
+        // No session - check if email was at least verified
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user && user.email_confirmed_at) {
+          // Email verified, redirect to login
+          router.replace('/login?verified=success');
+        } else {
+          // Verification failed, redirect to login with error
+          router.replace('/login?error=verification_failed');
+        }
       }
     } catch (error) {
       console.error('Callback error', error);

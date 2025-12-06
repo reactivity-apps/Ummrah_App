@@ -3,19 +3,19 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useState } from "react";
 import { supabase } from "../lib/supabase";
 import { useRouter, Link } from "expo-router";
-import GroupCodeStep from './components/auth/GroupCodeStep';
-import NameStep from './components/auth/NameStep';
-import EmailPasswordStep from './components/auth/EmailPasswordStep';
-import AccountCreatedStep from "./components/auth/AccountCreatedStep";
+import GroupCodeStep from './auth/join-trip-steps/GroupCodeStep';
+import NameStep from './auth/join-trip-steps/NameStep';
+import EmailPasswordStep from './auth/join-trip-steps/EmailPasswordStep';
+import AccountCreatedStep from "./auth/join-trip-steps/AccountCreatedStep";
 import { contentContainerConfig } from "../lib/navigationConfig";
 import * as Linking from 'expo-linking';
-import DebugInfo from './components/DebugInfo';
+import DebugInfo from "../components/DebugInfo";
 
 // Helper to get the correct redirect URL based on environment
 const getRedirectUrl = () => {
     // Use Linking.createURL to properly create deep link
     // This works for both Expo Go and standalone builds
-    return Linking.createURL("auth/callback");
+    return Linking.createURL("");
 };
 
 export default function JoinTripScreen() {
@@ -63,6 +63,8 @@ export default function JoinTripScreen() {
                     return;
                 }
 
+                console.log(getRedirectUrl())
+
                 // Sign up with pending join data stored in metadata
                 const { data: signData, error: signError } = await supabase.auth.signUp({
                     email: creds.email.trim(),
@@ -107,167 +109,6 @@ export default function JoinTripScreen() {
         }
     };
 
-    // finalizeJoin
-   
-    // const finalizeJoin = async (setError: (m: string | null) => void, setLoading: (b: boolean) => void, emailArg?: string) => {
-    //     setError(null);
-    //     if (!activeJoinCodeId) {
-    //         const errorMsg = 'Missing join code. Please restart the flow.';
-    //         setError(errorMsg);
-    //         throw new Error(errorMsg);
-    //     }
-
-    //     try {
-    //         setLoading(true);
-
-    //         // Determine final user id: prefer the id created during signup, else use current session
-    //         let userId = signedUpUserId;
-    //         if (!userId) {
-    //             const { data: userData, error: userError } = await supabase.auth.getUser();
-    //             if (userError || !userData?.user) {
-    //                 console.error('No authenticated user for finalization', userError);
-    //                 const errorMsg = 'Please sign in or verify your email first.';
-    //                 setError(errorMsg);
-    //                 throw new Error(errorMsg);
-    //             }
-    //             userId = userData.user.id;
-    //         }
-
-    //         // Update auth user metadata with chosen name (best-effort)
-    //         try {
-    //             await supabase.auth.updateUser({ data: { name: name.trim(), full_name: name.trim() } });
-    //         } catch (e) {
-    //             console.warn('Unable to update auth user metadata', e);
-    //         }
-
-    //         // Check if profile already exists (might be created by trigger)
-    //         const { data: existingProfile, error: checkError } = await supabase
-    //             .from('profiles')
-    //             .select('user_id')
-    //             .eq('user_id', userId)
-    //             .maybeSingle();
-
-    //         // Create or update profile with auth_role as null and updated_at set to now
-    //         if (existingProfile) {
-    //             // Profile exists, just update it
-    //             const { error: updateError } = await supabase
-    //                 .from('profiles')
-    //                 .update({
-    //                     auth_role: null,
-    //                     updated_at: new Date().toISOString(),
-    //                 })
-    //                 .eq('user_id', userId);
-
-    //             if (updateError) {
-    //                 console.error('Profile update error', updateError);
-    //                 const errorMsg = 'Unable to update profile. Please try again.';
-    //                 setError(errorMsg);
-    //                 throw new Error(errorMsg);
-    //             }
-    //         } else {
-    //             // Profile doesn't exist, create it
-    //             const { error: profileError } = await supabase
-    //                 .from('profiles')
-    //                 .insert({
-    //                     user_id: userId,
-    //                     auth_role: null,
-    //                     updated_at: new Date().toISOString(),
-    //                 });
-
-    //             if (profileError) {
-    //                 console.error('Profile insert error', profileError);
-    //                 const errorMsg = 'Unable to create profile. Please try again.';
-    //                 setError(errorMsg);
-    //                 throw new Error(errorMsg);
-    //             }
-    //         }
-
-    //         // Fetch join code row to get trip_id and current uses_count
-    //         const { data: joinRow, error: joinFetchError } = await supabase
-    //             .from('trip_join_codes')
-    //             .select('trip_id, uses_count')
-    //             .eq('id', activeJoinCodeId)
-    //             .maybeSingle();
-
-    //         if (joinFetchError || !joinRow) {
-    //             console.error('Unable to load join code', joinFetchError);
-    //             const errorMsg = 'Unable to finalize join. Please try again.';
-    //             setError(errorMsg);
-    //             throw new Error(errorMsg);
-    //         }
-
-    //         const tripId = joinRow.trip_id;
-
-    //         // Increment uses_count for the join code
-    //         if (!joinCodeClaimed) {
-    //             try {
-    //                 const newUsesCount = (joinRow.uses_count ?? 0) + 1;
-    //                 const { error: updateErr } = await supabase
-    //                     .from('trip_join_codes')
-    //                     .update({ uses_count: newUsesCount })
-    //                     .eq('id', activeJoinCodeId);
-
-    //                 if (updateErr) {
-    //                     console.error('Unable to increment join code uses_count', updateErr);
-    //                     // not fatal: continue
-    //                 } else {
-    //                     setJoinCodeClaimed(true);
-    //                 }
-    //             } catch (e) {
-    //                 console.error('Increment error', e);
-    //             }
-    //         }
-
-    //         // Fetch trip to get current group_size
-    //         const { data: tripData, error: tripFetchError } = await supabase
-    //             .from('trips')
-    //             .select('group_size')
-    //             .eq('id', tripId)
-    //             .maybeSingle();
-
-    //         if (tripFetchError || !tripData) {
-    //             console.error('Unable to fetch trip data', tripFetchError);
-    //             const errorMsg = 'Unable to load trip information.';
-    //             setError(errorMsg);
-    //             throw new Error(errorMsg);
-    //         }
-
-    //         // Increment group_size for the trip
-    //         const newGroupSize = (tripData.group_size ?? 0) + 1;
-    //         const { error: tripUpdateError } = await supabase
-    //             .from('trips')
-    //             .update({ group_size: newGroupSize })
-    //             .eq('id', tripId);
-
-    //         if (tripUpdateError) {
-    //             console.error('Unable to increment trip group_size', tripUpdateError);
-    //             // not fatal: continue
-    //         }
-
-    //         // Create trip membership
-    //         const { data: membership, error: membershipError } = await supabase
-    //             .from('trip_memberships')
-    //             .insert({ 
-    //                 trip_id: tripId, 
-    //                 user_id: userId 
-    //             })
-    //             .select()
-    //             .maybeSingle();
-
-    //         if (membershipError) {
-    //             console.error('Failed to create trip membership', membershipError);
-    //             const errorMsg = 'Unable to add you to the trip. Please try again.';
-    //             setError(errorMsg);
-    //             throw new Error(errorMsg);
-    //         }
-    //     } catch (error) {
-    //         // Re-throw the error so handleSignUp can catch it and sign the user out
-    //         throw error;
-    //     } finally {
-    //         setLoading(false);
-    //     }
-    // };
-   
     return (
     <SafeAreaView className="flex-1 bg-background" edges={['top', 'bottom']}>
             <KeyboardAvoidingView

@@ -20,8 +20,11 @@ export default function LoginScreen() {
   useEffect(() => {
     if (params.error === 'verification_failed') {
       setError('Email verification failed. Please try logging in or contact support.');
+    } else if (params.verified === 'success') {
+      // Show success message when user returns after verification
+      setError(null);
     }
-  }, [params.error]);
+  }, [params.error, params.verified]);
 
   const isEmailValid = (e: string) => emailRegex.test(e.trim());
   const isPasswordValid = (p: string) => p.length >= 8;
@@ -58,7 +61,9 @@ export default function LoginScreen() {
         if (signInError.message.includes('Invalid login credentials')) {
           setError('Invalid email or password. Please try again.');
         } else if (signInError.message.includes('Email not confirmed')) {
-          setError('Please verify your email address before logging in.');
+          // Redirect to verification page instead of just showing error
+          router.replace(`/auth/login-verify-email?email=${encodeURIComponent(trimmedEmail)}`);
+          return;
         } else {
           setError(signInError.message || 'Unable to sign in. Please try again.');
         }
@@ -67,6 +72,13 @@ export default function LoginScreen() {
 
       if (!data.user) {
         setError('Unable to sign in. Please try again.');
+        return;
+      }
+
+      // Double-check email verification status
+      if (data.user && !data.user.email_confirmed_at) {
+        // User exists but email not verified - redirect to verification page
+        router.replace(`/auth/login-verify-email?email=${encodeURIComponent(trimmedEmail)}`);
         return;
       }
 

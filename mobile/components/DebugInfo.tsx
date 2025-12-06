@@ -8,7 +8,7 @@ import { View, Text } from 'react-native';
 import * as Linking from 'expo-linking';
 
 export default function DebugInfo() {
-    const redirectUrl = Linking.createURL("auth/callback");
+    const redirectUrl = Linking.createURL("");
 
     if (__DEV__) {
         return (
