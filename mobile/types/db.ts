@@ -1,4 +1,3 @@
-
 export type AuthRole = 'super_admin';
 
 export type TripVisibility =

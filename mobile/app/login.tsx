@@ -82,7 +82,10 @@ export default function LoginScreen() {
         return;
       }
 
-      // Success - navigate to main tabs
+      // Success - wait briefly for TripContext to load
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Navigate to main tabs
       router.replace('/(tabs)');
     } catch (e) {
       console.error('Exception during login', e);

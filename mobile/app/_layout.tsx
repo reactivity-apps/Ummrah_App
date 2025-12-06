@@ -2,32 +2,21 @@ import "../global.css";
 import { useEffect, useState } from "react";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import { View, Text } from "react-native";
+import { View, Text, ActivityIndicator } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { requestPushNotificationPermissions, configureNotifications } from "../lib/api/services/pushNotification.service";
-import { TripProvider } from "../lib/context/TripContext";
+import { TripProvider, useTrip } from "../lib/context/TripContext";
 import { supabase } from "../lib/supabase";
 
-export default function RootLayout() {
+function AppContent() {
+    const { loading, authReady } = useTrip();
     const [userInfo, setUserInfo] = useState<{ email?: string; name?: string } | null>(null);
 
     useEffect(() => {
-        // Initialize push notifications
-        async function initPushNotifications() {
-            try {
-                await configureNotifications();
-                await requestPushNotificationPermissions();
-            } catch (err) {
-                console.error("Push notification setup failed:", err);
-            }
-        }
-        initPushNotifications();
-
         // Check for current user
         async function checkUser() {
             const { data: { user } } = await supabase.auth.getUser();
             if (user) {
-                // Try to get user's name from user_metadata or profiles table
                 const name = user.user_metadata?.name || user.user_metadata?.full_name;
                 setUserInfo({ 
                     email: user.email, 
@@ -57,36 +46,61 @@ export default function RootLayout() {
         };
     }, []);
 
+    // Show loading screen while auth and trip data are being initialized
+    if (authReady && loading) {
+        return (
+            <View className="flex-1 items-center justify-center bg-sand-50">
+                <ActivityIndicator size="large" color="#4A6741" />
+                <Text className="mt-4 text-foreground font-medium">Loading your trip data...</Text>
+            </View>
+        );
+    }
+
+    return (
+        <>
+            {userInfo && (
+                <View className="bg-green-100 border-b border-green-300 px-4 py-2">
+                    <Text className="text-xs text-green-800 text-center">
+                        🟢 Logged in: {userInfo.name ? `${userInfo.name} (${userInfo.email})` : userInfo.email}
+                    </Text>
+                </View>
+            )}
+            <Stack screenOptions={{ headerShown: false }}>
+                <Stack.Screen name="index" />
+                <Stack.Screen name="join-trip" />
+                <Stack.Screen name="login" />
+                <Stack.Screen name="(tabs)" />
+                <Stack.Screen name="itinerary" />
+                <Stack.Screen name="announcements" />
+                <Stack.Screen name="prayers" />
+                <Stack.Screen name="guide/[id]" />
+                <Stack.Screen name="map/[id]" />
+                <Stack.Screen name="settings" />
+                <Stack.Screen name="auth" />
+            </Stack>
+            <StatusBar style="auto" />
+        </>
+    );
+}
+
+export default function RootLayout() {
+    useEffect(() => {
+        // Initialize push notifications
+        async function initPushNotifications() {
+            try {
+                await configureNotifications();
+                await requestPushNotificationPermissions();
+            } catch (err) {
+                console.error("Push notification setup failed:", err);
+            }
+        }
+        initPushNotifications();
+    }, []);
+
     return (
         <SafeAreaProvider>
             <TripProvider>
-                {userInfo && (
-                    <View className="bg-green-100 border-b border-green-300 px-4 py-2">
-                        <Text className="text-xs text-green-800 text-center">
-                            🟢 Logged in: {userInfo.name ? `${userInfo.name} (${userInfo.email})` : userInfo.email}
-                        </Text>
-                    </View>
-                )}
-                <Stack screenOptions={{ headerShown: false }}>
-                    <Stack.Screen name="index" />
-                    <Stack.Screen name="join-trip" />
-                    <Stack.Screen name="login" />
-                    <Stack.Screen name="(tabs)" />
-                    <Stack.Screen name="itinerary" />
-                    <Stack.Screen name="announcements" />
-                    <Stack.Screen name="prayers" />
-                    <Stack.Screen name="guide/[id]" />
-                    <Stack.Screen name="map/[id]" />
-                    <Stack.Screen name="settings/personal-info" />
-                    <Stack.Screen name="settings/emergency-contact" />
-                    <Stack.Screen name="settings/trip-history" />
-                    <Stack.Screen name="settings/notifications" />
-                    <Stack.Screen name="settings/privacy-security" />
-                    <Stack.Screen name="settings/group-details" />
-                    <Stack.Screen name="settings/app-settings" />
-                    <Stack.Screen name="auth" />
-                </Stack>
-                <StatusBar style="auto" />
+                <AppContent />
             </TripProvider>
         </SafeAreaProvider>
     );

@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { View, Text, ActivityIndicator } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { supabase } from '../../lib/supabase';
@@ -6,6 +6,7 @@ import { supabase } from '../../lib/supabase';
 export default function AuthCallback() {
   const router = useRouter();
   const params = useLocalSearchParams();
+  const [message, setMessage] = useState('Verifying your email...');
 
   useEffect(() => {
     handleCallback();
@@ -31,6 +32,11 @@ export default function AuthCallback() {
 
         if (data.session) {
           // Successfully verified and logged in
+          setMessage('Loading your trip data...');
+          
+          // Wait a moment for TripContext to initialize with the new session
+          await new Promise(resolve => setTimeout(resolve, 1500));
+          
           router.replace('/(tabs)');
           return;
         } else if (data.user && data.user.email_confirmed_at) {
@@ -50,7 +56,12 @@ export default function AuthCallback() {
       }
 
       if (session) {
-        // User is verified and logged in, redirect to tabs
+        // User is verified and logged in
+        setMessage('Loading your trip data...');
+        
+        // Wait for TripContext to initialize
+        await new Promise(resolve => setTimeout(resolve, 1500));
+        
         router.replace('/(tabs)');
       } else {
         // No session - check if email was at least verified
@@ -72,7 +83,7 @@ export default function AuthCallback() {
   return (
     <View className="flex-1 bg-background items-center justify-center">
       <ActivityIndicator size="large" color="#4A6741" />
-      <Text className="text-foreground mt-4">Verifying your email...</Text>
+      <Text className="text-foreground mt-4">{message}</Text>
     </View>
   );
 }

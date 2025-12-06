@@ -10,7 +10,7 @@
  */
 
 import { supabase } from '../../supabase';
-import { TripRow, TripMemberRole } from '../../../types/db';
+import { TripRow } from '../../../types/db';
 
 export interface TripInput {
     group_id: string;
@@ -30,7 +30,7 @@ export interface TripUpdateInput {
 }
 
 /**
- * Create a new trip and automatically add creator as admin
+ * Create a new trip and automatically add creator as member
  */
 export async function createTrip(input: TripInput): Promise<{ success: boolean; trip?: TripRow; error?: string }> {
     try {
@@ -48,9 +48,10 @@ export async function createTrip(input: TripInput): Promise<{ success: boolean; 
                 name: input.name,
                 start_date: input.start_date,
                 end_date: input.end_date,
-                base_city: input.base_city,
+                cities: [],
                 visibility: input.visibility || 'draft',
-                created_by: user.id,
+                status: 'active',
+                group_size: 0,
             })
             .select()
             .single();
@@ -60,20 +61,17 @@ export async function createTrip(input: TripInput): Promise<{ success: boolean; 
             return { success: false, error: tripError.message };
         }
 
-        // Add creator as group_owner in trip_memberships
+        // Add creator as trip member
         const { error: membershipError } = await supabase
             .from('trip_memberships')
             .insert({
                 trip_id: trip.id!,
                 user_id: user.id,
-                role: 'group_owner',
             });
 
         if (membershipError) {
             console.error('Error creating trip membership:', membershipError);
-            console.error('Membership error details:', JSON.stringify(membershipError, null, 2));
-            // Trip was created but membership failed - might want to rollback
-            return { success: false, error: `Trip created but failed to add admin membership: ${membershipError.message}` };
+            return { success: false, error: `Trip created but failed to add membership: ${membershipError.message}` };
         }
 
         return { success: true, trip };
@@ -85,7 +83,7 @@ export async function createTrip(input: TripInput): Promise<{ success: boolean; 
 
 /**
  * Update an existing trip
- * Only admins can update trips
+ * Only group admins can update trips
  */
 export async function updateTrip(
     tripId: string,
@@ -98,10 +96,10 @@ export async function updateTrip(
             return { success: false, error: 'Not authenticated' };
         }
 
-        // Verify user is admin
-        const hasPermission = await verifyTripAdmin(tripId, user.id);
+        // Verify user is group admin
+        const hasPermission = await verifyGroupAdmin(tripId, user.id);
         if (!hasPermission) {
-            return { success: false, error: 'Only admins can update trips' };
+            return { success: false, error: 'Only group admins can update trips' };
         }
 
         const { data: trip, error } = await supabase
@@ -125,7 +123,7 @@ export async function updateTrip(
 
 /**
  * Delete a trip
- * Only the creator or group owner can delete trips
+ * Only group admins can delete trips
  */
 export async function deleteTrip(tripId: string): Promise<{ success: boolean; error?: string }> {
     try {
@@ -135,23 +133,11 @@ export async function deleteTrip(tripId: string): Promise<{ success: boolean; er
             return { success: false, error: 'Not authenticated' };
         }
 
-        // Get trip to check creator
-        const { data: trip, error: fetchError } = await supabase
-            .from('trips')
-            .select('created_by')
-            .eq('id', tripId)
-            .single();
+        // Check if user is group admin
+        const isAdmin = await verifyGroupAdmin(tripId, user.id);
 
-        if (fetchError || !trip) {
-            return { success: false, error: 'Trip not found' };
-        }
-
-        // Check if user is creator or admin
-        const isCreator = trip.created_by === user.id;
-        const isAdmin = await verifyTripAdmin(tripId, user.id);
-
-        if (!isCreator && !isAdmin) {
-            return { success: false, error: 'Only the creator or admins can delete trips' };
+        if (!isAdmin) {
+            return { success: false, error: 'Only group admins can delete trips' };
         }
 
         const { error } = await supabase
@@ -185,7 +171,7 @@ export async function getUserTrips(): Promise<{ success: boolean; trips?: TripRo
         // Get trips where user is a member
         const { data: memberships, error: membershipError } = await supabase
             .from('trip_memberships')
-            .select('trip_id, role, trip:trips(*)')
+            .select('trip_id, trip:trips(*)')
             .eq('user_id', user.id)
             .is('left_at', null);
 
@@ -227,9 +213,9 @@ export async function getTrip(tripId: string): Promise<{ success: boolean; trip?
 }
 
 /**
- * Verify if user is an admin for a trip
+ * Verify if user is a group admin for a trip's group
  */
-export async function verifyTripAdmin(tripId: string, userId?: string): Promise<boolean> {
+export async function verifyGroupAdmin(tripId: string, userId?: string): Promise<boolean> {
     try {
         let uid = userId;
 
@@ -239,21 +225,33 @@ export async function verifyTripAdmin(tripId: string, userId?: string): Promise<
             uid = user.id;
         }
 
-        const { data: membership, error } = await supabase
-            .from('trip_memberships')
-            .select('role')
-            .eq('trip_id', tripId)
-            .eq('user_id', uid)
-            .is('left_at', null)
+        // Get the trip's group_id
+        const { data: trip, error: tripError } = await supabase
+            .from('trips')
+            .select('group_id')
+            .eq('id', tripId)
             .single();
 
-        if (error || !membership) {
+        if (tripError || !trip) {
+            console.error('Trip not found for admin check:', tripError);
             return false;
         }
 
-        return membership.role === 'group_owner' || membership.role === 'super_admin';
+        console.log('Checking group admin for:', { tripId, groupId: trip.group_id, userId: uid });
+
+        // Check if user is in group_memberships for this group
+        const { data: membership, error } = await supabase
+            .from('group_memberships')
+            .select('id')
+            .eq('group_id', trip.group_id)
+            .eq('user_id', uid)
+            .single();
+
+        console.log('Group membership check result:', { membership, error, hasError: !!error });
+
+        return !error && !!membership;
     } catch (err) {
-        console.error('Error verifying trip admin:', err);
+        console.error('Error verifying group admin:', err);
         return false;
     }
 }
@@ -264,15 +262,27 @@ export async function verifyTripAdmin(tripId: string, userId?: string): Promise<
 export async function getTripWithMembership(tripId: string): Promise<{
     success: boolean;
     trip?: TripRow;
-    role?: 'super_admin' | 'group_owner' | 'user';
+    isGroupAdmin?: boolean;
     error?: string;
+    errorCode?: 'AUTH_MISSING' | 'TRIP_NOT_FOUND' | 'NOT_MEMBER' | 'ADMIN_CHECK_FAILED';
 }> {
     try {
+        // Validate auth session first
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        if (!session) {
+            console.error('[getTripWithMembership] No active session');
+            return { success: false, error: 'Not authenticated', errorCode: 'AUTH_MISSING' };
+        }
+
         const { data: { user } } = await supabase.auth.getUser();
 
         if (!user) {
-            return { success: false, error: 'Not authenticated' };
+            console.error('[getTripWithMembership] No user found');
+            return { success: false, error: 'Not authenticated', errorCode: 'AUTH_MISSING' };
         }
+
+        console.log('[getTripWithMembership] Getting trip with membership for user:', user.id, 'tripId:', tripId);
 
         // Get trip
         const { data: trip, error: tripError } = await supabase
@@ -282,37 +292,51 @@ export async function getTripWithMembership(tripId: string): Promise<{
             .single();
 
         if (tripError || !trip) {
-            return { success: false, error: 'Trip not found' };
+            console.error('[getTripWithMembership] Trip fetch error:', tripError);
+            return { success: false, error: 'Trip not found', errorCode: 'TRIP_NOT_FOUND' };
         }
 
-        // Get user's membership
-        const { data: membership, error: membershipError } = await supabase
+        console.log('[getTripWithMembership] Trip found:', { tripId: trip.id, groupId: trip.group_id });
+
+        // Check if user is a member of this trip
+        const { data: tripMembership, error: membershipError } = await supabase
             .from('trip_memberships')
-            .select('role')
+            .select('id')
             .eq('trip_id', tripId)
             .eq('user_id', user.id)
             .is('left_at', null)
             .single();
 
         if (membershipError) {
-            console.error('Error fetching membership:', membershipError);
-            return { success: false, error: 'Not a member of this trip' };
+            console.error('[getTripWithMembership] Error fetching trip membership:', membershipError);
+            return { success: false, error: 'Not a member of this trip', errorCode: 'NOT_MEMBER' };
         }
+
+        console.log('[getTripWithMembership] Trip membership found:', tripMembership);
+
+        // Check if user is a group admin
+        const isGroupAdmin = await verifyGroupAdmin(tripId, user.id);
+
+        console.log('[getTripWithMembership] Final result:', { isGroupAdmin });
 
         return {
             success: true,
             trip,
-            role: membership.role,
+            isGroupAdmin,
         };
     } catch (err) {
-        console.error('Error in getTripWithMembership:', err);
-        return { success: false, error: err instanceof Error ? err.message : 'Unknown error' };
+        console.error('[getTripWithMembership] Error:', err);
+        return { 
+            success: false, 
+            error: err instanceof Error ? err.message : 'Unknown error',
+            errorCode: 'ADMIN_CHECK_FAILED'
+        };
     }
 }
 
 /**
  * Remove a member from a trip
- * Only group owners can remove members
+ * Only group admins can remove members
  */
 export async function removeTripMember(
     tripId: string,
@@ -325,10 +349,10 @@ export async function removeTripMember(
             return { success: false, error: 'Not authenticated' };
         }
 
-        // Verify current user is group_owner
-        const hasPermission = await verifyTripAdmin(tripId, user.id);
+        // Verify current user is group admin
+        const hasPermission = await verifyGroupAdmin(tripId, user.id);
         if (!hasPermission) {
-            return { success: false, error: 'Only group owners can remove members' };
+            return { success: false, error: 'Only group admins can remove members' };
         }
 
         // Don't allow removing yourself
@@ -365,18 +389,28 @@ export async function getTripMembers(tripId: string): Promise<{
         id: string;
         user_id: string;
         name: string;
-        role: TripMemberRole;
+        isGroupAdmin: boolean;
         joined_at: string;
     }>;
     error?: string;
 }> {
     try {
+        // Get trip to find group_id
+        const { data: trip, error: tripError } = await supabase
+            .from('trips')
+            .select('group_id')
+            .eq('id', tripId)
+            .single();
+
+        if (tripError || !trip) {
+            return { success: false, error: 'Trip not found' };
+        }
+
         const { data: memberships, error } = await supabase
             .from('trip_memberships')
             .select(`
                 id,
                 user_id,
-                role,
                 joined_at,
                 profile:profiles(name)
             `)
@@ -389,11 +423,19 @@ export async function getTripMembers(tripId: string): Promise<{
             return { success: false, error: error.message };
         }
 
+        // Get group admins for this trip's group
+        const { data: groupAdmins } = await supabase
+            .from('group_memberships')
+            .select('user_id')
+            .eq('group_id', trip.group_id);
+
+        const adminUserIds = new Set(groupAdmins?.map(g => g.user_id) || []);
+
         const members = memberships?.map((m: any) => ({
             id: m.id,
             user_id: m.user_id,
             name: m.profile?.name || 'Unknown',
-            role: m.role,
+            isGroupAdmin: adminUserIds.has(m.user_id),
             joined_at: m.joined_at,
         })) || [];
 

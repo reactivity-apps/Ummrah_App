@@ -9,12 +9,14 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { TripRow } from '../../types/db';
 import { getUserTrips, createTrip, TripInput, getTripWithMembership } from '../api/services/trip.service';
+import { supabase } from '../supabase';
 
 interface TripContextType {
     currentTrip: TripRow | null;
-    currentTripRole: 'super_admin' | 'group_owner' | 'user' | null;
+    isGroupAdmin: boolean;
     allTrips: TripRow[];
     loading: boolean;
+    authReady: boolean;
     error: string | null;
     setCurrentTrip: (tripId: string) => Promise<void>;
     createNewTrip: (input: TripInput) => Promise<{ success: boolean; error?: string }>;
@@ -24,17 +26,59 @@ interface TripContextType {
 const TripContext = createContext<TripContextType | undefined>(undefined);
 
 const CURRENT_TRIP_KEY = '@ummrah_current_trip_id';
+const ADMIN_STATUS_KEY = '@ummrah_admin_status_';
 
 export function TripProvider({ children }: { children: ReactNode }) {
     const [currentTrip, setCurrentTripState] = useState<TripRow | null>(null);
-    const [currentTripRole, setCurrentTripRole] = useState<'super_admin' | 'group_owner' | 'user' | null>(null);
+    const [isGroupAdmin, setIsGroupAdmin] = useState<boolean>(false);
     const [allTrips, setAllTrips] = useState<TripRow[]>([]);
     const [loading, setLoading] = useState(true);
+    const [authReady, setAuthReady] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
-    // Load trips on mount
+    // Check if auth session is ready on mount
     useEffect(() => {
-        loadTrips();
+        const initializeAuth = async () => {
+            try {
+                const { data: { session } } = await supabase.auth.getSession();
+                if (session) {
+                    setAuthReady(true);
+                    await loadTrips();
+                } else {
+                    setAuthReady(false);
+                    setLoading(false);
+                }
+            } catch (err) {
+                console.error('Error initializing auth:', err);
+                setAuthReady(false);
+                setLoading(false);
+            }
+        };
+
+        initializeAuth();
+
+        // Listen for auth state changes
+        const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
+            console.log('[TripContext] Auth state changed:', event);
+            
+            if (session?.user) {
+                setAuthReady(true);
+                // Reload trips when user signs in
+                if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+                    await loadTrips();
+                }
+            } else {
+                setAuthReady(false);
+                setCurrentTripState(null);
+                setIsGroupAdmin(false);
+                setAllTrips([]);
+                setLoading(false);
+            }
+        });
+
+        return () => {
+            authListener.subscription.unsubscribe();
+        };
     }, []);
 
     const loadTrips = async () => {
@@ -73,18 +117,38 @@ export function TripProvider({ children }: { children: ReactNode }) {
 
     const loadCurrentTrip = async (tripId: string) => {
         try {
-            const { success, trip, role, error } = await getTripWithMembership(tripId);
+            // Load cached admin status immediately
+            const cachedAdminStatus = await AsyncStorage.getItem(`${ADMIN_STATUS_KEY}${tripId}`);
+            if (cachedAdminStatus !== null) {
+                setIsGroupAdmin(cachedAdminStatus === 'true');
+                console.log('[TripContext] Loaded cached admin status:', cachedAdminStatus);
+            }
+
+            const { success, trip, isGroupAdmin: admin, error: fetchError } = await getTripWithMembership(tripId);
 
             if (success && trip) {
                 setCurrentTripState(trip);
-                setCurrentTripRole(role || null);
+                
+                // Update admin status with fresh data
+                if (admin !== undefined) {
+                    setIsGroupAdmin(admin);
+                    // Cache the admin status
+                    await AsyncStorage.setItem(`${ADMIN_STATUS_KEY}${tripId}`, String(admin));
+                    console.log('[TripContext] Cached admin status:', admin);
+                } else {
+                    console.error('[TripContext] Admin status is undefined');
+                    setError('Failed to determine admin status');
+                }
+                
                 // Save to storage
                 await AsyncStorage.setItem(CURRENT_TRIP_KEY, tripId);
             } else {
-                console.error('Error loading current trip:', error);
+                console.error('[TripContext] Error loading current trip:', fetchError);
+                setError(fetchError || 'Failed to load trip');
             }
         } catch (err) {
-            console.error('Error in loadCurrentTrip:', err);
+            console.error('[TripContext] Error in loadCurrentTrip:', err);
+            setError(err instanceof Error ? err.message : 'Unknown error loading trip');
         }
     };
 
@@ -114,9 +178,10 @@ export function TripProvider({ children }: { children: ReactNode }) {
         <TripContext.Provider
             value={{
                 currentTrip,
-                currentTripRole,
+                isGroupAdmin,
                 allTrips,
                 loading,
+                authReady,
                 error,
                 setCurrentTrip,
                 createNewTrip,
