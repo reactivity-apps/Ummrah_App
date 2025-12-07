@@ -1,4 +1,4 @@
-import { View, Text, TextInput, TouchableOpacity, ScrollView, Alert, ActivityIndicator, KeyboardAvoidingView, Platform, Switch } from "react-native";
+import { View, Text, TextInput, TouchableOpacity, ScrollView, Alert, ActivityIndicator, KeyboardAvoidingView, Platform, Switch, RefreshControl } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useState, useEffect } from "react";
 import { useRouter } from "expo-router";
@@ -6,13 +6,31 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import { ArrowLeft, User, Mail, Phone, Save, CheckCircle, XCircle, Send, MapPin, Calendar, FileText, Utensils, Camera, Eye } from "lucide-react-native";
 import { supabase } from "../../lib/supabase";
 import { ProfileRow } from "../../types/db";
+import { useAuth } from "../../lib/context/AuthContext";
+import { loadFromCache, saveToCache } from "../../lib/utils";
+
+interface PersonalInfoData {
+    name: string;
+    email: string;
+    phone: string;
+    emailVerified: boolean;
+    country: string;
+    city: string;
+    dateOfBirth: string;
+    medicalNotes: string;
+    dietaryRestrictions: string;
+    profileVisible: boolean;
+}
 
 export default function PersonalInfoScreen() {
     const router = useRouter();
+    const { updateUserProfile } = useAuth();
     // TODO: Allow editing of verified emails with proper confirmation flow
     const ALLOW_VERIFIED_EMAIL_EDIT = false;
+    const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
     
     const [loading, setLoading] = useState(true);
+    const [refreshing, setRefreshing] = useState(false);
     const [saving, setSaving] = useState(false);
     const [sendingVerification, setSendingVerification] = useState(false);
     const [name, setName] = useState('');
@@ -27,48 +45,207 @@ export default function PersonalInfoScreen() {
     const [profileVisible, setProfileVisible] = useState(true);
     const [showDatePicker, setShowDatePicker] = useState(false);
 
+    // Track original values for change detection
+    const [originalValues, setOriginalValues] = useState({
+        name: '',
+        email: '',
+        phone: '',
+        country: '',
+        city: '',
+        dateOfBirth: '',
+        medicalNotes: '',
+        dietaryRestrictions: '',
+        profileVisible: true,
+    });
+
     useEffect(() => {
         loadProfile();
     }, []);
 
-    const loadProfile = async () => {
+    const loadProfile = async (forceRefresh: boolean = false) => {
         try {
-            setLoading(true);
+            if (!forceRefresh) {
+                setLoading(true);
+            }
+            
             const { data: { user } } = await supabase.auth.getUser();
             
             if (!user) {
+                setLoading(false);
+                setRefreshing(false);
+                return;
+            }
+
+            const cacheKey = `@ummrah_personal_info_${user.id}`;
+
+            // Try to load from cache if not forcing refresh
+            if (!forceRefresh) {
+                const cached = await loadFromCache<PersonalInfoData>(cacheKey, CACHE_DURATION, 'PersonalInfo');
+                if (cached) {
+                    setName(cached.name);
+                    setEmail(cached.email);
+                    setPhone(cached.phone);
+                    setEmailVerified(cached.emailVerified);
+                    setCountry(cached.country);
+                    setCity(cached.city);
+                    setDateOfBirth(cached.dateOfBirth);
+                    setMedicalNotes(cached.medicalNotes);
+                    setDietaryRestrictions(cached.dietaryRestrictions);
+                    setProfileVisible(cached.profileVisible);
+                    
+                    setOriginalValues({
+                        name: cached.name,
+                        email: cached.email,
+                        phone: cached.phone,
+                        country: cached.country,
+                        city: cached.city,
+                        dateOfBirth: cached.dateOfBirth,
+                        medicalNotes: cached.medicalNotes,
+                        dietaryRestrictions: cached.dietaryRestrictions,
+                        profileVisible: cached.profileVisible,
+                    });
+                    
+                    setLoading(false);
+                    return;
+                }
+            }
+
+            const { data: { user: freshUser } } = await supabase.auth.getUser();
+            
+            if (!freshUser) {
+                setLoading(false);
+                setRefreshing(false);
                 return;
             }
 
             // Check email verification status
-            setEmailVerified(user.email_confirmed_at !== null);
+            const emailVerified = freshUser.email_confirmed_at !== null;
+            setEmailVerified(emailVerified);
 
             // Load data from auth user
-            setName(user.user_metadata?.full_name || '');
-            setEmail(user.email || '');
-            setPhone(user.user_metadata?.phone || '');
+            const userName = freshUser.user_metadata?.full_name || '';
+            const userEmail = freshUser.email || '';
+            const userPhone = freshUser.user_metadata?.phone || '';
+            
+            setName(userName);
+            setEmail(userEmail);
+            setPhone(userPhone);
 
             // Load data from profiles table
             const { data: profile, error: profileError } = await supabase
                 .from('profiles')
                 .select('*')
-                .eq('user_id', user.id)
+                .eq('user_id', freshUser.id)
                 .single();
+
+            const profileCountry = profile?.country || '';
+            const profileCity = profile?.city || '';
+            const profileDateOfBirth = profile?.date_of_birth || '';
+            const profileMedicalNotes = profile?.medical_notes || '';
+            const profileDietaryRestrictions = profile?.dietary_restrictions || '';
+            const profileVisible = profile?.profile_visible ?? true;
 
             if (profileError && profileError.code !== 'PGRST116') {
                 console.error('Error fetching profile:', profileError);
             } else if (profile) {
-                setCountry(profile.country || '');
-                setCity(profile.city || '');
-                setDateOfBirth(profile.date_of_birth || '');
-                setMedicalNotes(profile.medical_notes || '');
-                setDietaryRestrictions(profile.dietary_restrictions || '');
-                setProfileVisible(profile.profile_visible);
+                setCountry(profileCountry);
+                setCity(profileCity);
+                setDateOfBirth(profileDateOfBirth);
+                setMedicalNotes(profileMedicalNotes);
+                setDietaryRestrictions(profileDietaryRestrictions);
+                setProfileVisible(profileVisible);
             }
+
+            // Store original values for change detection
+            const originalData = {
+                name: userName,
+                email: userEmail,
+                phone: userPhone,
+                country: profileCountry,
+                city: profileCity,
+                dateOfBirth: profileDateOfBirth,
+                medicalNotes: profileMedicalNotes,
+                dietaryRestrictions: profileDietaryRestrictions,
+                profileVisible: profileVisible,
+            };
+            setOriginalValues(originalData);
+
+            // Cache the data
+            const dataToCache: PersonalInfoData = {
+                name: userName,
+                email: userEmail,
+                phone: userPhone,
+                emailVerified: emailVerified,
+                country: profileCountry,
+                city: profileCity,
+                dateOfBirth: profileDateOfBirth,
+                medicalNotes: profileMedicalNotes,
+                dietaryRestrictions: profileDietaryRestrictions,
+                profileVisible: profileVisible,
+            };
+            await saveToCache(cacheKey, dataToCache, 'PersonalInfo');
         } catch (error) {
             console.error('Error:', error);
         } finally {
             setLoading(false);
+            setRefreshing(false);
+        }
+    };
+
+    const hasChanges = () => {
+        return (
+            name.trim() !== originalValues.name ||
+            email.trim() !== originalValues.email ||
+            phone.trim() !== originalValues.phone ||
+            country.trim() !== originalValues.country ||
+            city.trim() !== originalValues.city ||
+            dateOfBirth !== originalValues.dateOfBirth ||
+            medicalNotes.trim() !== originalValues.medicalNotes ||
+            dietaryRestrictions.trim() !== originalValues.dietaryRestrictions ||
+            profileVisible !== originalValues.profileVisible
+        );
+    };
+
+    const handleProfileVisibilityChange = async (newValue: boolean) => {
+        setProfileVisible(newValue);
+        
+        try {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) return;
+
+            const { error } = await supabase
+                .from('profiles')
+                .upsert({
+                    user_id: user.id,
+                    profile_visible: newValue,
+                    updated_at: new Date().toISOString(),
+                });
+
+            if (error) {
+                console.error('Error updating profile visibility:', error);
+                // Revert on error
+                setProfileVisible(!newValue);
+            } else {
+                // Update original values so hasChanges() reflects the save
+                setOriginalValues(prev => ({
+                    ...prev,
+                    profileVisible: newValue,
+                }));
+
+                // Update the cache with new visibility value
+                const cacheKey = `@ummrah_personal_info_${user.id}`;
+                const cached = await loadFromCache<PersonalInfoData>(cacheKey, CACHE_DURATION, 'PersonalInfo');
+                if (cached) {
+                    const updatedCache = {
+                        ...cached,
+                        profileVisible: newValue,
+                    };
+                    await saveToCache(cacheKey, updatedCache, 'PersonalInfo');
+                }
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            setProfileVisible(!newValue);
         }
     };
 
@@ -106,7 +283,8 @@ export default function PersonalInfoScreen() {
                 updates.email = email.trim();
             }
 
-            const { error: authError } = await supabase.auth.updateUser(updates);
+            // Use AuthContext wrapper to prevent unwanted reloads
+            const { error: authError } = await updateUserProfile(updates);
 
             if (authError) {
                 console.error('Error updating auth user:', authError);
@@ -140,8 +318,8 @@ export default function PersonalInfoScreen() {
 
             Alert.alert('Success', successMessage);
             
-            // Reload profile to get updated data
-            await loadProfile();
+            // Reload profile to get updated data (force refresh to bypass cache)
+            await loadProfile(true);
         } catch (error) {
             console.error('Error:', error);
             Alert.alert('Error', 'An unexpected error occurred');
@@ -194,7 +372,21 @@ export default function PersonalInfoScreen() {
                 behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
                 className="flex-1"
             >
-                <ScrollView className="flex-1" contentContainerStyle={{ paddingBottom: 32 }}>
+                <ScrollView 
+                    className="flex-1" 
+                    contentContainerStyle={{ paddingBottom: 32 }}
+                    refreshControl={
+                        <RefreshControl
+                            refreshing={refreshing}
+                            onRefresh={async () => {
+                                setRefreshing(true);
+                                await loadProfile(true);
+                            }}
+                            tintColor="#4A6741"
+                            colors={["#4A6741"]}
+                        />
+                    }
+                >
                     {/* Header */}
                     <View className="px-5 py-4 border-b border-sand-200">
                     <TouchableOpacity
@@ -206,6 +398,11 @@ export default function PersonalInfoScreen() {
                     </TouchableOpacity>
                     <Text className="text-2xl font-bold text-foreground">Personal Information</Text>
                     <Text className="text-muted-foreground mt-1">Update your profile details</Text>
+                    <View className="mt-3 p-3 bg-sand-50 rounded-lg">
+                        <Text className="text-xs text-muted-foreground leading-5">
+                            Your name, email, and phone are stored securely in your account. Other details like location, medical notes, and dietary preferences are optional and help trip organizers plan better.
+                        </Text>
+                    </View>
                 </View>
 
                 {/* Form */}
@@ -224,12 +421,20 @@ export default function PersonalInfoScreen() {
                             </View>
                             <Switch
                                 value={profileVisible}
-                                onValueChange={setProfileVisible}
+                                onValueChange={handleProfileVisibilityChange}
                                 trackColor={{ false: '#D1D5DB', true: '#C5A059' }}
                                 thumbColor={profileVisible ? '#FFFFFF' : '#F3F4F6'}
                             />
                         </View>
+                        <View className="mt-3 p-3 bg-blue-50 rounded-lg border border-blue-100">
+                            <Text className="text-xs text-blue-900 leading-4 font-medium">
+                                ℹ️ This setting saves immediately. For other profile details below, make your changes and press Save Changes at the bottom.
+                            </Text>
+                        </View>
                     </View>
+
+                    {/* Separator */}
+                    <View className="h-px bg-sand-200 mb-6" />
 
                     {/* Name */}
                     <View className="mb-6">
@@ -321,7 +526,7 @@ export default function PersonalInfoScreen() {
                     </View>
 
                     {/* Photo Upload Placeholder */}
-                    <View className="mb-6">
+                    {/* <View className="mb-6">
                         <Text className="text-sm font-medium text-foreground mb-2">Profile Photo</Text>
                         <TouchableOpacity 
                             disabled 
@@ -333,7 +538,7 @@ export default function PersonalInfoScreen() {
                             <Text className="text-muted-foreground font-medium">Upload Photo</Text>
                             <Text className="text-xs text-muted-foreground mt-1">Coming soon</Text>
                         </TouchableOpacity>
-                    </View>
+                    </View> */}
 
                      {/* City */}
                     <View className="mb-6">
@@ -387,19 +592,33 @@ export default function PersonalInfoScreen() {
                             </Text>
                         </TouchableOpacity>
                         {showDatePicker && (
-                            <DateTimePicker
-                                value={dateOfBirth ? new Date(dateOfBirth) : new Date(2000, 0, 1)}
-                                mode="date"
-                                display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-                                onChange={(event, selectedDate) => {
-                                    setShowDatePicker(Platform.OS === 'ios');
-                                    if (selectedDate) {
-                                        setDateOfBirth(selectedDate.toISOString().split('T')[0]);
-                                    }
-                                }}
-                                maximumDate={new Date()}
-                                minimumDate={new Date(1900, 0, 1)}
-                            />
+                            <View>
+                                {Platform.OS === 'ios' && (
+                                    <View className="flex-row justify-end px-4 py-2">
+                                        <TouchableOpacity
+                                            onPress={() => setShowDatePicker(false)}
+                                            className="bg-primary px-4 py-2 rounded-lg"
+                                        >
+                                            <Text className="text-primary-foreground font-semibold">Done</Text>
+                                        </TouchableOpacity>
+                                    </View>
+                                )}
+                                <DateTimePicker
+                                    value={dateOfBirth ? new Date(dateOfBirth) : new Date(2000, 0, 1)}
+                                    mode="date"
+                                    display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                                    onChange={(event, selectedDate) => {
+                                        if (Platform.OS === 'android') {
+                                            setShowDatePicker(false);
+                                        }
+                                        if (selectedDate) {
+                                            setDateOfBirth(selectedDate.toISOString().split('T')[0]);
+                                        }
+                                    }}
+                                    maximumDate={new Date()}
+                                    minimumDate={new Date(1900, 0, 1)}
+                                />
+                            </View>
                         )}
                     </View>
 
@@ -444,9 +663,9 @@ export default function PersonalInfoScreen() {
                     {/* Save Button */}
                     <TouchableOpacity
                         onPress={handleSave}
-                        disabled={saving}
+                        disabled={saving || !hasChanges()}
                         className={`rounded-xl p-4 items-center mt-6 flex-row justify-center ${
-                            saving ? 'bg-sand-200' : 'bg-primary'
+                            saving || !hasChanges() ? 'bg-sand-200' : 'bg-primary'
                         }`}
                     >
                         {saving ? (
@@ -458,9 +677,11 @@ export default function PersonalInfoScreen() {
                             </>
                         ) : (
                             <>
-                                <Save size={20} color="white" />
-                                <Text className="text-primary-foreground font-bold text-base ml-2">
-                                    Save Changes
+                                <Save size={20} color={!hasChanges() ? "hsl(40 5% 55%)" : "white"} />
+                                <Text className={`font-bold text-base ml-2 ${
+                                    !hasChanges() ? 'text-muted-foreground' : 'text-primary-foreground'
+                                }`}>
+                                    {!hasChanges() ? 'No Changes' : 'Save Changes'}
                                 </Text>
                             </>
                         )}

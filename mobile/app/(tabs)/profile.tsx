@@ -125,13 +125,14 @@ export default function ProfileScreen() {
                             subtitle="Add emergency contact" 
                             onPress={() => router.push('/settings/emergency-contact')}
                         />
-                        <ProfileMenuItem 
+                        {/* Removing temporarily, want to rethink */}
+                        {/* <ProfileMenuItem 
                             icon={Calendar} 
                             title="Trip History" 
                             subtitle="View past trips" 
                             onPress={() => router.push('/settings/trip-history')}
                             last 
-                        />
+                        /> */}
                     </View>
 
                     <Text className="text-sm font-bold text-muted-foreground mb-3 uppercase tracking-wider">Preferences</Text>

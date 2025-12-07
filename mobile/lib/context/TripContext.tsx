@@ -9,14 +9,13 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { TripRow } from '../../types/db';
 import { getUserTrips, createTrip, TripInput, getTripWithMembership } from '../api/services/trip.service';
-import { supabase } from '../supabase';
+import { useAuth } from './AuthContext';
 
 interface TripContextType {
     currentTrip: TripRow | null;
     isGroupAdmin: boolean;
     allTrips: TripRow[];
     loading: boolean;
-    authReady: boolean;
     error: string | null;
     setCurrentTrip: (tripId: string) => Promise<void>;
     createNewTrip: (input: TripInput) => Promise<{ success: boolean; error?: string }>;
@@ -32,54 +31,43 @@ export function TripProvider({ children }: { children: ReactNode }) {
     const [currentTrip, setCurrentTripState] = useState<TripRow | null>(null);
     const [isGroupAdmin, setIsGroupAdmin] = useState<boolean>(false);
     const [allTrips, setAllTrips] = useState<TripRow[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [authReady, setAuthReady] = useState(false);
+    const [loading, setLoading] = useState(false);
+    const [initialized, setInitialized] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    
+    const { isAuthenticated, shouldReloadData, lastAuthEvent } = useAuth();
 
-    // Check if auth session is ready on mount
+    // Effect 1: Initialize trips when auth becomes ready
     useEffect(() => {
-        const initializeAuth = async () => {
-            try {
-                const { data: { session } } = await supabase.auth.getSession();
-                if (session) {
-                    setAuthReady(true);
-                    await loadTrips();
-                } else {
-                    setAuthReady(false);
-                    setLoading(false);
-                }
-            } catch (err) {
-                console.error('Error initializing auth:', err);
-                setAuthReady(false);
-                setLoading(false);
-            }
-        };
-
-        initializeAuth();
-
-        // Listen for auth state changes
-        const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
-            console.log('[TripContext] Auth state changed:', event);
+        if (!isAuthenticated) {
+            // User logged out - clear everything
+            setCurrentTripState(null);
+            setIsGroupAdmin(false);
+            setAllTrips([]);
+            setInitialized(false);
+            setLoading(false);
             
-            if (session?.user) {
-                setAuthReady(true);
-                // Reload trips when user signs in
-                if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
-                    await loadTrips();
-                }
-            } else {
-                setAuthReady(false);
-                setCurrentTripState(null);
-                setIsGroupAdmin(false);
-                setAllTrips([]);
-                setLoading(false);
-            }
-        });
+            // Clear AsyncStorage trip data
+            AsyncStorage.removeItem(CURRENT_TRIP_KEY).catch(console.error);
+            // Note: We don't clear individual admin status keys here since they're trip-specific
+            // and will be overwritten when that trip is loaded again
+            
+            return;
+        }
 
-        return () => {
-            authListener.subscription.unsubscribe();
-        };
-    }, []);
+        // User is authenticated - load trips if not already loaded
+        if (!initialized) {
+            loadTrips();
+        }
+    }, [isAuthenticated, initialized]);
+
+    // Effect 2: React to auth events that require reload
+    useEffect(() => {
+        if (isAuthenticated && shouldReloadData && initialized) {
+            console.log('[TripContext] Reloading due to auth event:', lastAuthEvent);
+            loadTrips();
+        }
+    }, [shouldReloadData, lastAuthEvent]);
 
     const loadTrips = async () => {
         setLoading(true);
@@ -107,6 +95,8 @@ export function TripProvider({ children }: { children: ReactNode }) {
                 // Default to first trip
                 await loadCurrentTrip(trips[0].id!);
             }
+            
+            setInitialized(true);
         } catch (err) {
             console.error('Error loading trips:', err);
             setError(err instanceof Error ? err.message : 'Unknown error');
@@ -181,7 +171,6 @@ export function TripProvider({ children }: { children: ReactNode }) {
                 isGroupAdmin,
                 allTrips,
                 loading,
-                authReady,
                 error,
                 setCurrentTrip,
                 createNewTrip,

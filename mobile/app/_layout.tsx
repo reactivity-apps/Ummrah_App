@@ -9,15 +9,15 @@ import { AuthProvider, useAuth } from "../lib/context/AuthContext";
 import { TripProvider, useTrip } from "../lib/context/TripContext";
 
 function AppContent() {
-    const { loading, authReady } = useTrip();
-    const { isAuthenticated, userName, userEmail } = useAuth();
-
-    // Show loading screen while auth and trip data are being initialized
-    if (authReady && loading) {
+    const { isAuthenticated, userName, userEmail, loading: authLoading } = useAuth();
+    
+    // Only show loading during initial auth check (app startup)
+    // Trip loading happens in background and doesn't block UI
+    if (authLoading) {
         return (
             <View className="flex-1 items-center justify-center bg-sand-50">
                 <ActivityIndicator size="large" color="#4A6741" />
-                <Text className="mt-4 text-foreground font-medium">Loading your trip data...</Text>
+                <Text className="mt-4 text-foreground font-medium">Initializing...</Text>
             </View>
         );
     }

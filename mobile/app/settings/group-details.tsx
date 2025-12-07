@@ -1,3 +1,14 @@
+/**
+ * Group Details Screen
+ * 
+ * Displays group statistics and information with 1-hour caching.
+ * 
+ * NOTE: Group data is intentionally NOT in a context provider yet.
+ * This screen-level fetch is sufficient until we need group data in 3+ screens
+ * or require real-time updates. The cache strategy prevents excessive DB calls.
+ * Consider creating GroupContext only when building group management features.
+ */
+
 import { View, Text, TouchableOpacity, ScrollView, ActivityIndicator, RefreshControl } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { ArrowLeft, Users, Calendar, Clock, MapPin, Crown } from "lucide-react-native";
@@ -6,6 +17,7 @@ import { useState, useEffect } from "react";
 import { useTrip } from "../../lib/context/TripContext";
 import { supabase } from "../../lib/supabase";
 import { GroupRow } from "../../types/db";
+import { loadFromCache, saveToCache } from "../../lib/utils";
 
 interface GroupStats {
     totalTrips: number;
@@ -13,6 +25,14 @@ interface GroupStats {
     totalMembers: number;
     createdAt: string;
 }
+
+interface GroupDetailsData {
+    group: GroupRow;
+    stats: GroupStats;
+}
+
+const CACHE_KEY_PREFIX = '@ummrah_group_details_';
+const CACHE_DURATION = 60 * 60 * 1000; // 1 hour
 
 export default function GroupDetailsScreen() {
     const router = useRouter();
@@ -30,6 +50,18 @@ export default function GroupDetailsScreen() {
         if (!currentTrip?.group_id) {
             setLoading(false);
             return;
+        }
+
+        // Try to load from cache first
+        if (!isRefreshing) {
+            const cacheKey = `${CACHE_KEY_PREFIX}${currentTrip.group_id}`;
+            const cached = await loadFromCache<GroupDetailsData>(cacheKey, CACHE_DURATION, 'GroupDetails');
+            if (cached) {
+                setGroup(cached.group);
+                setStats(cached.stats);
+                setLoading(false);
+                return;
+            }
         }
 
         try {
@@ -89,6 +121,22 @@ export default function GroupDetailsScreen() {
                 totalMembers: uniqueMembers,
                 createdAt: groupData?.created_at || new Date().toISOString(),
             });
+
+            // Cache the data
+            const cacheKey = `${CACHE_KEY_PREFIX}${currentTrip.group_id}`;
+            await saveToCache<GroupDetailsData>(
+                cacheKey,
+                {
+                    group: groupData,
+                    stats: {
+                        totalTrips: totalTripsCount || 0,
+                        activeTrips: activeTripsCount || 0,
+                        totalMembers: uniqueMembers,
+                        createdAt: groupData?.created_at || new Date().toISOString(),
+                    },
+                },
+                'GroupDetails'
+            );
 
         } catch (error) {
             console.error('Error loading group details:', error);

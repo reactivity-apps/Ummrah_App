@@ -4,14 +4,11 @@ import { useState } from "react";
 import { useRouter } from "expo-router";
 import { ArrowLeft, Lock, Eye, EyeOff, Save } from "lucide-react-native";
 import { supabase } from "../../lib/supabase";
-
-// TODO: Fix auth guard resetting page when password is updated
-// The USER_UPDATED event from supabase.auth.updateUser() triggers auth state change
-// which causes the auth guard in (tabs)/_layout.tsx to re-evaluate and potentially redirect
-// Need to handle USER_UPDATED events in AuthContext without triggering loading/redirect states
+import { useAuth } from "../../lib/context/AuthContext";
 
 export default function ChangePasswordScreen() {
     const router = useRouter();
+    const { updateUserProfile } = useAuth();
     const [saving, setSaving] = useState(false);
     const [currentPassword, setCurrentPassword] = useState('');
     const [newPassword, setNewPassword] = useState('');
@@ -70,8 +67,9 @@ export default function ChangePasswordScreen() {
                 return;
             }
 
-            // Update password
-            const { error: updateError } = await supabase.auth.updateUser({
+            // Update password using AuthContext wrapper
+            // This prevents unwanted reloads and redirects
+            const { error: updateError } = await updateUserProfile({
                 password: newPassword
             });
 
