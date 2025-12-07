@@ -5,7 +5,7 @@ import { useRouter } from "expo-router";
 import { useState, useEffect } from "react";
 import { useTrip } from "../../lib/context/TripContext";
 import { supabase } from "../../lib/supabase";
-import { GroupRow, TripRow, TripMembershipRow } from "../../types/db";
+import { GroupRow } from "../../types/db";
 
 interface GroupStats {
     totalTrips: number;
@@ -16,7 +16,7 @@ interface GroupStats {
 
 export default function GroupDetailsScreen() {
     const router = useRouter();
-    const { currentTrip } = useTrip();
+    const { currentTrip, isGroupAdmin } = useTrip();
     const [group, setGroup] = useState<GroupRow | null>(null);
     const [stats, setStats] = useState<GroupStats | null>(null);
     const [loading, setLoading] = useState(true);
@@ -185,10 +185,12 @@ export default function GroupDetailsScreen() {
                             <Text className="text-2xl font-bold text-foreground text-center">
                                 {group?.name || 'Group Name'}
                             </Text>
-                            <View className="ml-2 bg-amber-100 px-2 py-1 rounded-full flex-row items-center">
-                                <Crown size={12} color="#D97706" />
-                                <Text className="text-amber-700 text-xs font-semibold ml-1">Group</Text>
-                            </View>
+                            {isGroupAdmin && (
+                                <View className="ml-2 bg-amber-100 px-2 py-1 rounded-full flex-row items-center">
+                                    <Crown size={12} color="#D97706" />
+                                    <Text className="text-amber-700 text-xs font-semibold ml-1">Admin</Text>
+                                </View>
+                            )}
                         </View>
                         {stats && (
                             <Text className="text-muted-foreground mt-2">
@@ -267,11 +269,11 @@ export default function GroupDetailsScreen() {
                                     <Text className="text-lg font-bold text-foreground">
                                         {currentTrip.name}
                                     </Text>
-                                    {currentTrip.base_city && (
+                                    {currentTrip.cities && currentTrip.cities.length > 0 && (
                                         <View className="flex-row items-center mt-1">
                                             <MapPin size={14} color="#9CA3AF" />
                                             <Text className="text-sm text-muted-foreground ml-1">
-                                                {currentTrip.base_city}
+                                                {currentTrip.cities.join(', ')}
                                             </Text>
                                         </View>
                                     )}

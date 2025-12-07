@@ -9,3 +9,4 @@ export { default as ItineraryItemCard } from './itinerary/ItineraryItemCard';
 export { default as ItineraryEditModal } from './itinerary/ItineraryEditModal';
 export { default as TemplatePickerModal } from './itinerary/TemplatePickerModal';
 export type { EditingItem } from './itinerary/ItineraryEditModal';
+export { default as TripStatus } from './TripStatus';

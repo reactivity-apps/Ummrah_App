@@ -2,18 +2,17 @@ import { View, Text, TextInput, TouchableOpacity, ScrollView, Alert, ActivityInd
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useState, useEffect } from "react";
 import { useRouter } from "expo-router";
-import { ArrowLeft, User, Phone, FileText, Save } from "lucide-react-native";
+import { ArrowLeft, User, Phone, Save } from "lucide-react-native";
 import { supabase } from "../../lib/supabase";
-import { Profile } from "../../types/db";
+import { ProfileRow } from "../../types/db";
 
 export default function EmergencyContactScreen() {
     const router = useRouter();
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
-    const [profile, setProfile] = useState<Profile | null>(null);
+    const [profile, setProfile] = useState<ProfileRow | null>(null);
     const [emergencyName, setEmergencyName] = useState('');
     const [emergencyPhone, setEmergencyPhone] = useState('');
-    const [emergencyNotes, setEmergencyNotes] = useState('');
 
     useEffect(() => {
         loadProfile();
@@ -25,7 +24,6 @@ export default function EmergencyContactScreen() {
             const { data: { user } } = await supabase.auth.getUser();
             
             if (!user) {
-                router.replace('/login');
                 return;
             }
 
@@ -35,14 +33,12 @@ export default function EmergencyContactScreen() {
                 .eq('user_id', user.id)
                 .single();
 
-            if (error) {
+            if (error && error.code !== 'PGRST116') {
                 console.error('Error fetching profile:', error);
-                Alert.alert('Error', 'Failed to load profile');
-            } else {
+            } else if (data) {
                 setProfile(data);
-                setEmergencyName(data.emergency_name || '');
-                setEmergencyPhone(data.emergency_phone || '');
-                setEmergencyNotes(data.emergency_notes || '');
+                setEmergencyName(data.emergency_contact_name || '');
+                setEmergencyPhone(data.emergency_contact_phone || '');
             }
         } catch (error) {
             console.error('Error:', error);
@@ -52,8 +48,6 @@ export default function EmergencyContactScreen() {
     };
 
     const handleSave = async () => {
-        if (!profile) return;
-
         if (!emergencyName.trim()) {
             Alert.alert('Error', 'Emergency contact name is required');
             return;
@@ -75,19 +69,19 @@ export default function EmergencyContactScreen() {
 
             const { error } = await supabase
                 .from('profiles')
-                .update({
-                    emergency_name: emergencyName.trim(),
-                    emergency_phone: emergencyPhone.trim(),
-                    emergency_notes: emergencyNotes.trim() || null,
-                    updated_at: new Date().toISOString()
-                })
-                .eq('user_id', user.id);
+                .upsert({
+                    user_id: user.id,
+                    emergency_contact_name: emergencyName.trim(),
+                    emergency_contact_phone: emergencyPhone.trim(),
+                    updated_at: new Date().toISOString(),
+                });
 
             if (error) {
                 console.error('Error updating emergency contact:', error);
                 Alert.alert('Error', 'Failed to update emergency contact');
             } else {
                 Alert.alert('Success', 'Emergency contact updated successfully');
+                await loadProfile();
             }
         } catch (error) {
             console.error('Error:', error);
@@ -162,24 +156,6 @@ export default function EmergencyContactScreen() {
                                 onChangeText={setEmergencyPhone}
                                 className="ml-3 flex-1 text-foreground"
                                 keyboardType="phone-pad"
-                            />
-                        </View>
-                    </View>
-
-                    {/* Notes */}
-                    <View className="mb-6">
-                        <Text className="text-sm font-medium text-foreground mb-2">Additional Notes</Text>
-                        <View className="flex-row items-start bg-card rounded-xl px-4 py-3 border border-sand-200">
-                            <FileText size={20} color="hsl(40 5% 55%)" style={{ marginTop: 2 }} />
-                            <TextInput
-                                placeholder="Relationship, medical information, etc."
-                                placeholderTextColor="hsl(40 5% 55%)"
-                                value={emergencyNotes}
-                                onChangeText={setEmergencyNotes}
-                                className="ml-3 flex-1 text-foreground"
-                                multiline
-                                numberOfLines={4}
-                                textAlignVertical="top"
                             />
                         </View>
                     </View>

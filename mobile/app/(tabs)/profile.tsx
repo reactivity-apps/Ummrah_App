@@ -1,6 +1,6 @@
 import { View, Text, TouchableOpacity, ScrollView, Alert, Animated, ActivityIndicator } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { User, Settings, LogOut, ChevronRight, CreditCard, Bell, Shield, Calendar, Phone, ArrowLeft, MapPin, Crown, Users } from "lucide-react-native";
+import { User, Settings, LogOut, ChevronRight, Bell, Shield, Calendar, Phone, ArrowLeft, Crown, Users, Lock } from "lucide-react-native";
 import { useRouter } from "expo-router";
 import { useFadeIn } from "../../lib/sharedElementTransitions";
 import { supabase } from "../../lib/supabase";
@@ -137,6 +137,12 @@ export default function ProfileScreen() {
                     <Text className="text-sm font-bold text-muted-foreground mb-3 uppercase tracking-wider">Preferences</Text>
 
                     <View className="bg-card rounded-xl border border-sand-200 overflow-hidden mb-4">
+                        <ProfileMenuItem 
+                            icon={Lock} 
+                            title="Change Password" 
+                            subtitle="Update your password" 
+                            onPress={() => router.push('/settings/change-password')}
+                        />
                         <ProfileMenuItem 
                             icon={Bell} 
                             title="Notifications" 

@@ -1,9 +1,11 @@
-import { View, Text, TextInput, TouchableOpacity, ScrollView, Alert, ActivityIndicator, KeyboardAvoidingView, Platform } from "react-native";
+import { View, Text, TextInput, TouchableOpacity, ScrollView, Alert, ActivityIndicator, KeyboardAvoidingView, Platform, Switch } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useState, useEffect } from "react";
 import { useRouter } from "expo-router";
-import { ArrowLeft, User, Mail, Phone, Save, CheckCircle, XCircle, Send, Lock, Eye, EyeOff } from "lucide-react-native";
+import DateTimePicker from '@react-native-community/datetimepicker';
+import { ArrowLeft, User, Mail, Phone, Save, CheckCircle, XCircle, Send, MapPin, Calendar, FileText, Utensils, Camera, Eye } from "lucide-react-native";
 import { supabase } from "../../lib/supabase";
+import { ProfileRow } from "../../types/db";
 
 export default function PersonalInfoScreen() {
     const router = useRouter();
@@ -17,12 +19,13 @@ export default function PersonalInfoScreen() {
     const [email, setEmail] = useState('');
     const [phone, setPhone] = useState('');
     const [emailVerified, setEmailVerified] = useState(false);
-    const [currentPassword, setCurrentPassword] = useState('');
-    const [newPassword, setNewPassword] = useState('');
-    const [confirmPassword, setConfirmPassword] = useState('');
-    const [showCurrentPassword, setShowCurrentPassword] = useState(false);
-    const [showNewPassword, setShowNewPassword] = useState(false);
-    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+    const [country, setCountry] = useState('');
+    const [city, setCity] = useState('');
+    const [dateOfBirth, setDateOfBirth] = useState('');
+    const [medicalNotes, setMedicalNotes] = useState('');
+    const [dietaryRestrictions, setDietaryRestrictions] = useState('');
+    const [profileVisible, setProfileVisible] = useState(true);
+    const [showDatePicker, setShowDatePicker] = useState(false);
 
     useEffect(() => {
         loadProfile();
@@ -34,7 +37,6 @@ export default function PersonalInfoScreen() {
             const { data: { user } } = await supabase.auth.getUser();
             
             if (!user) {
-                router.replace('/login');
                 return;
             }
 
@@ -45,6 +47,24 @@ export default function PersonalInfoScreen() {
             setName(user.user_metadata?.full_name || '');
             setEmail(user.email || '');
             setPhone(user.user_metadata?.phone || '');
+
+            // Load data from profiles table
+            const { data: profile, error: profileError } = await supabase
+                .from('profiles')
+                .select('*')
+                .eq('user_id', user.id)
+                .single();
+
+            if (profileError && profileError.code !== 'PGRST116') {
+                console.error('Error fetching profile:', profileError);
+            } else if (profile) {
+                setCountry(profile.country || '');
+                setCity(profile.city || '');
+                setDateOfBirth(profile.date_of_birth || '');
+                setMedicalNotes(profile.medical_notes || '');
+                setDietaryRestrictions(profile.dietary_restrictions || '');
+                setProfileVisible(profile.profile_visible);
+            }
         } catch (error) {
             console.error('Error:', error);
         } finally {
@@ -63,18 +83,6 @@ export default function PersonalInfoScreen() {
         if (email.trim() && !emailRegex.test(email.trim())) {
             Alert.alert('Error', 'Please enter a valid email address');
             return;
-        }
-
-        // Password validation
-        if (newPassword || confirmPassword) {
-            if (newPassword !== confirmPassword) {
-                Alert.alert('Error', 'New passwords do not match');
-                return;
-            }
-            if (newPassword.length < 6) {
-                Alert.alert('Error', 'Password must be at least 6 characters long');
-                return;
-            }
         }
 
         try {
@@ -98,11 +106,6 @@ export default function PersonalInfoScreen() {
                 updates.email = email.trim();
             }
 
-            // Update password if provided
-            if (newPassword) {
-                updates.password = newPassword;
-            }
-
             const { error: authError } = await supabase.auth.updateUser(updates);
 
             if (authError) {
@@ -111,10 +114,24 @@ export default function PersonalInfoScreen() {
                 return;
             }
 
-            // Clear password fields
-            setCurrentPassword('');
-            setNewPassword('');
-            setConfirmPassword('');
+            // Update or insert profile data
+            const { error: profileError } = await supabase
+                .from('profiles')
+                .upsert({
+                    user_id: user.id,
+                    country: country.trim() || null,
+                    city: city.trim() || null,
+                    date_of_birth: dateOfBirth || null,
+                    medical_notes: medicalNotes.trim() || null,
+                    dietary_restrictions: dietaryRestrictions.trim() || null,
+                    profile_visible: profileVisible,
+                    updated_at: new Date().toISOString(),
+                });
+
+            if (profileError) {
+                console.error('Error updating profile:', profileError);
+                Alert.alert('Warning', 'Profile info saved to auth but failed to update extended profile data');
+            }
 
             let successMessage = 'Profile updated successfully';
             if (email.trim() !== user.email) {
@@ -193,6 +210,27 @@ export default function PersonalInfoScreen() {
 
                 {/* Form */}
                 <View className="px-5 mt-6">
+                     {/* Profile Visibility */}
+                    <View className="mb-6">
+                        <View className="flex-row items-center justify-between bg-card rounded-xl px-4 py-4 border border-sand-200">
+                            <View className="flex-1 mr-4">
+                                <View className="flex-row items-center mb-1">
+                                    <Eye size={18} color="hsl(40 5% 55%)" />
+                                    <Text className="text-sm font-medium text-foreground ml-2">Profile Visibility</Text>
+                                </View>
+                                <Text className="text-xs text-muted-foreground">
+                                    Allow other trip members to see your profile
+                                </Text>
+                            </View>
+                            <Switch
+                                value={profileVisible}
+                                onValueChange={setProfileVisible}
+                                trackColor={{ false: '#D1D5DB', true: '#C5A059' }}
+                                thumbColor={profileVisible ? '#FFFFFF' : '#F3F4F6'}
+                            />
+                        </View>
+                    </View>
+
                     {/* Name */}
                     <View className="mb-6">
                         <Text className="text-sm font-medium text-foreground mb-2">Full Name *</Text>
@@ -282,59 +320,124 @@ export default function PersonalInfoScreen() {
                         </View>
                     </View>
 
-                    {/* Password Section */}
-                    <View className="mb-6 pt-4 border-t border-sand-200">
-                        <Text className="text-lg font-bold text-foreground mb-4">Change Password</Text>
-                        <Text className="text-sm text-muted-foreground mb-4">
-                            Leave blank if you don't want to change your password
-                        </Text>
-
-                        {/* New Password */}
-                        <View className="mb-4">
-                            <Text className="text-sm font-medium text-foreground mb-2">New Password</Text>
-                            <View className="flex-row items-center bg-card rounded-xl px-4 py-3 border border-sand-200">
-                                <Lock size={20} color="hsl(40 5% 55%)" />
-                                <TextInput
-                                    placeholder="Enter new password"
-                                    placeholderTextColor="hsl(40 5% 55%)"
-                                    value={newPassword}
-                                    onChangeText={setNewPassword}
-                                    className="ml-3 flex-1 text-foreground"
-                                    secureTextEntry={!showNewPassword}
-                                    autoCapitalize="none"
-                                />
-                                <TouchableOpacity onPress={() => setShowNewPassword(!showNewPassword)}>
-                                    {showNewPassword ? (
-                                        <EyeOff size={20} color="hsl(40 5% 55%)" />
-                                    ) : (
-                                        <Eye size={20} color="hsl(40 5% 55%)" />
-                                    )}
-                                </TouchableOpacity>
+                    {/* Photo Upload Placeholder */}
+                    <View className="mb-6">
+                        <Text className="text-sm font-medium text-foreground mb-2">Profile Photo</Text>
+                        <TouchableOpacity 
+                            disabled 
+                            className="bg-card rounded-xl px-4 py-8 border border-sand-200 border-dashed items-center opacity-50"
+                        >
+                            <View className="h-16 w-16 bg-sand-100 rounded-full items-center justify-center mb-3">
+                                <Camera size={28} color="hsl(40 5% 55%)" />
                             </View>
+                            <Text className="text-muted-foreground font-medium">Upload Photo</Text>
+                            <Text className="text-xs text-muted-foreground mt-1">Coming soon</Text>
+                        </TouchableOpacity>
+                    </View>
+
+                     {/* City */}
+                    <View className="mb-6">
+                        <Text className="text-sm font-medium text-foreground mb-2">City</Text>
+                        <View className="flex-row items-center bg-card rounded-xl px-4 py-3 border border-sand-200">
+                            <MapPin size={20} color="hsl(40 5% 55%)" />
+                            <TextInput
+                                placeholder="Enter your city"
+                                placeholderTextColor="hsl(40 5% 55%)"
+                                value={city}
+                                onChangeText={setCity}
+                                className="ml-3 flex-1 text-foreground"
+                                autoCapitalize="words"
+                            />
                         </View>
+                    </View>
 
-                        {/* Confirm Password */}
-                        <View className="mb-4">
-                            <Text className="text-sm font-medium text-foreground mb-2">Confirm New Password</Text>
-                            <View className="flex-row items-center bg-card rounded-xl px-4 py-3 border border-sand-200">
-                                <Lock size={20} color="hsl(40 5% 55%)" />
-                                <TextInput
-                                    placeholder="Confirm new password"
-                                    placeholderTextColor="hsl(40 5% 55%)"
-                                    value={confirmPassword}
-                                    onChangeText={setConfirmPassword}
-                                    className="ml-3 flex-1 text-foreground"
-                                    secureTextEntry={!showConfirmPassword}
-                                    autoCapitalize="none"
-                                />
-                                <TouchableOpacity onPress={() => setShowConfirmPassword(!showConfirmPassword)}>
-                                    {showConfirmPassword ? (
-                                        <EyeOff size={20} color="hsl(40 5% 55%)" />
-                                    ) : (
-                                        <Eye size={20} color="hsl(40 5% 55%)" />
-                                    )}
-                                </TouchableOpacity>
-                            </View>
+                    {/* Country */}
+                    <View className="mb-6">
+                        <Text className="text-sm font-medium text-foreground mb-2">Country</Text>
+                        <View className="flex-row items-center bg-card rounded-xl px-4 py-3 border border-sand-200">
+                            <MapPin size={20} color="hsl(40 5% 55%)" />
+                            <TextInput
+                                placeholder="Enter your country"
+                                placeholderTextColor="hsl(40 5% 55%)"
+                                value={country}
+                                onChangeText={setCountry}
+                                className="ml-3 flex-1 text-foreground"
+                                autoCapitalize="words"
+                            />
+                        </View>
+                    </View>
+
+                    {/* Date of Birth */}
+                    <View className="mb-6">
+                        <Text className="text-sm font-medium text-foreground mb-2">Date of Birth</Text>
+                        <TouchableOpacity 
+                            onPress={() => setShowDatePicker(true)}
+                            className="flex-row items-center bg-card rounded-xl px-4 py-3 border border-sand-200"
+                        >
+                            <Calendar size={20} color="hsl(40 5% 55%)" />
+                            <Text className={`ml-3 flex-1 ${dateOfBirth ? 'text-foreground' : 'text-muted-foreground'}`}>
+                                {dateOfBirth 
+                                    ? new Date(dateOfBirth).toLocaleDateString('en-US', { 
+                                        year: 'numeric', 
+                                        month: 'long', 
+                                        day: 'numeric' 
+                                    })
+                                    : 'Select your date of birth'
+                                }
+                            </Text>
+                        </TouchableOpacity>
+                        {showDatePicker && (
+                            <DateTimePicker
+                                value={dateOfBirth ? new Date(dateOfBirth) : new Date(2000, 0, 1)}
+                                mode="date"
+                                display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                                onChange={(event, selectedDate) => {
+                                    setShowDatePicker(Platform.OS === 'ios');
+                                    if (selectedDate) {
+                                        setDateOfBirth(selectedDate.toISOString().split('T')[0]);
+                                    }
+                                }}
+                                maximumDate={new Date()}
+                                minimumDate={new Date(1900, 0, 1)}
+                            />
+                        )}
+                    </View>
+
+                    {/* Medical Notes */}
+                    <View className="mb-6">
+                        <Text className="text-sm font-medium text-foreground mb-2">Medical Notes</Text>
+                        <View className="flex-row items-start bg-card rounded-xl px-4 py-3 border border-sand-200">
+                            <FileText size={20} color="hsl(40 5% 55%)" style={{ marginTop: 2 }} />
+                            <TextInput
+                                placeholder="Any medical conditions, allergies, or medications..."
+                                placeholderTextColor="hsl(40 5% 55%)"
+                                value={medicalNotes}
+                                onChangeText={setMedicalNotes}
+                                className="ml-3 flex-1 text-foreground"
+                                multiline
+                                numberOfLines={4}
+                                textAlignVertical="top"
+                                style={{ minHeight: 80 }}
+                            />
+                        </View>
+                    </View>
+
+                    {/* Dietary Restrictions */}
+                    <View className="mb-6">
+                        <Text className="text-sm font-medium text-foreground mb-2">Dietary Restrictions</Text>
+                        <View className="flex-row items-start bg-card rounded-xl px-4 py-3 border border-sand-200">
+                            <Utensils size={20} color="hsl(40 5% 55%)" style={{ marginTop: 2 }} />
+                            <TextInput
+                                placeholder="Food allergies, dietary preferences, or restrictions..."
+                                placeholderTextColor="hsl(40 5% 55%)"
+                                value={dietaryRestrictions}
+                                onChangeText={setDietaryRestrictions}
+                                className="ml-3 flex-1 text-foreground"
+                                multiline
+                                numberOfLines={3}
+                                textAlignVertical="top"
+                                style={{ minHeight: 60 }}
+                            />
                         </View>
                     </View>
 
