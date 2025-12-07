@@ -7,7 +7,7 @@ import { ArrowLeft, User, Mail, Phone, Save, CheckCircle, XCircle, Send, MapPin,
 import { supabase } from "../../lib/supabase";
 import { ProfileRow } from "../../types/db";
 import { useAuth } from "../../lib/context/AuthContext";
-import { loadFromCache, saveToCache } from "../../lib/utils";
+import { loadFromCache, saveToCache, getTimeAgo } from "../../lib/utils";
 
 interface PersonalInfoData {
     name: string;
@@ -24,7 +24,7 @@ interface PersonalInfoData {
 
 export default function PersonalInfoScreen() {
     const router = useRouter();
-    const { updateUserProfile } = useAuth();
+    const { user, updateUserProfile } = useAuth();
     // TODO: Allow editing of verified emails with proper confirmation flow
     const ALLOW_VERIFIED_EMAIL_EDIT = false;
     const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
@@ -33,6 +33,7 @@ export default function PersonalInfoScreen() {
     const [refreshing, setRefreshing] = useState(false);
     const [saving, setSaving] = useState(false);
     const [sendingVerification, setSendingVerification] = useState(false);
+    const [lastUpdated, setLastUpdated] = useState<number | null>(null);
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [phone, setPhone] = useState('');
@@ -68,8 +69,6 @@ export default function PersonalInfoScreen() {
                 setLoading(true);
             }
             
-            const { data: { user } } = await supabase.auth.getUser();
-            
             if (!user) {
                 setLoading(false);
                 setRefreshing(false);
@@ -82,27 +81,28 @@ export default function PersonalInfoScreen() {
             if (!forceRefresh) {
                 const cached = await loadFromCache<PersonalInfoData>(cacheKey, CACHE_DURATION, 'PersonalInfo');
                 if (cached) {
-                    setName(cached.name);
-                    setEmail(cached.email);
-                    setPhone(cached.phone);
-                    setEmailVerified(cached.emailVerified);
-                    setCountry(cached.country);
-                    setCity(cached.city);
-                    setDateOfBirth(cached.dateOfBirth);
-                    setMedicalNotes(cached.medicalNotes);
-                    setDietaryRestrictions(cached.dietaryRestrictions);
-                    setProfileVisible(cached.profileVisible);
+                    setName(cached.data.name);
+                    setEmail(cached.data.email);
+                    setPhone(cached.data.phone);
+                    setEmailVerified(cached.data.emailVerified);
+                    setCountry(cached.data.country);
+                    setCity(cached.data.city);
+                    setDateOfBirth(cached.data.dateOfBirth);
+                    setMedicalNotes(cached.data.medicalNotes);
+                    setDietaryRestrictions(cached.data.dietaryRestrictions);
+                    setProfileVisible(cached.data.profileVisible);
+                    setLastUpdated(cached.timestamp);
                     
                     setOriginalValues({
-                        name: cached.name,
-                        email: cached.email,
-                        phone: cached.phone,
-                        country: cached.country,
-                        city: cached.city,
-                        dateOfBirth: cached.dateOfBirth,
-                        medicalNotes: cached.medicalNotes,
-                        dietaryRestrictions: cached.dietaryRestrictions,
-                        profileVisible: cached.profileVisible,
+                        name: cached.data.name,
+                        email: cached.data.email,
+                        phone: cached.data.phone,
+                        country: cached.data.country,
+                        city: cached.data.city,
+                        dateOfBirth: cached.data.dateOfBirth,
+                        medicalNotes: cached.data.medicalNotes,
+                        dietaryRestrictions: cached.data.dietaryRestrictions,
+                        profileVisible: cached.data.profileVisible,
                     });
                     
                     setLoading(false);
@@ -110,22 +110,14 @@ export default function PersonalInfoScreen() {
                 }
             }
 
-            const { data: { user: freshUser } } = await supabase.auth.getUser();
-            
-            if (!freshUser) {
-                setLoading(false);
-                setRefreshing(false);
-                return;
-            }
-
             // Check email verification status
-            const emailVerified = freshUser.email_confirmed_at !== null;
+            const emailVerified = user.email_confirmed_at !== null;
             setEmailVerified(emailVerified);
 
             // Load data from auth user
-            const userName = freshUser.user_metadata?.full_name || '';
-            const userEmail = freshUser.email || '';
-            const userPhone = freshUser.user_metadata?.phone || '';
+            const userName = user.user_metadata?.full_name || '';
+            const userEmail = user.email || '';
+            const userPhone = user.user_metadata?.phone || '';
             
             setName(userName);
             setEmail(userEmail);
@@ -135,7 +127,7 @@ export default function PersonalInfoScreen() {
             const { data: profile, error: profileError } = await supabase
                 .from('profiles')
                 .select('*')
-                .eq('user_id', freshUser.id)
+                .eq('user_id', user.id)
                 .single();
 
             const profileCountry = profile?.country || '';
@@ -184,6 +176,7 @@ export default function PersonalInfoScreen() {
                 profileVisible: profileVisible,
             };
             await saveToCache(cacheKey, dataToCache, 'PersonalInfo');
+            setLastUpdated(Date.now());
         } catch (error) {
             console.error('Error:', error);
         } finally {
@@ -210,7 +203,6 @@ export default function PersonalInfoScreen() {
         setProfileVisible(newValue);
         
         try {
-            const { data: { user } } = await supabase.auth.getUser();
             if (!user) return;
 
             const { error } = await supabase
@@ -237,7 +229,7 @@ export default function PersonalInfoScreen() {
                 const cached = await loadFromCache<PersonalInfoData>(cacheKey, CACHE_DURATION, 'PersonalInfo');
                 if (cached) {
                     const updatedCache = {
-                        ...cached,
+                        ...cached.data,
                         profileVisible: newValue,
                     };
                     await saveToCache(cacheKey, updatedCache, 'PersonalInfo');
@@ -264,7 +256,6 @@ export default function PersonalInfoScreen() {
 
         try {
             setSaving(true);
-            const { data: { user } } = await supabase.auth.getUser();
             
             if (!user) {
                 Alert.alert('Error', 'Not authenticated');
@@ -397,7 +388,10 @@ export default function PersonalInfoScreen() {
                         <Text className="text-primary font-medium ml-2">Back</Text>
                     </TouchableOpacity>
                     <Text className="text-2xl font-bold text-foreground">Personal Information</Text>
-                    <Text className="text-muted-foreground mt-1">Update your profile details</Text>
+                    <Text className="text-muted-foreground">Update your profile details</Text>
+                    {lastUpdated && (
+                        <Text className="text-xs text-muted-foreground mt-5">Refreshed {getTimeAgo(lastUpdated)}</Text>
+                    )}
                     <View className="mt-3 p-3 bg-sand-50 rounded-lg">
                         <Text className="text-xs text-muted-foreground leading-5">
                             Your name, email, and phone are stored securely in your account. Other details like location, medical notes, and dietary preferences are optional and help trip organizers plan better.

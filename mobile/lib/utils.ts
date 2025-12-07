@@ -51,6 +51,36 @@ export function getTimeRemaining(targetTime: string): string {
 }
 
 /**
+ * Get human-readable time ago from timestamp
+ */
+export function getTimeAgo(timestamp: number): string {
+    const now = Date.now();
+    const diffInSeconds = Math.floor((now - timestamp) / 1000);
+
+    if (diffInSeconds < 60) {
+        return 'just now';
+    }
+
+    const diffInMinutes = Math.floor(diffInSeconds / 60);
+    if (diffInMinutes < 60) {
+        return diffInMinutes === 1 ? '1 minute ago' : `${diffInMinutes} minutes ago`;
+    }
+
+    const diffInHours = Math.floor(diffInMinutes / 60);
+    if (diffInHours < 24) {
+        return diffInHours === 1 ? '1 hour ago' : `${diffInHours} hours ago`;
+    }
+
+    const diffInDays = Math.floor(diffInHours / 24);
+    if (diffInDays < 30) {
+        return diffInDays === 1 ? '1 day ago' : `${diffInDays} days ago`;
+    }
+
+    const diffInMonths = Math.floor(diffInDays / 30);
+    return diffInMonths === 1 ? '1 month ago' : `${diffInMonths} months ago`;
+}
+
+/**
  * Check if a prayer time has passed
  */
 export function isPrayerDone(prayerTime: string): boolean {
@@ -80,7 +110,7 @@ export async function loadFromCache<T>(
     cacheKey: string,
     cacheDuration: number,
     keyName: string = 'Cache'
-): Promise<T | null> {
+): Promise<{ data: T; timestamp: number } | null> {
     try {
         const cached = await AsyncStorage.getItem(cacheKey);
         
@@ -92,7 +122,7 @@ export async function loadFromCache<T>(
         // Return cached data if it's fresh
         if (age < cacheDuration) {
             console.log(`[${keyName}] Using cached data, age:`, Math.round(age / 1000), 'seconds');
-            return cachedData.data;
+            return { data: cachedData.data, timestamp: cachedData.timestamp };
         }
         
         return null;
@@ -116,7 +146,11 @@ export async function saveToCache<T>(
             timestamp: Date.now(),
         };
         await AsyncStorage.setItem(cacheKey, JSON.stringify(cachedData));
-        console.log(`[${keyName}] Cached data successfully`);
+        
+        // DEBUG: Log total cached objects count (will remove later)
+        const allKeys = await AsyncStorage.getAllKeys();
+        const cacheKeys = allKeys.filter(key => key.startsWith('@ummrah_'));
+        console.log(`[${keyName}] Cached data successfully. Total cached objects: ${cacheKeys.length}`);
     } catch (error) {
         console.error(`[${keyName}] Error saving to cache:`, error);
     }

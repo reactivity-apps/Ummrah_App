@@ -5,7 +5,8 @@ import { useRouter } from "expo-router";
 import { ArrowLeft, User, Phone, Save } from "lucide-react-native";
 import { supabase } from "../../lib/supabase";
 import { ProfileRow } from "../../types/db";
-import { loadFromCache, saveToCache } from "../../lib/utils";
+import { loadFromCache, saveToCache, getTimeAgo } from "../../lib/utils";
+import { useAuth } from "../../lib/context/AuthContext";
 
 interface EmergencyContactData {
     name: string;
@@ -14,12 +15,14 @@ interface EmergencyContactData {
 
 export default function EmergencyContactScreen() {
     const router = useRouter();
+    const { user } = useAuth();
     const CACHE_DURATION = 24 * 60 * 60 * 1000; // 1 day
 
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
     const [saving, setSaving] = useState(false);
     const [profile, setProfile] = useState<ProfileRow | null>(null);
+    const [lastUpdated, setLastUpdated] = useState<number | null>(null);
     const [emergencyName, setEmergencyName] = useState('');
     const [emergencyPhone, setEmergencyPhone] = useState('');
     
@@ -39,8 +42,6 @@ export default function EmergencyContactScreen() {
                 setLoading(true);
             }
             
-            const { data: { user } } = await supabase.auth.getUser();
-            
             if (!user) {
                 setLoading(false);
                 setRefreshing(false);
@@ -53,12 +54,13 @@ export default function EmergencyContactScreen() {
             if (!forceRefresh) {
                 const cached = await loadFromCache<EmergencyContactData>(cacheKey, CACHE_DURATION, 'EmergencyContact');
                 if (cached) {
-                    setEmergencyName(cached.name);
-                    setEmergencyPhone(cached.phone);
+                    setEmergencyName(cached.data.name);
+                    setEmergencyPhone(cached.data.phone);
+                    setLastUpdated(cached.timestamp);
                     
                     setOriginalValues({
-                        name: cached.name,
-                        phone: cached.phone,
+                        name: cached.data.name,
+                        phone: cached.data.phone,
                     });
                     
                     setLoading(false);
@@ -94,6 +96,7 @@ export default function EmergencyContactScreen() {
                     phone: emergencyPhone,
                 };
                 await saveToCache(cacheKey, dataToCache, 'EmergencyContact');
+                setLastUpdated(Date.now());
             }
         } catch (error) {
             console.error('Error:', error);
@@ -123,7 +126,6 @@ export default function EmergencyContactScreen() {
 
         try {
             setSaving(true);
-            const { data: { user } } = await supabase.auth.getUser();
             if (!user) return;
 
             const { error } = await supabase
@@ -189,7 +191,10 @@ export default function EmergencyContactScreen() {
                         <Text className="text-primary font-medium ml-2">Back</Text>
                     </TouchableOpacity>
                     <Text className="text-2xl font-bold text-foreground">Emergency Contact</Text>
-                    <Text className="text-muted-foreground mt-1">Person to contact in case of emergency</Text>
+                    <Text className="text-muted-foreground">Person to contact in case of emergency</Text>
+                    {lastUpdated && (
+                        <Text className="text-xs text-muted-foreground mt-5">Refreshed {getTimeAgo(lastUpdated)}</Text>
+                    )}
                 </View>
 
                 {/* Form */}

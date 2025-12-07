@@ -5,9 +5,11 @@ import { useRouter } from "expo-router";
 import { ArrowLeft, Shield, Lock, Eye, Trash2, AlertTriangle, EyeOff } from "lucide-react-native";
 import { supabase } from "../../lib/supabase";
 import { useTrip } from "../../lib/context/TripContext";
+import { useAuth } from "../../lib/context/AuthContext";
 
 export default function PrivacySecurityScreen() {
     const router = useRouter();
+    const { user } = useAuth();
     const { currentTrip } = useTrip();
     const [deleting, setDeleting] = useState(false);
     const [showPasswordModal, setShowPasswordModal] = useState(false);
@@ -45,9 +47,7 @@ export default function PrivacySecurityScreen() {
             setVerifying(true);
 
             // Get current user email
-            const { data: { user }, error: userError } = await supabase.auth.getUser();
-            
-            if (userError || !user || !user.email) {
+            if (!user || !user.email) {
                 throw new Error("Unable to get user information");
             }
 
@@ -81,9 +81,7 @@ export default function PrivacySecurityScreen() {
             setDeleting(true);
 
             // Get current user
-            const { data: { user }, error: userError } = await supabase.auth.getUser();
-            
-            if (userError || !user) {
+            if (!user) {
                 throw new Error("Unable to get user information");
             }
 
@@ -154,21 +152,6 @@ export default function PrivacySecurityScreen() {
                     </TouchableOpacity>
                     <Text className="text-2xl font-bold text-foreground">Privacy & Security</Text>
                     <Text className="text-muted-foreground mt-1">Your data, your control</Text>
-                </View>
-
-                {/* Data Security Info */}
-                <View className="px-5 mt-4">
-                    <View className="bg-primary/10 p-4 rounded-xl border border-primary/20">
-                        <View className="flex-row items-start mb-3">
-                            <Shield size={20} color="#4A6741" style={{ marginTop: 2 }} />
-                            <Text className="text-sm font-semibold text-foreground ml-2">
-                                Your Data is Secure
-                            </Text>
-                        </View>
-                        <Text className="text-xs text-muted-foreground leading-relaxed">
-                            We take your privacy seriously. All your personal information is encrypted and stored securely. We never share your data with third parties without your explicit consent.
-                        </Text>
-                    </View>
                 </View>
 
                 {/* Privacy Features */}

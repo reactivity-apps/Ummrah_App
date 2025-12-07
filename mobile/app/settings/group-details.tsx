@@ -17,7 +17,7 @@ import { useState, useEffect } from "react";
 import { useTrip } from "../../lib/context/TripContext";
 import { supabase } from "../../lib/supabase";
 import { GroupRow } from "../../types/db";
-import { loadFromCache, saveToCache } from "../../lib/utils";
+import { loadFromCache, saveToCache, getTimeAgo } from "../../lib/utils";
 
 interface GroupStats {
     totalTrips: number;
@@ -41,6 +41,7 @@ export default function GroupDetailsScreen() {
     const [stats, setStats] = useState<GroupStats | null>(null);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
+    const [lastUpdated, setLastUpdated] = useState<number | null>(null);
 
     useEffect(() => {
         loadGroupDetails();
@@ -57,8 +58,9 @@ export default function GroupDetailsScreen() {
             const cacheKey = `${CACHE_KEY_PREFIX}${currentTrip.group_id}`;
             const cached = await loadFromCache<GroupDetailsData>(cacheKey, CACHE_DURATION, 'GroupDetails');
             if (cached) {
-                setGroup(cached.group);
-                setStats(cached.stats);
+                setGroup(cached.data.group);
+                setStats(cached.data.stats);
+                setLastUpdated(cached.timestamp);
                 setLoading(false);
                 return;
             }
@@ -137,6 +139,7 @@ export default function GroupDetailsScreen() {
                 },
                 'GroupDetails'
             );
+            setLastUpdated(Date.now());
 
         } catch (error) {
             console.error('Error loading group details:', error);
@@ -212,9 +215,12 @@ export default function GroupDetailsScreen() {
                         <ArrowLeft size={24} color="#4A6741" />
                     </TouchableOpacity>
                     <Text className="text-2xl font-bold text-foreground">Group Details</Text>
-                    <Text className="text-muted-foreground mt-1">
-                        Information about your travel group
-                    </Text>
+                        <Text className="text-muted-foreground">
+                            Information about your travel group
+                        </Text>
+                         {lastUpdated && (
+                            <Text className="text-xs text-muted-foreground mt-5">Refreshed {getTimeAgo(lastUpdated)}</Text>
+                        )}
                 </View>
 
                 {/* Group Info Card */}

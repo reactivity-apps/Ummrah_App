@@ -8,7 +8,7 @@ import { useAuth } from "../../lib/context/AuthContext";
 
 export default function ChangePasswordScreen() {
     const router = useRouter();
-    const { updateUserProfile } = useAuth();
+    const { user, updateUserProfile } = useAuth();
     const [saving, setSaving] = useState(false);
     const [currentPassword, setCurrentPassword] = useState('');
     const [newPassword, setNewPassword] = useState('');
@@ -48,9 +48,7 @@ export default function ChangePasswordScreen() {
             setSaving(true);
 
             // Get current user email
-            const { data: { user }, error: userError } = await supabase.auth.getUser();
-            
-            if (userError || !user || !user.email) {
+            if (!user || !user.email) {
                 Alert.alert('Error', 'Unable to get user information');
                 return;
             }
