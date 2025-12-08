@@ -32,6 +32,7 @@ export interface ProfileRow {
   auth_role: AuthRole | null;  // null = normal authenticated user
 
   profile_visible: boolean;
+  is_active: boolean;  // false = account deactivated (soft delete)
 
   updated_at: string;
 }

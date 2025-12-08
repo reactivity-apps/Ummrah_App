@@ -1,6 +1,6 @@
 import { View, Text, TouchableOpacity, ScrollView, Alert, Animated, ActivityIndicator } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { User, Settings, LogOut, ChevronRight, Bell, Shield, Calendar, Phone, ArrowLeft, Crown, Users, Lock } from "lucide-react-native";
+import { User, Settings, LogOut, ChevronRight, Bell, Shield, Calendar, Phone, ArrowLeft, Crown, Users, Lock, Trash2 } from "lucide-react-native";
 import { useRouter } from "expo-router";
 import { useFadeIn } from "../../lib/sharedElementTransitions";
 import { supabase } from "../../lib/supabase";
@@ -18,7 +18,7 @@ export default function ProfileScreen() {
             await supabase.auth.signOut();
         } catch (e: any) {
             console.warn('Logout error', e);
-            Alert.alert('Logout failed', e?.message ?? 'Unable to logout');
+            Alert.alert('Logout failed', e?.message ?? 'Unable to logout. Please try again');
         }
     };
 
@@ -57,29 +57,6 @@ export default function ProfileScreen() {
                         {userEmail && <Text className="text-muted-foreground mt-1">{userEmail}</Text>}
                     </View>
 
-                    {/* <View className="flex-row justify-around mt-6 px-4">
-                        <View className="items-center px-4">
-                            <View className="bg-primary/10 w-12 h-12 rounded-full items-center justify-center mb-2">
-                                <Text className="text-2xl font-bold text-primary">{participatedTrips}</Text>
-                            </View>
-                            <Text className="text-muted-foreground text-sm">Umrahs</Text>
-                        </View>
-                        <View className="h-16 w-[1px] bg-border" />
-                        <View className="items-center px-4">
-                            <View className="bg-primary/10 w-12 h-12 rounded-full items-center justify-center mb-2">
-                                <Text className="text-2xl font-bold text-primary">0</Text>
-                            </View>
-                            <Text className="text-muted-foreground text-sm">Hajj</Text>
-                        </View>
-                        <View className="h-16 w-[1px] bg-border" />
-                        <View className="items-center px-4">
-                            <View className="bg-primary/10 w-12 h-12 rounded-full items-center justify-center mb-2">
-                                <Calendar size={20} color="#4A6741" />
-                            </View>
-                            <Text className="text-muted-foreground text-sm">Next Trip</Text>
-                        </View>
-                    </View> */}
-
                     {currentTrip && (
                         <View className="mx-4 mt-4 p-3 bg-sand-50 rounded-lg border border-sand-100">
                             <Text className="text-xs text-muted-foreground font-medium mb-1">CURRENT TRIP</Text>
@@ -115,59 +92,58 @@ export default function ProfileScreen() {
                     <View className="bg-card rounded-xl border border-sand-200 overflow-hidden mb-4">
                         <ProfileMenuItem 
                             icon={User} 
-                            title="Personal Information" 
-                            subtitle={userEmail || 'Update your details'} 
+                            title="Edit Personal Information" 
+                            subtitle="Update your details"
                             onPress={() => router.push('/settings/personal-info')}
                         />
                         <ProfileMenuItem 
                             icon={Phone} 
-                            title="Emergency Contact" 
+                            title="Edit Emergency Contact" 
                             subtitle="Add emergency contact" 
                             onPress={() => router.push('/settings/emergency-contact')}
                         />
-                        {/* Removing temporarily, want to rethink */}
-                        {/* <ProfileMenuItem 
-                            icon={Calendar} 
-                            title="Trip History" 
-                            subtitle="View past trips" 
-                            onPress={() => router.push('/settings/trip-history')}
-                            last 
-                        /> */}
-                    </View>
-
-                    <Text className="text-sm font-bold text-muted-foreground mb-3 uppercase tracking-wider">Preferences</Text>
-
-                    <View className="bg-card rounded-xl border border-sand-200 overflow-hidden mb-4">
-                        <ProfileMenuItem 
+                          <ProfileMenuItem 
                             icon={Lock} 
                             title="Change Password" 
                             subtitle="Update your password" 
                             onPress={() => router.push('/settings/change-password')}
                         />
                         <ProfileMenuItem 
+                            icon={Trash2} 
+                            title="Delete Account" 
+                            subtitle="Permanently remove your account" 
+                            onPress={() => router.push('/settings/delete-account')}
+                            last 
+                        />
+                       
+                    </View>
+
+                    <Text className="text-sm font-bold text-muted-foreground mb-3 uppercase tracking-wider">Preferences</Text>
+
+                    <View className="bg-card rounded-xl border border-sand-200 overflow-hidden mb-4">
+                        <ProfileMenuItem 
                             icon={Bell} 
                             title="Notifications" 
                             subtitle="Prayer times & reminders" 
                             onPress={() => router.push('/settings/notifications')}
                         />
-                        <ProfileMenuItem 
-                            icon={Shield} 
-                            title="Privacy & Security" 
-                            subtitle="Manage your data" 
-                            onPress={() => router.push('/settings/privacy-security')}
-                            last 
-                        />
+                       
                     </View>
 
                     <Text className="text-sm font-bold text-muted-foreground mb-3 uppercase tracking-wider">Other</Text>
 
                     <View className="bg-card rounded-xl border border-sand-200 overflow-hidden mb-4">
-                        {/* <ProfileMenuItem icon={CreditCard} title="Payment Methods" subtitle="Manage cards" /> */}
                         <ProfileMenuItem 
-                            icon={Settings} 
-                            title="App Settings" 
-                            subtitle="Version 1.0.0" 
-                            onPress={() => router.push('/settings/app-settings')}
+                            icon={Shield} 
+                            title="Terms of Service" 
+                            subtitle="App usage guidelines & agreement" 
+                            onPress={() => router.push('/settings/privacy-security')}
+                        />
+                        <ProfileMenuItem 
+                            icon={Shield} 
+                            title="Privacy Policy" 
+                            subtitle="How we protect your data" 
+                            onPress={() => router.push('/settings/privacy-security')}
                             last 
                         />
                     </View>

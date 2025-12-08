@@ -1,27 +1,23 @@
 import { Tabs, useRouter } from "expo-router";
-import { useEffect } from "react";
+import { View, Text } from "react-native";
 import RadialMenu from "../../components/RadialMenu";
 import { useAuth } from "../../lib/context/AuthContext";
 
 export default function TabLayout() {
-    const router = useRouter();
     const { isAuthenticated, loading } = useAuth();
-
-    useEffect(() => {
-        // Redirect to join-trip if not authenticated
-        if (!loading && !isAuthenticated) {
-            router.replace('/join-trip');
-        }
-    }, [isAuthenticated, loading]);
 
     // Don't render tabs until auth check is complete
     if (loading) {
         return null;
     }
 
-    // Don't render if not authenticated (redirect is in progress)
+    // Show not authenticated message instead of redirecting
     if (!isAuthenticated) {
-        return null;
+        return (
+            <View className="flex-1 items-center justify-center bg-background">
+                <Text className="text-foreground text-lg">Not Authenticated</Text>
+            </View>
+        );
     }
 
     return (
