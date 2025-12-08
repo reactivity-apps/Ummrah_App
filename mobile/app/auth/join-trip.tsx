@@ -1,15 +1,15 @@
 import { View, Text, KeyboardAvoidingView, Platform, ScrollView } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useState } from "react";
-import { supabase } from "../lib/supabase";
+import { supabase } from "../../lib/supabase";
 import { useRouter, Link } from "expo-router";
-import GroupCodeStep from './auth/join-trip-steps/GroupCodeStep';
-import NameStep from './auth/join-trip-steps/NameStep';
-import EmailPasswordStep from './auth/join-trip-steps/EmailPasswordStep';
-import AccountCreatedStep from "./auth/join-trip-steps/AccountCreatedStep";
-import { contentContainerConfig } from "../lib/navigationConfig";
+import GroupCodeStep from './join-trip-steps/GroupCodeStep';
+import NameStep from './join-trip-steps/NameStep';
+import EmailPasswordStep from './join-trip-steps/EmailPasswordStep';
+import AccountCreatedStep from "./join-trip-steps/AccountCreatedStep";
+import { contentContainerConfig } from "../../lib/navigationConfig";
 import * as Linking from 'expo-linking';
-import DebugInfo from "../components/DebugInfo";
+import DebugInfo from "../../components/DebugInfo";
 
 // Helper to get the correct redirect URL based on environment
 const getRedirectUrl = () => {
@@ -157,7 +157,7 @@ export default function JoinTripScreen() {
                         {/* Already have account / Footer */}
                         {step !== 4 && <View className="items-center mt-6">
                             <Text className="text-sm text-muted-foreground">Already have an account?{' '}
-                                <Link href="/login" className="text-primary font-medium">Log in</Link>
+                                <Link href="/auth/login" className="text-primary font-medium">Log in</Link>
                             </Text>
                         </View>}
 

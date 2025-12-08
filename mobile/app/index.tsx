@@ -14,7 +14,7 @@ export default function Index() {
         if (isAuthenticated) {
             router.replace('/(tabs)');
         } else {
-            router.replace('/join-trip');
+            router.replace('/auth/join-trip');
         }
     }, [isAuthenticated, loading]);
 

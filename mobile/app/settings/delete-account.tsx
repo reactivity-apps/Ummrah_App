@@ -123,7 +123,7 @@ export default function DeleteAccountScreen() {
                 [
                     {
                         text: "OK",
-                        onPress: () => router.replace('/join-trip')
+                        onPress: () => router.replace('/auth/join-trip')
                     }
                 ]
             );

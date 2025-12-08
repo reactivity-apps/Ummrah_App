@@ -129,7 +129,7 @@ export default function LoginVerifyEmail() {
             </TouchableOpacity>
 
             <TouchableOpacity
-              onPress={() => router.replace('/login')}
+              onPress={() => router.replace('/auth/login')}
               className="w-full py-4 rounded-xl items-center bg-sand-100 border border-sand-200 mb-3"
             >
               <Text className="font-semibold text-base text-foreground">

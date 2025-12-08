@@ -16,6 +16,7 @@ export default function ProfileScreen() {
     const handleLogout = async () => {
         try {
             await supabase.auth.signOut();
+            router.replace('/auth/join-trip');
         } catch (e: any) {
             console.warn('Logout error', e);
             Alert.alert('Logout failed', e?.message ?? 'Unable to logout. Please try again');

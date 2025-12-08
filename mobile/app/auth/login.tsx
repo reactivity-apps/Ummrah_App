@@ -2,9 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Mail, Lock, ArrowRight } from 'lucide-react-native';
-import { supabase } from '../lib/supabase';
+import { supabase } from '../../lib/supabase';
 import { useRouter, Link, useLocalSearchParams } from 'expo-router';
-import { contentContainerConfig } from '../lib/navigationConfig';
+import { contentContainerConfig } from '../../lib/navigationConfig';
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -235,8 +235,11 @@ export default function LoginScreen() {
                 )}
               </TouchableOpacity>
 
-              {/* Forgot password link - optional */}
-              <TouchableOpacity className="items-center mt-4">
+              {/* Forgot password link */}
+              <TouchableOpacity 
+                onPress={() => router.push('/auth/forgot-password')}
+                className="items-center mt-4"
+              >
                 <Text className="text-sm text-primary font-medium">Forgot password?</Text>
               </TouchableOpacity>
             </View>
@@ -245,7 +248,7 @@ export default function LoginScreen() {
             <View className="items-center mt-6">
               <Text className="text-sm text-muted-foreground">
                 Don't have an account?{' '}
-                <Link href="/join-trip" className="text-primary font-medium">
+                <Link href="/auth/join-trip" className="text-primary font-medium">
                   Join a trip
                 </Link>
               </Text>

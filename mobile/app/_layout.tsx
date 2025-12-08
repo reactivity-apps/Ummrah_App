@@ -33,8 +33,7 @@ function AppContent() {
             )}
             <Stack screenOptions={{ headerShown: false }}>
                 <Stack.Screen name="index" />
-                <Stack.Screen name="join-trip" />
-                <Stack.Screen name="login" />
+                <Stack.Screen name="auth" />
                 <Stack.Screen name="(tabs)" />
                 <Stack.Screen name="itinerary" />
                 <Stack.Screen name="announcements" />
@@ -42,7 +41,6 @@ function AppContent() {
                 <Stack.Screen name="guide/[id]" />
                 <Stack.Screen name="map/[id]" />
                 <Stack.Screen name="settings" />
-                <Stack.Screen name="auth" />
             </Stack>
             <StatusBar style="auto" />
         </>
