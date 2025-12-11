@@ -25,21 +25,22 @@ export default function ProfileScreen() {
 
     return (
         <SafeAreaView className="flex-1 bg-sand-50">
+            <View className="px-4 pt-6 pb-4 bg-card border-b border-sand-200">
+                <View className="flex-row items-center mb-2">
+                    <View className="h-10 w-10 rounded-full border-2 border-[#4A6741]/30 bg-[#4A6741]/10 items-center justify-center mr-3">
+                        <User size={20} color="#4A6741" />
+                    </View>
+                    <Text className="text-3xl font-bold text-stone-800">Profile</Text>
+                </View>
+                <Text className="text-stone-500 text-base">Manage your account</Text>
+            </View>
+
             <Animated.ScrollView 
                 style={fadeInStyle} 
                 className="flex-1" 
                 contentContainerStyle={{ paddingBottom: 35 }}
             >
-                <View className="bg-card pb-6 pt-2 border-b border-sand-200">
-                    {/* Back Button */}
-                    <TouchableOpacity
-                        onPress={() => router.push('/(tabs)')}
-                        className="px-4 py-2 -ml-2 mb-2"
-                        activeOpacity={0.7}
-                    >
-                        <ArrowLeft size={24} color="#4A6741" />
-                    </TouchableOpacity>
-
+                <View className="bg-card pb-6 pt-6">
                     <View className="items-center">
                         <View className="h-24 w-24 bg-primary/10 rounded-full items-center justify-center mb-4 border-2 border-primary/20">
                             <Text className="text-primary font-bold text-3xl">

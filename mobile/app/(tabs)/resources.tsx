@@ -1,7 +1,7 @@
 import { View, Text, ScrollView, TouchableOpacity, Animated } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
-import { BookOpen, ScrollText, MapPin, FileText, MessageCircle, Clock, ChevronRight, ArrowLeft } from "lucide-react-native";
+import { BookOpen, ScrollText, MapPin, FileText, MessageCircle, Clock, ChevronRight } from "lucide-react-native";
 import { useFadeIn } from "../../lib/sharedElementTransitions";
 
 export default function ResourcesScreen() {
@@ -23,7 +23,7 @@ export default function ResourcesScreen() {
             title: 'Duas',
             subtitle: 'Supplications',
             icon: <ScrollText size={20} color="#4A6741" />,
-            route: '/(tabs)/duas',
+            route: '/duas',
             color: 'bg-emerald-50',
             borderColor: 'border-emerald-100'
         },
@@ -50,7 +50,7 @@ export default function ResourcesScreen() {
             title: 'Umrah Guide',
             subtitle: 'Step by Step',
             icon: <BookOpen size={20} color="#4A6741" />,
-            route: '/(tabs)/guide',
+            route: '/umrah-guide',
             color: 'bg-stone-50',
             borderColor: 'border-stone-200'
         },
@@ -68,17 +68,14 @@ export default function ResourcesScreen() {
     return (
         <SafeAreaView className="flex-1 bg-[#FDFBF7]" edges={['top']}>
             <View className="flex-1">
-                <View className="px-4 pt-6 pb-4">
+                <View className="px-4 pt-6 pb-4 bg-card border-b border-sand-200">
                     <View className="flex-row items-center mb-2">
-                        <TouchableOpacity
-                            onPress={() => router.push('/(tabs)')}
-                            className="mr-3 p-2 -ml-2"
-                        >
-                            <ArrowLeft size={24} color="#4A6741" />
-                        </TouchableOpacity>
+                        <View className="h-10 w-10 rounded-full border-2 border-[#4A6741]/30 bg-[#4A6741]/10 items-center justify-center mr-3">
+                            <BookOpen size={20} color="#4A6741" />
+                        </View>
                         <Text className="text-3xl font-bold text-stone-800">Resources</Text>
                     </View>
-                    <Text className="text-stone-500 text-base ml-11">Everything you need for your journey</Text>
+                    <Text className="text-stone-500 text-base">Everything you need for your journey</Text>
                 </View>
 
                 <Animated.ScrollView style={fadeInStyle} showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 100 }}>
@@ -108,7 +105,7 @@ export default function ResourcesScreen() {
                             <Text className="text-lg font-semibold text-stone-800">Quick Access</Text>
                         </View>
 
-                        <TouchableOpacity onPress={() => router.push('/(tabs)/duas')} className="flex-row items-center py-3 border-b border-stone-100">
+                        <TouchableOpacity onPress={() => router.push('/duas')} className="flex-row items-center py-3 border-b border-stone-100">
                             <Text className="text-2xl mr-4">🤲</Text>
                             <View className="flex-1">
                                 <Text className="text-base font-medium text-stone-800">Morning Adhkar</Text>
@@ -117,7 +114,7 @@ export default function ResourcesScreen() {
                             <ChevronRight size={20} color="#CBD5E0" />
                         </TouchableOpacity>
 
-                        <TouchableOpacity onPress={() => router.push('/(tabs)/guide')} className="flex-row items-center py-3 pt-4">
+                        <TouchableOpacity onPress={() => router.push('/umrah-guide')} className="flex-row items-center py-3 pt-4">
                             <Text className="text-2xl mr-4">🕋</Text>
                             <View className="flex-1">
                                 <Text className="text-base font-medium text-stone-800">Tawaf Guide</Text>

@@ -3,7 +3,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useState, useEffect } from "react";
 import { useRouter } from "expo-router";
 import DateTimePicker from '@react-native-community/datetimepicker';
-import { ArrowLeft, User, Mail, Phone, Save, CheckCircle, XCircle, Send, MapPin, Calendar, FileText, Utensils, Camera, Eye } from "lucide-react-native";
+import { User, Mail, Phone, Save, CheckCircle, XCircle, Send, MapPin, Calendar, FileText, Utensils, Camera, Eye } from "lucide-react-native";
 import { supabase } from "../../lib/supabase";
 import { ProfileRow } from "../../types/db";
 import { useAuth } from "../../lib/context/AuthContext";
@@ -378,29 +378,16 @@ export default function PersonalInfoScreen() {
                         />
                     }
                 >
-                    {/* Header */}
-                    <View className="px-5 py-4 border-b border-sand-200">
-                    <TouchableOpacity
-                        onPress={() => router.back()}
-                        className="flex-row items-center mb-4"
-                    >
-                        <ArrowLeft size={24} color="#4A6741" />
-                        <Text className="text-primary font-medium ml-2">Back</Text>
-                    </TouchableOpacity>
-                    <Text className="text-2xl font-bold text-foreground">Personal Information</Text>
-                    <Text className="text-muted-foreground">Update your profile details</Text>
-                    {lastUpdated && (
-                        <Text className="text-xs text-muted-foreground mt-5">Refreshed {getTimeAgo(lastUpdated)}</Text>
-                    )}
-                    <View className="mt-3 p-3 bg-sand-50 rounded-lg">
-                        <Text className="text-xs text-muted-foreground leading-5">
-                            Your name, email, and phone are stored securely in your account. Other details like location, medical notes, and dietary preferences are optional and help trip organizers plan better.
-                        </Text>
-                    </View>
-                </View>
-
-                {/* Form */}
-                <View className="px-5 mt-6">
+                    {/* Form */}
+                    <View className="px-5 mt-6">
+                        <View className="mb-3 p-3 bg-sand-50 rounded-lg">
+                            <Text className="text-xs text-muted-foreground leading-5">
+                                Your name, email, and phone are stored securely in your account. Other details like location, medical notes, and dietary preferences are optional and help trip organizers plan better.
+                            </Text>
+                        </View>
+                        {lastUpdated && (
+                            <Text className="text-xs text-muted-foreground mb-4">Refreshed {getTimeAgo(lastUpdated)}</Text>
+                        )}
                      {/* Profile Visibility */}
                     <View className="mb-6">
                         <View className="flex-row items-center justify-between bg-card rounded-xl px-4 py-4 border border-sand-200">

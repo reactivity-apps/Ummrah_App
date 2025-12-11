@@ -2,7 +2,7 @@ import { View, Text, TouchableOpacity, ScrollView, Switch, Alert, Linking, Platf
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useState, useEffect } from "react";
 import { useRouter } from "expo-router";
-import { ArrowLeft, Bell, Clock, Megaphone, AlertTriangle, Settings } from "lucide-react-native";
+import { Bell, Clock, Megaphone, AlertTriangle, Settings } from "lucide-react-native";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Notifications from 'expo-notifications';
 
@@ -118,19 +118,6 @@ export default function NotificationsScreen() {
     return (
         <SafeAreaView className="flex-1 bg-background">
             <ScrollView className="flex-1" contentContainerStyle={{ paddingBottom: 32 }}>
-                {/* Header */}
-                <View className="px-5 py-4 border-b border-sand-200">
-                    <TouchableOpacity
-                        onPress={() => router.back()}
-                        className="flex-row items-center mb-4"
-                    >
-                        <ArrowLeft size={24} color="#4A6741" />
-                        <Text className="text-primary font-medium ml-2">Back</Text>
-                    </TouchableOpacity>
-                    <Text className="text-2xl font-bold text-foreground">Notifications</Text>
-                    <Text className="text-muted-foreground mt-1">Manage your notification preferences</Text>
-                </View>
-
                 {/* Info Box */}
                 <View className="px-5 mt-4">
                     <View className="bg-primary/10 p-4 rounded-xl border border-primary/20">

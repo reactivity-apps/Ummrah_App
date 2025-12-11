@@ -2,7 +2,7 @@ import { View, Text, TextInput, TouchableOpacity, ScrollView, Alert, ActivityInd
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useState } from "react";
 import { useRouter } from "expo-router";
-import { ArrowLeft, Lock, Eye, EyeOff, Save } from "lucide-react-native";
+import { Lock, Eye, EyeOff, Save } from "lucide-react-native";
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../lib/context/AuthContext";
 
@@ -107,19 +107,6 @@ export default function ChangePasswordScreen() {
                 className="flex-1"
             >
                 <ScrollView className="flex-1" contentContainerStyle={{ paddingBottom: 32 }}>
-                    {/* Header */}
-                    <View className="px-5 py-4 border-b border-sand-200">
-                        <TouchableOpacity
-                            onPress={() => router.back()}
-                            className="flex-row items-center mb-4"
-                        >
-                            <ArrowLeft size={24} color="#4A6741" />
-                            <Text className="text-primary font-medium ml-2">Back</Text>
-                        </TouchableOpacity>
-                        <Text className="text-2xl font-bold text-foreground">Change Password</Text>
-                        <Text className="text-muted-foreground mt-1">Update your account password</Text>
-                    </View>
-
                     {/* Form */}
                     <View className="px-5 mt-6">
                         <Text className="text-sm text-muted-foreground mb-6">

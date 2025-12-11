@@ -2,7 +2,7 @@ import { View, Text, TouchableOpacity, ScrollView, Alert, ActivityIndicator, Tex
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useState } from "react";
 import { useRouter } from "expo-router";
-import { ArrowLeft, Lock, Trash2, AlertTriangle, Eye, EyeOff } from "lucide-react-native";
+import { Lock, Trash2, AlertTriangle, Eye, EyeOff } from "lucide-react-native";
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../lib/context/AuthContext";
 import { useTrip } from "../../lib/context/TripContext";
@@ -141,22 +141,9 @@ export default function DeleteAccountScreen() {
     };
 
     return (
-        <SafeAreaView className="flex-1 bg-background">
+        <SafeAreaView className="flex-1 bg-background" edges={['bottom']}>
             <ScrollView className="flex-1" contentContainerStyle={{ paddingBottom: 32 }}>
-                {/* Header */}
-                <View className="px-5 py-4 border-b border-sand-200">
-                    <TouchableOpacity
-                        onPress={() => router.back()}
-                        className="flex-row items-center mb-4"
-                    >
-                        <ArrowLeft size={24} color="#4A6741" />
-                        <Text className="text-primary font-medium ml-2">Back</Text>
-                    </TouchableOpacity>
-                    <Text className="text-2xl font-bold text-foreground">Delete Account</Text>
-                    <Text className="text-muted-foreground mt-1">Deactivate your account and remove trip access</Text>
-                </View>
-
-                {/* Warning */}
+                {/* Warning Message */}
                 <View className="px-5 mt-6">
                     <View className="bg-red-50 p-4 rounded-xl border border-red-200 mb-6">
                         <View className="flex-row items-start">
@@ -170,21 +157,6 @@ export default function DeleteAccountScreen() {
                                 </Text>
                             </View>
                         </View>
-                    </View>
-
-                    {/* What Will Be Deleted */}
-                    <Text className="text-sm font-bold text-muted-foreground mb-3 uppercase tracking-wider">
-                        What Will Be Deleted
-                    </Text>
-
-                    <View className="bg-card rounded-xl border border-sand-200 p-4 mb-6">
-                        <Text className="text-sm text-foreground leading-relaxed">
-                            • <Text className="font-semibold">Personal Information</Text> - Your name, email, phone number, and profile details
-                            {'\n\n'}• <Text className="font-semibold">Emergency Contacts</Text> - All saved emergency contact information
-                            {'\n\n'}• <Text className="font-semibold">Trip Memberships</Text> - You will be removed from all current and past trips
-                            {'\n\n'}• <Text className="font-semibold">Trip History</Text> - All records of trips you've participated in
-                            {'\n\n'}• <Text className="font-semibold">Account Access</Text> - You will be immediately logged out and unable to sign in
-                        </Text>
                     </View>
 
                     {currentTrip && (
@@ -211,6 +183,21 @@ export default function DeleteAccountScreen() {
                             </View>
                         </>
                     )}
+
+                    {/* What Will Be Deleted */}
+                    <Text className="text-sm font-bold text-muted-foreground mb-3 uppercase tracking-wider">
+                        What Will Be Deleted
+                    </Text>
+
+                    <View className="bg-card rounded-xl border border-sand-200 p-4 mb-6">
+                        <Text className="text-sm text-foreground leading-relaxed">
+                            • <Text className="font-semibold">Personal Information</Text> - Your name, email, phone number, and profile details
+                            {'\n\n'}• <Text className="font-semibold">Emergency Contacts</Text> - All saved emergency contact information
+                            {'\n\n'}• <Text className="font-semibold">Trip Memberships</Text> - You will be removed from all current and past trips
+                            {'\n\n'}• <Text className="font-semibold">Trip History</Text> - All records of trips you've participated in
+                            {'\n\n'}• <Text className="font-semibold">Account Access</Text> - You will be immediately logged out and unable to sign in
+                        </Text>
+                    </View>
 
                     {/* Alternatives */}
                     <Text className="text-sm font-bold text-muted-foreground mb-3 uppercase tracking-wider">

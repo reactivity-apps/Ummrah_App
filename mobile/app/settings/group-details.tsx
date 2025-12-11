@@ -11,7 +11,7 @@
 
 import { View, Text, TouchableOpacity, ScrollView, ActivityIndicator, RefreshControl } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { ArrowLeft, Users, Calendar, Clock, MapPin, Crown } from "lucide-react-native";
+import { Users, Calendar, Clock, MapPin, Crown } from "lucide-react-native";
 import { useRouter } from "expo-router";
 import { useState, useEffect } from "react";
 import { useTrip } from "../../lib/context/TripContext";
@@ -182,15 +182,10 @@ export default function GroupDetailsScreen() {
 
     if (!currentTrip) {
         return (
-            <SafeAreaView className="flex-1 bg-sand-50">
-                <View className="p-4">
-                    <TouchableOpacity onPress={() => router.back()} className="mb-4">
-                        <ArrowLeft size={24} color="#4A6741" />
-                    </TouchableOpacity>
-                    <Text className="text-center text-muted-foreground mt-8">
-                        No trip selected. Please join or create a trip first.
-                    </Text>
-                </View>
+            <SafeAreaView className="flex-1 bg-sand-50 items-center justify-center">
+                <Text className="text-center text-muted-foreground px-8">
+                    No trip selected. Please join or create a trip first.
+                </Text>
             </SafeAreaView>
         );
     }
@@ -209,22 +204,11 @@ export default function GroupDetailsScreen() {
                     />
                 }
             >
-                {/* Header */}
-                <View className="p-4 pb-6 bg-card border-b border-sand-200">
-                    <TouchableOpacity onPress={() => router.back()} className="mb-4">
-                        <ArrowLeft size={24} color="#4A6741" />
-                    </TouchableOpacity>
-                    <Text className="text-2xl font-bold text-foreground">Group Details</Text>
-                        <Text className="text-muted-foreground">
-                            Information about your travel group
-                        </Text>
-                         {lastUpdated && (
-                            <Text className="text-xs text-muted-foreground mt-5">Refreshed {getTimeAgo(lastUpdated)}</Text>
-                        )}
-                </View>
-
                 {/* Group Info Card */}
                 <View className="px-4 mt-4">
+                    {lastUpdated && (
+                        <Text className="text-xs text-muted-foreground mb-3">Refreshed {getTimeAgo(lastUpdated)}</Text>
+                    )}
                     <View className="bg-card p-6 rounded-xl border border-sand-200 items-center">
                         <View className="h-20 w-20 bg-primary/10 rounded-full items-center justify-center mb-4 border-2 border-primary/20">
                             {group?.logo_url ? (

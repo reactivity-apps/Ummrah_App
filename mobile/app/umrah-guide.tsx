@@ -1,9 +1,9 @@
 import { View, Text, FlatList, TouchableOpacity, Animated } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Link, useRouter } from "expo-router";
-import { GUIDES } from "../../data/mock";
-import { ChevronRight, BookOpen, ArrowLeft } from "lucide-react-native";
-import { useStaggeredFadeIn, usePressScale } from "../../lib/sharedElementTransitions";
+import { GUIDES } from "../data/mock";
+import { ChevronRight, BookOpen } from "lucide-react-native";
+import { useStaggeredFadeIn, usePressScale } from "../lib/sharedElementTransitions";
 
 // Animated guide card
 function GuideCard({ item, index }: { item: typeof GUIDES[0]; index: number }) {
@@ -11,7 +11,7 @@ function GuideCard({ item, index }: { item: typeof GUIDES[0]; index: number }) {
     const { animatedStyle: pressStyle, onPressIn, onPressOut } = usePressScale();
 
     return (
-        <Link href={`/guide/${item.id}`} asChild>
+        <Link href={`/umrah-guide/${item.id}`} asChild>
             <TouchableOpacity
                 onPressIn={onPressIn}
                 onPressOut={onPressOut}
@@ -48,21 +48,10 @@ export default function GuideScreen() {
     const router = useRouter();
 
     return (
-        <SafeAreaView className="flex-1 bg-sand-50">
+        <SafeAreaView className="flex-1 bg-sand-50" edges={['bottom']}>
             <View className="px-4 py-4 bg-card border-b border-sand-200">
                 <View className="flex-row items-center justify-between">
-                    <View className="flex-row items-center flex-1">
-                        <TouchableOpacity
-                            onPress={() => router.push('/(tabs)')}
-                            className="mr-3 p-2 -ml-2"
-                        >
-                            <ArrowLeft size={24} color="#4A6741" />
-                        </TouchableOpacity>
-                        <View>
-                            <Text className="text-2xl font-bold text-foreground">Umrah Guide</Text>
-                            <Text className="text-muted-foreground mt-1">Self-guided instructions</Text>
-                        </View>
-                    </View>
+                    <Text className="text-stone-500 text-base">Step-by-step instructions</Text>
                     <View className="bg-primary/10 px-3 py-1.5 rounded-md border border-primary/20">
                         <Text className="text-primary font-semibold text-sm">{GUIDES.length} Steps</Text>
                     </View>

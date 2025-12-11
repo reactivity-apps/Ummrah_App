@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, Animated, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { ArrowLeft, MapPin, Bell, Clock, ChevronRight, Sunrise, Sun, Cloud, Sunset, Moon } from 'lucide-react-native';
+import { MapPin, Bell, Clock, ChevronRight, Sunrise, Sun, Cloud, Sunset, Moon } from 'lucide-react-native';
 import RadialMenu from '../components/RadialMenu';
 import PrayerTimesWidget from '../components/PrayerTimesWidget';
 import { useFadeIn } from '../lib/sharedElementTransitions';
@@ -48,16 +48,8 @@ export default function PrayersScreen() {
         : ['#C5A059', '#B8904D', '#A67F42']; // Gold for Madina
 
     return (
-        <SafeAreaView className="flex-1 bg-[#FDFBF7]" edges={['top']}>
-            {/* Header */}
-            <View className="px-6 py-4 flex-row items-center border-b border-[#C5A059]/20">
-                <TouchableOpacity onPress={() => router.back()} className="mr-4 p-2 -ml-2" activeOpacity={0.7}>
-                    <ArrowLeft size={24} color="#4A6741" />
-                </TouchableOpacity>
-                <View className="flex-1 flex-row items-center gap-2">
-                    <CrescentIcon size={24} color="#C5A059" />
-                    <Text className="text-2xl font-bold text-stone-800">Prayer Times</Text>
-                </View>
+        <SafeAreaView className="flex-1 bg-[#FDFBF7]" edges={['bottom']}>
+            <View className="px-6 py-4 border-b border-[#C5A059]/20">
                 <View className="flex-row gap-2">
                     <TouchableOpacity 
                         onPress={() => setLocation('Makkah')}

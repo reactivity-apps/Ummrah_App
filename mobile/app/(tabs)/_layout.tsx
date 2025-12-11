@@ -1,10 +1,13 @@
-import { Tabs, useRouter } from "expo-router";
+import { Tabs } from "expo-router";
 import { View, Text } from "react-native";
-import RadialMenu from "../../components/RadialMenu";
+// import RadialMenu from "../../components/RadialMenu";
 import { useAuth } from "../../lib/context/AuthContext";
+import { useTrip } from "../../lib/context/TripContext";
+import { Home, BookOpen, MapPin, User, Shield, MessageCircle } from "lucide-react-native";
 
 export default function TabLayout() {
     const { isAuthenticated, loading } = useAuth();
+    const { isGroupAdmin } = useTrip();
 
     // Don't render tabs until auth check is complete
     if (loading) {
@@ -22,31 +25,70 @@ export default function TabLayout() {
 
     return (
         <>
-            {/* 
-                Tab Navigator with minimal, fast transitions
-                - Hidden tab bar (using RadialMenu instead)
-                - Smooth transitions between tabs
-                - Performance optimized with detached screens
-            */}
             <Tabs
                 screenOptions={{
                     headerShown: false,
-                    tabBarStyle: { display: 'none' },
-                    // Fast fade animation for tab switches
-                    animation: 'fade',
+                    tabBarActiveTintColor: '#4A6741',
+                    tabBarInactiveTintColor: '#9CA3AF',
+                    tabBarStyle: {
+                        backgroundColor: '#FFFFFF',
+                        borderTopColor: '#E5E7EB',
+                        height: 60,
+                        paddingBottom: 5,
+                        paddingTop: 5,
+                    },
+                    tabBarLabelStyle: {
+                        fontSize: 12,
+                        fontWeight: '600',
+                    },
                 }}
             >
-                <Tabs.Screen name="index" />
-                <Tabs.Screen name="resources" />
-                <Tabs.Screen name="duas" />
-                <Tabs.Screen name="guide" />
-                <Tabs.Screen name="map" />
-                <Tabs.Screen name="profile" />
-                <Tabs.Screen name="murshid" />
-                <Tabs.Screen name="admin" />
+                <Tabs.Screen 
+                    name="index"
+                    options={{
+                        title: 'Home',
+                        tabBarIcon: ({ color, size }) => <Home size={size} color={color} />,
+                    }}
+                />
+                <Tabs.Screen 
+                    name="resources"
+                    options={{
+                        title: 'Resources',
+                        tabBarIcon: ({ color, size }) => <BookOpen size={size} color={color} />,
+                    }}
+                />
+                <Tabs.Screen 
+                    name="map"
+                    options={{
+                        title: 'Map',
+                        tabBarIcon: ({ color, size }) => <MapPin size={size} color={color} />,
+                    }}
+                />
+                <Tabs.Screen 
+                    name="murshid"
+                    options={{
+                        title: 'Murshid',
+                        tabBarIcon: ({ color, size }) => <MessageCircle size={size} color={color} />,
+                    }}
+                />
+                <Tabs.Screen 
+                    name="profile"
+                    options={{
+                        title: 'Profile',
+                        tabBarIcon: ({ color, size }) => <User size={size} color={color} />,
+                    }}
+                />
+                <Tabs.Screen 
+                    name="admin"
+                    options={{
+                        title: 'Admin',
+                        tabBarIcon: ({ color, size }) => <Shield size={size} color={color} />,
+                        href: isGroupAdmin ? undefined : null, // Only show if user is group admin
+                    }}
+                />
             </Tabs>
 
-            <RadialMenu />
+            {/* <RadialMenu /> */}
         </>
     );
 }

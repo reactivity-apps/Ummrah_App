@@ -226,46 +226,22 @@ export default function MurshidScreen() {
 
     return (
         <SafeAreaView className="flex-1 bg-[#FDFBF7]" edges={['top']}>
+            {/* Header */}
+            <View className="px-4 pt-6 pb-4 bg-card border-b border-sand-200">
+                <View className="flex-row items-center mb-2">
+                    <View className="h-10 w-10 rounded-full border-2 border-[#C5A059]/30 bg-[#C5A059]/10 items-center justify-center mr-3">
+                        <Sparkles size={20} color="#C5A059" />
+                    </View>
+                    <Text className="text-3xl font-bold text-stone-800">Murshid</Text>
+                </View>
+                <Text className="text-stone-500 text-base ml-13">Your AI spiritual guide</Text>
+            </View>
+
             <KeyboardAvoidingView
                 behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
                 className="flex-1"
                 keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
             >
-                {/* Header */}
-                <View className="items-center pt-4 pb-6 bg-[#FDFBF7] border-b border-sand-100 z-10 shadow-sm">
-                    {/* Back Button */}
-                    <TouchableOpacity
-                        onPress={() => router.push('/(tabs)')}
-                        className="absolute left-4 top-4 p-2 -ml-2 z-20"
-                        activeOpacity={0.7}
-                    >
-                        <ArrowLeft size={24} color="#4A6741" />
-                    </TouchableOpacity>
-
-                    <View className="relative">
-                        {/* Halo/Glow */}
-                        <View className="absolute -inset-1 bg-green-100 rounded-full opacity-50 blur-sm" />
-
-                        {/* Avatar Container */}
-                        <View className="w-20 h-20 bg-white rounded-full items-center justify-center border-2 border-[#E2E8F0] overflow-hidden relative shadow-sm">
-                            {/* Background Pattern */}
-                            <View className="absolute inset-0 opacity-10">
-                                <GeometricPattern size={80} color={COLORS.primary} />
-                            </View>
-
-                            {/* Avatar Icon/Image */}
-                            <View className="bg-[#4A6741] w-16 h-16 rounded-full items-center justify-center">
-                                <Text className="text-white text-2xl font-serif">M</Text>
-                            </View>
-                        </View>
-                    </View>
-
-                    <View className="mt-3 items-center">
-                        <Text className="text-xl font-semibold text-sand-800 tracking-wide">Murshid</Text>
-                        <Text className="text-lg text-[#C5A059] font-medium -mt-1" style={{ fontFamily: Platform.OS === 'ios' ? 'Geeza Pro' : 'serif' }}>مرشد</Text>
-                    </View>
-                </View>
-
                 {/* Chat Area */}
                 <Animated.ScrollView
                     style={contentFadeStyle}

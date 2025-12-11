@@ -1,7 +1,7 @@
 import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, Animated } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
-import { ArrowLeft, Calendar, MapPin, Clock, Users, Utensils, Plane, Hotel, AlertCircle } from "lucide-react-native";
+import { Calendar, MapPin, Clock, Users, Utensils, Plane, Hotel, AlertCircle } from "lucide-react-native";
 import RadialMenu from "../components/RadialMenu";
 import { useFadeIn } from "../lib/sharedElementTransitions";
 import Svg, { Path, Rect } from "react-native-svg";
@@ -144,19 +144,12 @@ export default function ItineraryScreen() {
     }
 
     return (
-        <SafeAreaView className="flex-1 bg-sand-50">
-            {/* Header */}
+        <SafeAreaView className="flex-1 bg-sand-50" edges={['bottom']}>
             <View className="px-4 py-3 bg-card border-b border-[#C5A059]/20">
                 <View className="flex-row items-center mb-3">
-                    <TouchableOpacity onPress={() => router.push('/(tabs)')} className="mr-3 p-2 -ml-2" activeOpacity={0.7}>
-                        <ArrowLeft size={24} color="#4A6741" />
-                    </TouchableOpacity>
-                    <View className="flex-1 flex-row items-center gap-2">
-                        <Calendar size={24} color="#C5A059" />
-                        <View>
-                            <Text className="text-2xl font-bold text-foreground">Trip Itinerary</Text>
-                            <Text className="text-sm text-[#C5A059]">{tripName}</Text>
-                        </View>
+                    <Calendar size={24} color="#C5A059" />
+                    <View>
+                        <Text className="text-sm text-[#C5A059]">{tripName}</Text>
                     </View>
                 </View>
 

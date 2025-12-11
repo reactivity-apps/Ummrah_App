@@ -41,25 +41,14 @@ export default function HomeScreen() {
 
     return (
         <SafeAreaView className="flex-1 bg-background" edges={['top']}>
-            <Animated.ScrollView
-                style={fadeInStyle}
-                className="flex-1"
-                contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 8, paddingBottom: 20 }}
-            >
-                {/* Mobile Header */}
-                <View className="flex-row items-center justify-between py-2 mb-6">
-                    <View className="flex-row items-center gap-3">
-                        <View className="h-10 w-10 rounded-full border-2 border-[#C5A059]/30 bg-[#C5A059]/10 items-center justify-center">
+            {/* Header */}
+            <View className="px-4 pt-6 pb-4 bg-background border-b border-sand-200">
+                <View className="flex-row items-center justify-between mb-2">
+                    <View className="flex-row items-center">
+                        <View className="h-10 w-10 rounded-full border-2 border-[#C5A059]/30 bg-[#C5A059]/10 items-center justify-center mr-3">
                             <KaabaIcon size={20} color="#C5A059" />
                         </View>
-                        <View>
-                            <Text className="text-xs text-muted-foreground">Assalamu Alaykum,</Text>
-                            {authLoading ? (
-                                <View className="h-7 w-32 bg-muted-foreground/20 rounded-md" />
-                            ) : (
-                                <Text className="text-lg font-bold text-foreground">{userName}</Text>
-                            )}
-                        </View>
+                        <Text className="text-3xl font-bold text-stone-800">Home</Text>
                     </View>
                     <TouchableOpacity
                         className="relative p-2"
@@ -69,7 +58,14 @@ export default function HomeScreen() {
                         <View className="absolute top-2 right-2 h-2.5 w-2.5 rounded-full bg-red-500 border-2 border-white" />
                     </TouchableOpacity>
                 </View>
+                <Text className="text-stone-500 text-base ml-13">Assalamu Alaykum, {userName}</Text>
+            </View>
 
+            <Animated.ScrollView
+                style={fadeInStyle}
+                className="flex-1"
+                contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 8, paddingBottom: 20 }}
+            >
                 {/* Trip Status */}
                 <View className="mb-4">
                     <TripStatus />
@@ -113,9 +109,9 @@ export default function HomeScreen() {
 
 function QuickActions() {
     const actions = [
-        { label: "Duas", icon: Book, href: "/(tabs)/duas", color: "#4A6741" },
+        { label: "Duas", icon: Book, href: "/duas", color: "#4A6741" },
         { label: "Ziyarat", icon: Compass, href: "/(tabs)/map", color: "#C5A059" },
-        { label: "Guide", icon: Info, href: "/(tabs)/guide", color: "#4A6741" },
+        { label: "Guide", icon: Info, href: "/umrah-guide", color: "#4A6741" },
         { label: "Documents", icon: FileText, href: "/(tabs)/resources", color: "#C5A059" },
         { label: "Profile", icon: User, href: "/(tabs)/profile", color: "#4A6741" },
         { label: "Murshid", icon: MessageCircle, href: "/(tabs)/murshid", color: "#C5A059" },

@@ -91,16 +91,29 @@ function AppContent() {
                     </Text>
                 </View>
             )}
-            <Stack screenOptions={{ headerShown: false }}>
-                <Stack.Screen name="index" />
-                <Stack.Screen name="auth" />
-                <Stack.Screen name="(tabs)" />
-                <Stack.Screen name="itinerary" />
-                <Stack.Screen name="announcements" />
-                <Stack.Screen name="prayers" />
-                <Stack.Screen name="guide/[id]" />
-                <Stack.Screen name="map/[id]" />
-                <Stack.Screen name="settings" />
+            <Stack 
+                screenOptions={{ 
+                    headerShown: true,
+                    headerStyle: {
+                        backgroundColor: '#FFFFFF',
+                    },
+                    headerTintColor: '#4A6741',
+                    headerTitleStyle: {
+                        fontWeight: '600',
+                    },
+                }}
+            >
+                <Stack.Screen name="index" options={{ headerShown: false }} />
+                <Stack.Screen name="auth" options={{ headerShown: false }} />
+                <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+                <Stack.Screen name="itinerary" options={{ title: 'Trip Itinerary' }} />
+                <Stack.Screen name="announcements" options={{ title: 'Announcements' }} />
+                <Stack.Screen name="prayers" options={{ title: 'Prayer Times' }} />
+                <Stack.Screen name="duas" options={{ title: 'Duas' }} />
+                <Stack.Screen name="umrah-guide" options={{ title: 'Umrah Guide' }} />
+                <Stack.Screen name="umrah-guide/[id]" options={{ title: 'Guide Details' }} />
+                <Stack.Screen name="map/[id]" options={{ title: 'Location Details' }} />
+                <Stack.Screen name="settings" options={{ headerShown: false }} />
             </Stack>
             <StatusBar style="auto" />
         </>

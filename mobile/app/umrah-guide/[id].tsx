@@ -4,7 +4,6 @@ import { useLocalSearchParams, router } from "expo-router";
 import { useState, useEffect } from "react";
 import { GUIDES } from "../../data/mock";
 import {
-    ArrowLeft,
     CheckCircle2,
     BookOpen,
     ChevronDown,
@@ -89,13 +88,9 @@ export default function GuideDetailScreen() {
     }
 
     return (
-        <SafeAreaView className="flex-1 bg-sand-50">
-            {/* Header with Progress */}
+        <SafeAreaView className="flex-1 bg-sand-50" edges={['bottom']}>
             <View className="px-4 py-3 bg-card border-b border-sand-200">
                 <View className="flex-row items-center mb-3">
-                    <TouchableOpacity onPress={() => router.push('/(tabs)/guide')} className="mr-3 p-2 -ml-2" activeOpacity={0.7}>
-                        <ArrowLeft size={24} color="#4A6741" />
-                    </TouchableOpacity>
                     <View className="flex-1">
                         <View className="flex-row items-center gap-2 mb-1">
                             <Text className="text-xs font-semibold text-primary uppercase tracking-wide">
@@ -338,7 +333,7 @@ export default function GuideDetailScreen() {
 
                         {nextGuide && (
                             <TouchableOpacity
-                                onPress={() => router.push(`/guide/${nextGuide.id}`)}
+                                onPress={() => router.push(`/umrah-guide/${nextGuide.id}`)}
                                 className="bg-primary p-4 rounded-xl flex-row items-center justify-center shadow-sm"
                             >
                                 <Text className="text-white font-bold mr-2 text-base">Continue to {nextGuide.title}</Text>

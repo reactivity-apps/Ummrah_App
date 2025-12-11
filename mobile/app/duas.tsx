@@ -1,10 +1,10 @@
 import { View, Text, FlatList, TouchableOpacity, TextInput } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useState, useEffect } from "react";
-import { DUAS } from "../../data/mock";
-import { Search, ArrowLeft } from "lucide-react-native";
+import { DUAS } from "../data/mock";
+import { Search } from "lucide-react-native";
 import { useRouter } from "expo-router";
-import { DuasSkeleton } from "../../components/SkeletonLoader";
+import { DuasSkeleton } from "../components/SkeletonLoader";
 
 export default function DuasScreen() {
     const router = useRouter();
@@ -35,17 +35,9 @@ export default function DuasScreen() {
     }
 
     return (
-        <SafeAreaView className="flex-1 bg-sand-50">
+        <SafeAreaView className="flex-1 bg-sand-50" edges={['bottom']}>
             <View className="px-4 py-4 bg-card border-b border-sand-200">
-                <View className="flex-row items-center mb-4">
-                    <TouchableOpacity
-                        onPress={() => router.push('/(tabs)')}
-                        className="mr-3 p-2 -ml-2"
-                    >
-                        <ArrowLeft size={24} color="#4A6741" />
-                    </TouchableOpacity>
-                    <Text className="text-2xl font-bold text-foreground">Duas & Supplications</Text>
-                </View>
+                <Text className="text-stone-500 text-base mb-4">Supplications for your journey</Text>
                 <View className="flex-row items-center bg-sand-50 rounded-xl px-4 py-3 border border-sand-200">
                     <Search size={20} color="hsl(40 5% 55%)" />
                     <TextInput

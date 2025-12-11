@@ -65,19 +65,14 @@ export default function MapScreen() {
 
     return (
         <SafeAreaView className="flex-1 bg-sand-50">
-            <View className="px-4 py-4 bg-card border-b border-sand-200">
+            <View className="px-4 pt-6 pb-4 bg-card border-b border-sand-200">
                 <View className="flex-row items-center mb-2">
-                    <TouchableOpacity
-                        onPress={() => router.push('/(tabs)')}
-                        className="mr-3 p-2 -ml-2"
-                    >
-                        <ArrowLeft size={24} color="#4A6741" />
-                    </TouchableOpacity>
-                    <View>
-                        <Text className="text-2xl font-bold text-foreground">Ziyarat Locations</Text>
+                    <View className="h-10 w-10 rounded-full border-2 border-[#C5A059]/30 bg-[#C5A059]/10 items-center justify-center mr-3">
+                        <MapPin size={20} color="#C5A059" />
                     </View>
+                    <Text className="text-3xl font-bold text-stone-800">Ziyarat</Text>
                 </View>
-                <Text className="text-muted-foreground ml-11">Historical sites to visit</Text>
+                <Text className="text-stone-500 text-base">Historical sites to visit</Text>
             </View>
 
             <FlatList

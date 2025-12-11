@@ -1,27 +1,14 @@
 import { View, Text, TouchableOpacity, ScrollView } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
-import { ArrowLeft, Lock, Eye } from "lucide-react-native";
+import { Lock, Eye } from "lucide-react-native";
 
 export default function PrivacySecurityScreen() {
     const router = useRouter();
 
     return (
-        <SafeAreaView className="flex-1 bg-background">
+        <SafeAreaView className="flex-1 bg-background" edges={['bottom']}>
             <ScrollView className="flex-1" contentContainerStyle={{ paddingBottom: 32 }}>
-                {/* Header */}
-                <View className="px-5 py-4 border-b border-sand-200">
-                    <TouchableOpacity
-                        onPress={() => router.back()}
-                        className="flex-row items-center mb-4"
-                    >
-                        <ArrowLeft size={24} color="#4A6741" />
-                        <Text className="text-primary font-medium ml-2">Back</Text>
-                    </TouchableOpacity>
-                    <Text className="text-2xl font-bold text-foreground">Privacy & Security</Text>
-                    <Text className="text-muted-foreground mt-1">Your data, your control</Text>
-                </View>
-
                 {/* Privacy Features */}
                 <View className="px-5 mt-6">
                     <Text className="text-sm font-bold text-muted-foreground mb-3 uppercase tracking-wider">

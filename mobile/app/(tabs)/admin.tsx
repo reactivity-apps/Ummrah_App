@@ -228,7 +228,15 @@ export default function AdminScreen() {
     };
 
     return (
-        <SafeAreaView className="flex-1 bg-sand-50">
+        <SafeAreaView className="flex-1 bg-sand-50" edges={['top']}>
+            <View className="px-4 pt-6 pb-4 bg-card border-b border-sand-200">
+                <View className="flex-row items-center mb-2">
+                    <Shield size={28} color="#4A6741" />
+                    <Text className="text-3xl font-bold text-stone-800 ml-3">Admin</Text>
+                </View>
+                <Text className="text-stone-500 text-base">Manage your trip</Text>
+            </View>
+
             <AdminModals
                 showAddMemberModal={showAddMemberModal}
                 setShowAddMemberModal={setShowAddMemberModal}

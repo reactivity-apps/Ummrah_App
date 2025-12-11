@@ -2,7 +2,7 @@ import { View, Text, TextInput, TouchableOpacity, ScrollView, Alert, ActivityInd
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useState, useEffect } from "react";
 import { useRouter } from "expo-router";
-import { ArrowLeft, User, Phone, Save } from "lucide-react-native";
+import { User, Phone, Save } from "lucide-react-native";
 import { supabase } from "../../lib/supabase";
 import { ProfileRow } from "../../types/db";
 import { loadFromCache, saveToCache, getTimeAgo } from "../../lib/utils";
@@ -181,30 +181,17 @@ export default function EmergencyContactScreen() {
                         />
                     }
                 >
-                    {/* Header */}
-                    <View className="px-5 py-4 border-b border-sand-200">
-                    <TouchableOpacity
-                        onPress={() => router.back()}
-                        className="flex-row items-center mb-4"
-                    >
-                        <ArrowLeft size={24} color="#4A6741" />
-                        <Text className="text-primary font-medium ml-2">Back</Text>
-                    </TouchableOpacity>
-                    <Text className="text-2xl font-bold text-foreground">Emergency Contact</Text>
-                    <Text className="text-muted-foreground">Person to contact in case of emergency</Text>
-                    {lastUpdated && (
-                        <Text className="text-xs text-muted-foreground mt-5">Refreshed {getTimeAgo(lastUpdated)}</Text>
-                    )}
-                </View>
-
-                {/* Form */}
-                <View className="px-5 mt-6">
-                    {/* Info Box */}
-                    <View className="bg-primary/10 p-4 rounded-xl border border-primary/20 mb-6">
-                        <Text className="text-sm text-foreground leading-5">
-                            This information will only be used in case of emergencies during your trip. Make sure to keep it up to date before each journey.
-                        </Text>
-                    </View>
+                    {/* Form */}
+                    <View className="px-5 mt-6">
+                        {/* Info Box */}
+                        <View className="bg-primary/10 p-4 rounded-xl border border-primary/20 mb-6">
+                            <Text className="text-sm text-foreground leading-5">
+                                This information will only be used in case of emergencies during your trip. Make sure to keep it up to date before each journey.
+                            </Text>
+                        </View>
+                        {lastUpdated && (
+                            <Text className="text-xs text-muted-foreground mb-4">Refreshed {getTimeAgo(lastUpdated)}</Text>
+                        )}
 
                     {/* Name */}
                     <View className="mb-6">

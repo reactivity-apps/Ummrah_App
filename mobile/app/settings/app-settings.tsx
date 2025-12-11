@@ -1,6 +1,6 @@
 import { View, Text, TouchableOpacity, ScrollView, Switch, Alert } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { ArrowLeft, Moon, Globe, Volume2, Bell, Download, Trash2, Info, Shield, Wifi } from "lucide-react-native";
+import { Moon, Globe, Volume2, Bell, Download, Trash2, Info, Shield, Wifi } from "lucide-react-native";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 
@@ -30,19 +30,8 @@ export default function AppSettingsScreen() {
     };
 
     return (
-        <SafeAreaView className="flex-1 bg-sand-50">
+        <SafeAreaView className="flex-1 bg-sand-50" edges={['bottom']}>
             <ScrollView className="flex-1" contentContainerStyle={{ paddingBottom: 24 }}>
-                {/* Header */}
-                <View className="p-4 pb-6 bg-card border-b border-sand-200">
-                    <TouchableOpacity onPress={() => router.back()} className="mb-4">
-                        <ArrowLeft size={24} color="#4A6741" />
-                    </TouchableOpacity>
-                    <Text className="text-2xl font-bold text-foreground">App Settings</Text>
-                    <Text className="text-muted-foreground mt-1">
-                        Customize your app experience
-                    </Text>
-                </View>
-
                 {/* Version Info */}
                 <View className="px-4 mt-4">
                     <Text className="text-sm font-bold text-muted-foreground mb-3 uppercase tracking-wider">

@@ -2,7 +2,7 @@ import { View, Text, ScrollView, TouchableOpacity, Animated } from "react-native
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useLocalSearchParams, router } from "expo-router";
 import { ZIYARAT } from "../../data/mock";
-import { ArrowLeft, MapPin, Clock, Info, Bookmark } from "lucide-react-native";
+import { MapPin, Clock, Info, Bookmark } from "lucide-react-native";
 import { useFadeIn } from "../../lib/sharedElementTransitions";
 import { DetailSkeleton } from "../../components/SkeletonLoader";
 import { useState, useEffect } from "react";
@@ -42,13 +42,9 @@ export default function ZiyaratDetailScreen() {
     }
 
     return (
-        <SafeAreaView className="flex-1 bg-sand-50">
-            {/* Header */}
+        <SafeAreaView className="flex-1 bg-sand-50" edges={['bottom']}>
             <View className="px-4 py-3 bg-card border-b border-sand-200 flex-row items-center justify-between">
                 <View className="flex-row items-center flex-1">
-                    <TouchableOpacity onPress={() => router.push('/(tabs)/map')} className="mr-3 p-2 -ml-2" activeOpacity={0.7}>
-                        <ArrowLeft size={24} color="#4A6741" />
-                    </TouchableOpacity>
                     <Text className="text-xl font-bold text-foreground flex-1" numberOfLines={1}>
                         {location.title}
                     </Text>
