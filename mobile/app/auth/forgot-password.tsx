@@ -5,6 +5,7 @@ import { Mail, ArrowRight, ArrowLeft } from 'lucide-react-native';
 import { supabase } from '../../lib/supabase';
 import { useRouter } from 'expo-router';
 import { contentContainerConfig } from '../../lib/navigationConfig';
+import { getRedirectUrl } from '../../lib/utils';
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -42,7 +43,7 @@ export default function ForgotPasswordScreen() {
       console.log('[ForgotPassword] Sending reset email to:', trimmedEmail);
 
       const { error: resetError } = await supabase.auth.resetPasswordForEmail(trimmedEmail, {
-        redirectTo: 'ummrahapp://auth/reset-password',
+        redirectTo: getRedirectUrl('auth/reset-password'),
       });
 
       if (resetError) {

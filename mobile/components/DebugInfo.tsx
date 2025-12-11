@@ -5,10 +5,10 @@
  */
 
 import { View, Text } from 'react-native';
-import * as Linking from 'expo-linking';
+import { getRedirectUrl } from '../lib/utils';
 
 export default function DebugInfo() {
-    const redirectUrl = Linking.createURL("");
+    const redirectUrl = getRedirectUrl();
 
     if (__DEV__) {
         return (

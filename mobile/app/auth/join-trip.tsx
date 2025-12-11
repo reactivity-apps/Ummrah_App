@@ -8,15 +8,8 @@ import NameStep from './join-trip-steps/NameStep';
 import EmailPasswordStep from './join-trip-steps/EmailPasswordStep';
 import AccountCreatedStep from "./join-trip-steps/AccountCreatedStep";
 import { contentContainerConfig } from "../../lib/navigationConfig";
-import * as Linking from 'expo-linking';
 import DebugInfo from "../../components/DebugInfo";
-
-// Helper to get the correct redirect URL based on environment
-const getRedirectUrl = () => {
-    // Use Linking.createURL to properly create deep link
-    // This works for both Expo Go and standalone builds
-    return Linking.createURL("");
-};
+import { getRedirectUrl } from "../../lib/utils";
 
 export default function JoinTripScreen() {
     const router = useRouter();
