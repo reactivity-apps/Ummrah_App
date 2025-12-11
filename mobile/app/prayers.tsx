@@ -7,6 +7,7 @@ import RadialMenu from '../components/RadialMenu';
 import PrayerTimesWidget from '../components/PrayerTimesWidget';
 import { useFadeIn } from '../lib/sharedElementTransitions';
 import { usePrayerTimes } from '../lib/api/hooks/usePrayerTimes';
+import { usePrayerLocation } from '../lib/context/PrayerLocationContext';
 import Svg, { Path, Circle } from 'react-native-svg';
 
 // Crescent Icon Component
@@ -21,6 +22,7 @@ const CrescentIcon = ({ size = 20, color = "#C5A059" }) => (
 
 export default function PrayersScreen() {
     const router = useRouter();
+    const { locationAddress, selectedLocation, setLocation } = usePrayerLocation();
 
     // Smooth entrance animation
     const fadeInStyle = useFadeIn(0);
@@ -36,9 +38,14 @@ export default function PrayersScreen() {
         error,
         refresh,
     } = usePrayerTimes({
-        address: 'Makkah, Saudi Arabia',
+        address: locationAddress,
         autoRefresh: true,
     });
+
+    // Theme colors based on selected location
+    const themeColors = selectedLocation === 'Makkah' 
+        ? ['#4A6741', '#3A5234', '#2A3E28']  // Green for Makkah
+        : ['#C5A059', '#B8904D', '#A67F42']; // Gold for Madina
 
     return (
         <SafeAreaView className="flex-1 bg-[#FDFBF7]" edges={['top']}>
@@ -50,6 +57,26 @@ export default function PrayersScreen() {
                 <View className="flex-1 flex-row items-center gap-2">
                     <CrescentIcon size={24} color="#C5A059" />
                     <Text className="text-2xl font-bold text-stone-800">Prayer Times</Text>
+                </View>
+                <View className="flex-row gap-2">
+                    <TouchableOpacity 
+                        onPress={() => setLocation('Makkah')}
+                        className={`px-3 py-1.5 rounded-lg ${selectedLocation === 'Makkah' ? 'bg-[#4A6741]' : 'bg-stone-100'}`}
+                        activeOpacity={0.7}
+                    >
+                        <Text className={`text-xs font-semibold ${selectedLocation === 'Makkah' ? 'text-white' : 'text-stone-600'}`}>
+                            Makkah
+                        </Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity 
+                        onPress={() => setLocation('Madina')}
+                        className={`px-3 py-1.5 rounded-lg ${selectedLocation === 'Madina' ? 'bg-[#C5A059]' : 'bg-stone-100'}`}
+                        activeOpacity={0.7}
+                    >
+                        <Text className={`text-xs font-semibold ${selectedLocation === 'Madina' ? 'text-white' : 'text-stone-600'}`}>
+                            Madina
+                        </Text>
+                    </TouchableOpacity>
                 </View>
             </View>
 
@@ -96,6 +123,7 @@ export default function PrayersScreen() {
                             location={location}
                             timeUntil={timeUntilNext}
                             clickable={false}
+                            themeColors={themeColors}
                         />
                     </View>
                 )}

@@ -7,6 +7,7 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import { requestPushNotificationPermissions, configureNotifications } from "../lib/api/services/pushNotification.service";
 import { AuthProvider, useAuth } from "../lib/context/AuthContext";
 import { TripProvider, useTrip } from "../lib/context/TripContext";
+import { PrayerLocationProvider } from "../lib/context/PrayerLocationContext";
 import * as Linking from 'expo-linking';
 import { supabase } from "../lib/supabase";
 
@@ -124,7 +125,9 @@ export default function RootLayout() {
         <SafeAreaProvider>
             <AuthProvider>
                 <TripProvider>
-                    <AppContent />
+                    <PrayerLocationProvider>
+                        <AppContent />
+                    </PrayerLocationProvider>
                 </TripProvider>
             </AuthProvider>
         </SafeAreaProvider>

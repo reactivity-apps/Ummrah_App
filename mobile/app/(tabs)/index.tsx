@@ -7,6 +7,7 @@ import Svg, { Path, Rect } from "react-native-svg";
 import { useFadeIn } from "../../lib/sharedElementTransitions";
 import { useTrip } from "../../lib/context/TripContext";
 import { useAuth } from "../../lib/context/AuthContext";
+import { usePrayerLocation } from "../../lib/context/PrayerLocationContext";
 import { TripStatus } from "../../components";
 import { usePrayerWidget } from "../../lib/api/hooks/usePrayerTimes";
 
@@ -25,12 +26,18 @@ export default function HomeScreen() {
     const router = useRouter();
     const { currentTrip } = useTrip();
     const { userName, loading: authLoading } = useAuth();
+    const { locationAddress, selectedLocation } = usePrayerLocation();
     
     // Fetch real-time prayer data
     const { prayers, nextPrayer, timeUntilNext, location, isLoading: prayerLoading } = usePrayerWidget({
-        address: 'Makkah, Saudi Arabia',
+        address: locationAddress,
         autoRefresh: true,
     });
+
+    // Theme colors based on selected location
+    const themeColors = selectedLocation === 'Makkah' 
+        ? ['#4A6741', '#3A5234', '#2A3E28']  // Green for Makkah
+        : ['#C5A059', '#B8904D', '#A67F42']; // Gold for Madina
 
     return (
         <SafeAreaView className="flex-1 bg-background" edges={['top']}>
@@ -83,6 +90,7 @@ export default function HomeScreen() {
                             location={location}
                             timeUntil={timeUntilNext}
                             clickable={true}
+                            themeColors={themeColors}
                         />
                     ) : null}
                 </View>

@@ -32,6 +32,7 @@ interface PrayerTimesWidgetProps {
     timeUntil?: string;
     onPress?: () => void;
     clickable?: boolean;
+    themeColors?: string[]; // Gradient colors for location theming
 }
 
 export default function PrayerTimesWidget({
@@ -40,7 +41,8 @@ export default function PrayerTimesWidget({
     location = 'Makkah, Saudi Arabia',
     timeUntil = '45 mins',
     onPress,
-    clickable = true
+    clickable = true,
+    themeColors = ['#4A6741', '#3A5234', '#2A3E28'] // Default: Makkah green
 }: PrayerTimesWidgetProps) {
     const router = useRouter();
 
@@ -55,7 +57,7 @@ export default function PrayerTimesWidget({
     const content = (
         // @ts-ignore - LinearGradient type compatibility issue with React 19
         <LinearGradient
-            colors={['#4A6741', '#3A5234', '#2A3E28']}
+            colors={themeColors}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
             style={styles.gradient}
