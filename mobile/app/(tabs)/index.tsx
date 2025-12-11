@@ -8,6 +8,7 @@ import { useFadeIn } from "../../lib/sharedElementTransitions";
 import { useTrip } from "../../lib/context/TripContext";
 import { useAuth } from "../../lib/context/AuthContext";
 import { TripStatus } from "../../components";
+import { usePrayerWidget } from "../../lib/api/hooks/usePrayerTimes";
 
 // Kaaba Icon Component
 const KaabaIcon = ({ size = 24, color = "#4A6741" }) => (
@@ -24,6 +25,12 @@ export default function HomeScreen() {
     const router = useRouter();
     const { currentTrip } = useTrip();
     const { userName, loading: authLoading } = useAuth();
+    
+    // Fetch real-time prayer data
+    const { prayers, nextPrayer, timeUntilNext, location, isLoading: prayerLoading } = usePrayerWidget({
+        address: 'Makkah, Saudi Arabia',
+        autoRefresh: true,
+    });
 
     return (
         <SafeAreaView className="flex-1 bg-background" edges={['top']}>
@@ -64,19 +71,20 @@ export default function HomeScreen() {
                 {/* Prayer Times */}
                 <View className="mb-4">
                     <Text className="text-lg font-semibold text-foreground mb-2">Prayer Times</Text>
-                    <PrayerTimesWidget
-                        prayers={[
-                            { name: "Fajr", time: "05:10", done: true },
-                            { name: "Dhuhr", time: "12:30", done: true },
-                            { name: "Asr", time: "15:45", next: true },
-                            { name: "Maghrib", time: "18:20" },
-                            { name: "Isha", time: "19:50" },
-                        ]}
-                        nextPrayer={{ name: "Asr", time: "15:45" }}
-                        location="Makkah, KSA"
-                        timeUntil="45 mins"
-                        clickable={true}
-                    />
+                    {prayerLoading ? (
+                        <View className="bg-[#4A6741] rounded-2xl p-6 items-center justify-center" style={{ minHeight: 200 }}>
+                            <ActivityIndicator size="large" color="#C5A059" />
+                            <Text className="text-white/70 mt-2">Loading prayer times...</Text>
+                        </View>
+                    ) : nextPrayer ? (
+                        <PrayerTimesWidget
+                            prayers={prayers}
+                            nextPrayer={nextPrayer}
+                            location={location}
+                            timeUntil={timeUntilNext}
+                            clickable={true}
+                        />
+                    ) : null}
                 </View>
 
                 {/* Quick Access */}
