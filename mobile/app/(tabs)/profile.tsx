@@ -1,7 +1,7 @@
 import { View, Text, TouchableOpacity, ScrollView, Alert, Animated, ActivityIndicator } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { User, Settings, LogOut, ChevronRight, Bell, Shield, Calendar, Phone, ArrowLeft, Crown, Users, Lock, Trash2 } from "lucide-react-native";
-import { useRouter } from "expo-router";
+import { useRouter, Link } from "expo-router";
 import { useFadeIn } from "../../lib/sharedElementTransitions";
 import { supabase } from "../../lib/supabase";
 import { useTrip } from "../../lib/context/TripContext";
@@ -82,7 +82,7 @@ export default function ProfileScreen() {
                                     icon={Users} 
                                     title="Group Details" 
                                     subtitle="View group information & stats" 
-                                    onPress={() => router.push('/settings/group-details')}
+                                    href="/settings/group-details"
                                     last 
                                 />
                             </View>
@@ -96,25 +96,25 @@ export default function ProfileScreen() {
                             icon={User} 
                             title="Edit Personal Information" 
                             subtitle="Update your details"
-                            onPress={() => router.push('/settings/personal-info')}
+                            href="/settings/personal-info"
                         />
                         <ProfileMenuItem 
                             icon={Phone} 
                             title="Edit Emergency Contact" 
                             subtitle="Add emergency contact" 
-                            onPress={() => router.push('/settings/emergency-contact')}
+                            href="/settings/emergency-contact"
                         />
                           <ProfileMenuItem 
                             icon={Lock} 
                             title="Change Password" 
                             subtitle="Update your password" 
-                            onPress={() => router.push('/settings/change-password')}
+                            href="/settings/change-password"
                         />
                         <ProfileMenuItem 
                             icon={Trash2} 
                             title="Delete Account" 
                             subtitle="Permanently remove your account" 
-                            onPress={() => router.push('/settings/delete-account')}
+                            href="/settings/delete-account"
                             last 
                         />
                        
@@ -127,7 +127,7 @@ export default function ProfileScreen() {
                             icon={Bell} 
                             title="Notifications" 
                             subtitle="Prayer times & reminders" 
-                            onPress={() => router.push('/settings/notifications')}
+                            href="/settings/notifications"
                         />
                        
                     </View>
@@ -139,13 +139,13 @@ export default function ProfileScreen() {
                             icon={Shield} 
                             title="Terms of Service" 
                             subtitle="App usage guidelines & agreement" 
-                            onPress={() => router.push('/settings/privacy-security')}
+                            href="/settings/terms"
                         />
                         <ProfileMenuItem 
                             icon={Shield} 
                             title="Privacy Policy" 
                             subtitle="How we protect your data" 
-                            onPress={() => router.push('/settings/privacy-security')}
+                            href="/settings/privacy-security"
                             last 
                         />
                     </View>
@@ -168,32 +168,51 @@ function ProfileMenuItem({
     title,
     subtitle,
     last,
-    onPress
+    href
 }: {
     icon: any;
     title: string;
     subtitle?: string;
     last?: boolean;
-    onPress?: () => void;
+    href?: string;
 }) {
-    return (
-        <TouchableOpacity
-            className={`flex-row items-center justify-between p-4 ${!last ? 'border-b border-sand-100' : ''}`}
-            onPress={onPress}
-            disabled={!onPress}
-        >
-            <View className="flex-row items-center flex-1">
-                <View className="h-9 w-9 bg-sand-100 rounded-full items-center justify-center mr-3">
-                    <Icon size={18} color="#4A6741" />
+    if (!href) {
+        return (
+            <View className={`flex-row items-center justify-between p-4 ${!last ? 'border-b border-sand-100' : ''}`}>
+                <View className="flex-row items-center flex-1">
+                    <View className="h-9 w-9 bg-sand-100 rounded-full items-center justify-center mr-3">
+                        <Icon size={18} color="#4A6741" />
+                    </View>
+                    <View className="flex-1">
+                        <Text className="text-foreground font-medium">{title}</Text>
+                        {subtitle && (
+                            <Text className="text-xs text-muted-foreground mt-0.5">{subtitle}</Text>
+                        )}
+                    </View>
                 </View>
-                <View className="flex-1">
-                    <Text className="text-foreground font-medium">{title}</Text>
-                    {subtitle && (
-                        <Text className="text-xs text-muted-foreground mt-0.5">{subtitle}</Text>
-                    )}
-                </View>
+                <ChevronRight size={18} color="hsl(40 5% 70%)" />
             </View>
-            <ChevronRight size={18} color="hsl(40 5% 70%)" />
-        </TouchableOpacity>
+        );
+    }
+
+    return (
+        <Link href={href} asChild>
+            <TouchableOpacity
+                className={`flex-row items-center justify-between p-4 ${!last ? 'border-b border-sand-100' : ''}`}
+            >
+                <View className="flex-row items-center flex-1">
+                    <View className="h-9 w-9 bg-sand-100 rounded-full items-center justify-center mr-3">
+                        <Icon size={18} color="#4A6741" />
+                    </View>
+                    <View className="flex-1">
+                        <Text className="text-foreground font-medium">{title}</Text>
+                        {subtitle && (
+                            <Text className="text-xs text-muted-foreground mt-0.5">{subtitle}</Text>
+                        )}
+                    </View>
+                </View>
+                <ChevronRight size={18} color="hsl(40 5% 70%)" />
+            </TouchableOpacity>
+        </Link>
     );
 }

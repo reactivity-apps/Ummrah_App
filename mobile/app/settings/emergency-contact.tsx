@@ -183,15 +183,15 @@ export default function EmergencyContactScreen() {
                 >
                     {/* Form */}
                     <View className="px-5 mt-6">
+                        {lastUpdated && (
+                            <Text className="text-xs text-muted-foreground mb-4">Last updated {getTimeAgo(lastUpdated)}</Text>
+                        )}
                         {/* Info Box */}
                         <View className="bg-primary/10 p-4 rounded-xl border border-primary/20 mb-6">
                             <Text className="text-sm text-foreground leading-5">
                                 This information will only be used in case of emergencies during your trip. Make sure to keep it up to date before each journey.
                             </Text>
                         </View>
-                        {lastUpdated && (
-                            <Text className="text-xs text-muted-foreground mb-4">Refreshed {getTimeAgo(lastUpdated)}</Text>
-                        )}
 
                     {/* Name */}
                     <View className="mb-6">

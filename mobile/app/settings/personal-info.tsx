@@ -380,14 +380,14 @@ export default function PersonalInfoScreen() {
                 >
                     {/* Form */}
                     <View className="px-5 mt-6">
+                         {lastUpdated && (
+                            <Text className="text-xs text-muted-foreground mb-4">Last updated {getTimeAgo(lastUpdated)}</Text>
+                        )}
                         <View className="mb-3 p-3 bg-sand-50 rounded-lg">
                             <Text className="text-xs text-muted-foreground leading-5">
                                 Your name, email, and phone are stored securely in your account. Other details like location, medical notes, and dietary preferences are optional and help trip organizers plan better.
                             </Text>
                         </View>
-                        {lastUpdated && (
-                            <Text className="text-xs text-muted-foreground mb-4">Refreshed {getTimeAgo(lastUpdated)}</Text>
-                        )}
                      {/* Profile Visibility */}
                     <View className="mb-6">
                         <View className="flex-row items-center justify-between bg-card rounded-xl px-4 py-4 border border-sand-200">

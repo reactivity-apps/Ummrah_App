@@ -46,6 +46,10 @@ export default function SettingsLayout() {
                 name="app-settings"
                 options={{ title: "App Settings" }}
             />
+            <Stack.Screen
+                name="terms"
+                options={{ title: "Terms of Service" }}
+            />
         </Stack>
     );
 }

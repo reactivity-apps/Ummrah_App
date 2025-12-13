@@ -207,7 +207,7 @@ export default function GroupDetailsScreen() {
                 {/* Group Info Card */}
                 <View className="px-4 mt-4">
                     {lastUpdated && (
-                        <Text className="text-xs text-muted-foreground mb-3">Refreshed {getTimeAgo(lastUpdated)}</Text>
+                        <Text className="text-xs text-muted-foreground mb-3">Last updated {getTimeAgo(lastUpdated)}</Text>
                     )}
                     <View className="bg-card p-6 rounded-xl border border-sand-200 items-center">
                         <View className="h-20 w-20 bg-primary/10 rounded-full items-center justify-center mb-4 border-2 border-primary/20">

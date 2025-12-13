@@ -77,7 +77,7 @@ export default function PrayersScreen() {
                 style={fadeInStyle}
                 className="flex-1"
                 showsVerticalScrollIndicator={false}
-                contentContainerStyle={{ paddingHorizontal: 24, paddingVertical: 24, paddingBottom: 120 }}
+                contentContainerStyle={{ paddingHorizontal: 24, paddingVertical: 24, paddingBottom: 24 }}
             >
                 {/* Loading State */}
                 {isLoading && (
@@ -173,22 +173,22 @@ export default function PrayersScreen() {
                 )}
 
                 {/* Qibla Direction */}
-                {!isLoading && (
-                <View className="mb-6">
-                    <TouchableOpacity className="bg-white rounded-2xl p-5 border border-stone-100 shadow-sm flex-row items-center justify-between">
-                        <View className="flex-row items-center">
-                            <View className="w-12 h-12 bg-[#4A6741] rounded-full items-center justify-center">
-                                <Text className="text-white text-xl">🧭</Text>
+                {/* {!isLoading && (
+                    <View className="mb-6">
+                        <TouchableOpacity className="bg-white rounded-2xl p-5 border border-stone-100 shadow-sm flex-row items-center justify-between">
+                            <View className="flex-row items-center">
+                                <View className="w-12 h-12 bg-[#4A6741] rounded-full items-center justify-center">
+                                    <Text className="text-white text-xl">🧭</Text>
+                                </View>
+                                <View className="ml-4">
+                                    <Text className="text-base font-semibold text-stone-800">Qibla Direction</Text>
+                                    <Text className="text-xs text-stone-500">Find the direction to Kaaba</Text>
+                                </View>
                             </View>
-                            <View className="ml-4">
-                                <Text className="text-base font-semibold text-stone-800">Qibla Direction</Text>
-                                <Text className="text-xs text-stone-500">Find the direction to Kaaba</Text>
-                            </View>
-                        </View>
-                        <ChevronRight size={20} color="#CBD5E0" />
-                    </TouchableOpacity>
-                </View>
-                )}
+                            <ChevronRight size={20} color="#CBD5E0" />
+                        </TouchableOpacity>
+                    </View>
+                )} */}
 
                 {/* Islamic Date */}
                 {!isLoading && (
@@ -204,7 +204,6 @@ export default function PrayersScreen() {
                 )}
             </Animated.ScrollView>
 
-            <RadialMenu />
         </SafeAreaView>
     );
 }

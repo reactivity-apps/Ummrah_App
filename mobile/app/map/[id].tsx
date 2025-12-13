@@ -49,12 +49,13 @@ export default function ZiyaratDetailScreen() {
                         {location.title}
                     </Text>
                 </View>
+                {/* TODO: Add bookmark functionality */}
                 <TouchableOpacity className="ml-2 p-2">
                     <Bookmark size={22} color="#4A6741" />
                 </TouchableOpacity>
             </View>
 
-            <ScrollView className="flex-1" contentContainerStyle={{ paddingBottom: 24 }}>
+            <ScrollView className="flex-1" contentContainerStyle={{ padding: 20, paddingBottom: 20 }}>
                 {/* Hero Section - Animated entrance */}
                 <Animated.View
                     style={heroStyle}

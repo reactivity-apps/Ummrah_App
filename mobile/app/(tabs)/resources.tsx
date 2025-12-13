@@ -1,11 +1,10 @@
 import { View, Text, ScrollView, TouchableOpacity, Animated } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useRouter } from "expo-router";
+import { Link } from "expo-router";
 import { BookOpen, ScrollText, MapPin, FileText, MessageCircle, Clock, ChevronRight } from "lucide-react-native";
 import { useFadeIn } from "../../lib/sharedElementTransitions";
 
 export default function ResourcesScreen() {
-    const router = useRouter();
     const fadeInStyle = useFadeIn(0);
 
     const resources = [
@@ -55,9 +54,9 @@ export default function ResourcesScreen() {
             borderColor: 'border-stone-200'
         },
         {
-            id: 'documents',
-            title: 'Documents',
-            subtitle: 'Travel Docs',
+            id: 'profile',
+            title: 'Profile',
+            subtitle: 'Account & Settings',
             icon: <FileText size={20} color="#718096" />,
             route: '/(tabs)/profile',
             color: 'bg-blue-50',
@@ -78,24 +77,24 @@ export default function ResourcesScreen() {
                     <Text className="text-stone-500 text-base">Everything you need for your journey</Text>
                 </View>
 
-                <Animated.ScrollView style={fadeInStyle} showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 100 }}>
+                <Animated.ScrollView style={fadeInStyle} showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 16, paddingBottom: 24 }}>
                     {/* Resource List */}
                     <View className="space-y-3">
                         {resources.map((item) => (
-                            <TouchableOpacity
-                                key={item.id}
-                                onPress={() => router.push(item.route as any)}
-                                className={`flex-row items-center p-4 rounded-xl border ${item.borderColor} ${item.color} shadow-sm`}
-                            >
-                                <View className="bg-white w-12 h-12 rounded-full items-center justify-center shadow-sm mr-4">
-                                    {item.icon}
-                                </View>
-                                <View className="flex-1">
-                                    <Text className="text-base font-semibold text-stone-800">{item.title}</Text>
-                                    <Text className="text-xs text-stone-500">{item.subtitle}</Text>
-                                </View>
-                                <ChevronRight size={20} color="#CBD5E0" />
-                            </TouchableOpacity>
+                            <Link key={item.id} href={item.route as any} asChild>
+                                <TouchableOpacity
+                                    className={`flex-row items-center p-4 rounded-xl border ${item.borderColor} ${item.color} shadow-sm`}
+                                >
+                                    <View className="bg-white w-12 h-12 rounded-full items-center justify-center shadow-sm mr-4">
+                                        {item.icon}
+                                    </View>
+                                    <View className="flex-1">
+                                        <Text className="text-base font-semibold text-stone-800">{item.title}</Text>
+                                        <Text className="text-xs text-stone-500">{item.subtitle}</Text>
+                                    </View>
+                                    <ChevronRight size={20} color="#CBD5E0" />
+                                </TouchableOpacity>
+                            </Link>
                         ))}
                     </View>
 
@@ -105,23 +104,27 @@ export default function ResourcesScreen() {
                             <Text className="text-lg font-semibold text-stone-800">Quick Access</Text>
                         </View>
 
-                        <TouchableOpacity onPress={() => router.push('/duas')} className="flex-row items-center py-3 border-b border-stone-100">
-                            <Text className="text-2xl mr-4">🤲</Text>
-                            <View className="flex-1">
-                                <Text className="text-base font-medium text-stone-800">Morning Adhkar</Text>
-                                <Text className="text-xs text-stone-500">Recommended for now</Text>
-                            </View>
-                            <ChevronRight size={20} color="#CBD5E0" />
-                        </TouchableOpacity>
+                        <Link href="/duas" asChild>
+                            <TouchableOpacity className="flex-row items-center py-3 border-b border-stone-100">
+                                <Text className="text-2xl mr-4">🤲</Text>
+                                <View className="flex-1">
+                                    <Text className="text-base font-medium text-stone-800">Morning Adhkar</Text>
+                                    <Text className="text-xs text-stone-500">Recommended for now</Text>
+                                </View>
+                                <ChevronRight size={20} color="#CBD5E0" />
+                            </TouchableOpacity>
+                        </Link>
 
-                        <TouchableOpacity onPress={() => router.push('/umrah-guide')} className="flex-row items-center py-3 pt-4">
-                            <Text className="text-2xl mr-4">🕋</Text>
-                            <View className="flex-1">
-                                <Text className="text-base font-medium text-stone-800">Tawaf Guide</Text>
-                                <Text className="text-xs text-stone-500">Step 3 of Umrah</Text>
-                            </View>
-                            <ChevronRight size={20} color="#CBD5E0" />
-                        </TouchableOpacity>
+                        <Link href="/umrah-guide" asChild>
+                            <TouchableOpacity className="flex-row items-center py-3 pt-4">
+                                <Text className="text-2xl mr-4">🕋</Text>
+                                <View className="flex-1">
+                                    <Text className="text-base font-medium text-stone-800">Tawaf Guide</Text>
+                                    <Text className="text-xs text-stone-500">Step 3 of Umrah</Text>
+                                </View>
+                                <ChevronRight size={20} color="#CBD5E0" />
+                            </TouchableOpacity>
+                        </Link>
                     </View>
                 </Animated.ScrollView>
             </View>

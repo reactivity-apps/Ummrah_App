@@ -5,13 +5,12 @@
  */
 
 import React, { useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, Modal, Linking } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, Modal, Linking, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Bell, AlertCircle, X, ExternalLink } from 'lucide-react-native';
 import { useAnnouncements } from '../lib/api/hooks/useAnnouncements';
 import { formatTimeAgo } from '../lib/api/utils/helpers';
 import { AnnouncementRow } from '../types/db';
-import { router } from 'expo-router';
 import { useTrip } from '../lib/context/TripContext';
 
 export default function AnnouncementsScreen() {
@@ -32,21 +31,19 @@ export default function AnnouncementsScreen() {
 
     return (
         <SafeAreaView className="flex-1 bg-sand-50" edges={['bottom']}>
-            <View className="px-4 py-3 bg-card border-b border-sand-200">
-                <View className="flex-row items-center">
-                    <Bell size={20} color="#4A6741" />
-                    <Text className="text-xl font-bold text-foreground ml-2">Announcements</Text>
-                </View>
-                <Text className="text-sm text-muted-foreground">
-                    {announcements.length} message{announcements.length !== 1 ? 's' : ''}
-                </Text>
-            </View>
-
             {/* Content */}
             <ScrollView className="flex-1">
+                {!loading && (
+                    <View className="px-4 pt-4 pb-2">
+                        <Text className="text-sm text-muted-foreground">
+                            {announcements.length} message{announcements.length !== 1 ? 's' : ''}
+                        </Text>
+                    </View>
+                )}
                 {loading ? (
-                    <View className="p-8 items-center">
-                        <Text className="text-muted-foreground">Loading announcements...</Text>
+                    <View className="flex-1 items-center justify-center p-8">
+                        <ActivityIndicator size="large" color="#4A6741" />
+                        <Text className="text-muted-foreground mt-4">Loading announcements...</Text>
                     </View>
                 ) : announcements.length === 0 ? (
                     <View className="p-8 items-center">

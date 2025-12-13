@@ -83,7 +83,7 @@ export default function TabLayout() {
                     options={{
                         title: 'Admin',
                         tabBarIcon: ({ color, size }) => <Shield size={size} color={color} />,
-                        href: isGroupAdmin ? undefined : null, // Only show if user is group admin
+                        href: isGroupAdmin ? '/admin' : null, // Only show if user is group admin
                     }}
                 />
             </Tabs>

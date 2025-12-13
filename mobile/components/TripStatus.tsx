@@ -39,12 +39,46 @@ export default function TripStatus() {
         );
     }
 
-    // Calculate current day
+    // Calculate current day and trip status
     const startDate = currentTrip.start_date ? new Date(currentTrip.start_date) : null;
     const endDate = currentTrip.end_date ? new Date(currentTrip.end_date) : null;
     const today = new Date();
-    const currentDay = startDate ? Math.ceil((today.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)) + 1 : null;
-    const totalDays = startDate && endDate ? Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)) + 1 : null;
+    today.setHours(0, 0, 0, 0); // Normalize to start of day
+    
+    let tripStatus: { type: 'upcoming' | 'active' | 'completed', message: string } | null = null;
+    let currentDay: number | null = null;
+    let totalDays: number | null = null;
+
+    if (startDate && endDate) {
+        const normalizedStart = new Date(startDate);
+        normalizedStart.setHours(0, 0, 0, 0);
+        const normalizedEnd = new Date(endDate);
+        normalizedEnd.setHours(0, 0, 0, 0);
+        
+        totalDays = Math.ceil((normalizedEnd.getTime() - normalizedStart.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+        
+        if (today < normalizedStart) {
+            // Trip hasn't started yet
+            const daysUntilStart = Math.ceil((normalizedStart.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+            tripStatus = {
+                type: 'upcoming',
+                message: daysUntilStart === 1 ? 'Starts tomorrow' : `Starts in ${daysUntilStart} days`
+            };
+        } else if (today > normalizedEnd) {
+            // Trip has ended
+            tripStatus = {
+                type: 'completed',
+                message: 'Trip completed'
+            };
+        } else {
+            // Trip is active
+            currentDay = Math.ceil((today.getTime() - normalizedStart.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+            tripStatus = {
+                type: 'active',
+                message: `Day ${currentDay} of ${totalDays}`
+            };
+        }
+    }
 
     // Find next activity
     const now = new Date();
@@ -69,8 +103,8 @@ export default function TripStatus() {
                     <Text className="font-bold text-foreground">{currentTrip.name}</Text>
                 </View>
                 <View>
-                    {currentDay && totalDays && (
-                        <Text className="text-xs text-muted-foreground text-right">Day {currentDay} of {totalDays}</Text>
+                    {tripStatus && (
+                        <Text className="text-xs text-muted-foreground text-right">{tripStatus.message}</Text>
                     )}
                     <Text className="font-semibold text-[#C5A059] text-right">{citiesDisplay}</Text>
                 </View>
