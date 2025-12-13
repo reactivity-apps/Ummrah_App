@@ -1,19 +1,28 @@
-import { View, Text, TouchableOpacity, ScrollView, Switch, Alert, Linking, Platform, ActivityIndicator } from "react-native";
+import { View, Text, TouchableOpacity, ScrollView, Switch, Alert, Linking, Platform, ActivityIndicator, RefreshControl } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useState, useEffect } from "react";
 import { useRouter } from "expo-router";
 import { Bell, Clock, Megaphone, AlertTriangle, Settings } from "lucide-react-native";
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Notifications from 'expo-notifications';
+import { supabase } from "../../lib/supabase";
+import { useAuth } from "../../lib/context/AuthContext";
+import { ProfileRow } from "../../types/db";
+import { loadFromCache, saveToCache, getTimeAgo } from "../../lib/utils";
 
-const STORAGE_KEYS = {
-    ANNOUNCEMENT_NOTIFICATIONS: 'notifications_announcements',
-    PRAYER_NOTIFICATIONS: 'notifications_prayers',
-};
+const CACHE_DURATION = 24 * 60 * 60 * 1000; // 24 hours
+
+interface NotificationPreferences {
+    announcements: boolean;
+    prayers: boolean;
+}
 
 export default function NotificationsScreen() {
     const router = useRouter();
+    const { user } = useAuth();
     const [loading, setLoading] = useState(true);
+    const [refreshing, setRefreshing] = useState(false);
+    const [saving, setSaving] = useState(false);
+    const [lastUpdated, setLastUpdated] = useState<number | null>(null);
     const [announcementNotifications, setAnnouncementNotifications] = useState(true);
     const [prayerNotifications, setPrayerNotifications] = useState(true);
     const [systemNotificationsEnabled, setSystemNotificationsEnabled] = useState(true);
@@ -53,26 +62,88 @@ export default function NotificationsScreen() {
     const loadSettings = async () => {
         try {
             setLoading(true);
-            const [announcements, prayers] = await Promise.all([
-                AsyncStorage.getItem(STORAGE_KEYS.ANNOUNCEMENT_NOTIFICATIONS),
-                AsyncStorage.getItem(STORAGE_KEYS.PRAYER_NOTIFICATIONS),
-            ]);
+            
+            if (!user?.id) {
+                console.warn('No user ID available');
+                setLoading(false);
+                return;
+            }
 
-            // Default to true if not set
-            setAnnouncementNotifications(announcements !== 'false');
-            setPrayerNotifications(prayers !== 'false');
+            // Try loading from cache first
+            const cacheKey = `notification_preferences_${user.id}`;
+            const cached = await loadFromCache<NotificationPreferences>(cacheKey, CACHE_DURATION);
+            
+            if (cached) {
+                setAnnouncementNotifications(cached.data.announcements);
+                setPrayerNotifications(cached.data.prayers);
+                setLastUpdated(cached.timestamp);
+                setLoading(false);
+            }
+
+            // Fetch from database
+            const { data: profile, error } = await supabase
+                .from('profiles')
+                .select('notification_announcements, notification_prayers, updated_at')
+                .eq('user_id', user.id)
+                .single();
+
+            if (error) {
+                throw error;
+            }
+
+            if (profile) {
+                const preferences: NotificationPreferences = {
+                    announcements: profile.notification_announcements ?? true,
+                    prayers: profile.notification_prayers ?? true,
+                };
+                
+                setAnnouncementNotifications(preferences.announcements);
+                setPrayerNotifications(preferences.prayers);
+                
+                // Save to cache
+                await saveToCache(cacheKey, preferences);
+                setLastUpdated(Date.now());
+            }
         } catch (error) {
             console.error('Error loading notification settings:', error);
-            Alert.alert('Error', 'Failed to load notification settings');
+            Alert.alert('Error', 'Failed to load notification preferences');
         } finally {
             setLoading(false);
+            setRefreshing(false);
         }
     };
 
     const handleToggleAnnouncements = async (value: boolean) => {
+        if (!user?.id) {
+            Alert.alert('Error', 'User not authenticated');
+            return;
+        }
+
         try {
+            setSaving(true);
             setAnnouncementNotifications(value);
-            await AsyncStorage.setItem(STORAGE_KEYS.ANNOUNCEMENT_NOTIFICATIONS, String(value));
+
+            // Save to database
+            const { error } = await supabase
+                .from('profiles')
+                .upsert({
+                    user_id: user.id,
+                    notification_announcements: value,
+                    updated_at: new Date().toISOString(),
+                }, { onConflict: 'user_id' });
+
+            if (error) {
+                throw error;
+            }
+
+            // Update cache
+            const cacheKey = `notification_preferences_${user.id}`;
+            const preferences: NotificationPreferences = {
+                announcements: value,
+                prayers: prayerNotifications,
+            };
+            await saveToCache(cacheKey, preferences);
+            setLastUpdated(Date.now());
             
             // Show feedback
             Alert.alert(
@@ -85,13 +156,42 @@ export default function NotificationsScreen() {
             console.error('Error saving announcement settings:', error);
             Alert.alert('Error', 'Failed to save settings');
             setAnnouncementNotifications(!value); // Revert on error
+        } finally {
+            setSaving(false);
         }
     };
 
     const handleTogglePrayers = async (value: boolean) => {
+        if (!user?.id) {
+            Alert.alert('Error', 'User not authenticated');
+            return;
+        }
+
         try {
+            setSaving(true);
             setPrayerNotifications(value);
-            await AsyncStorage.setItem(STORAGE_KEYS.PRAYER_NOTIFICATIONS, String(value));
+
+            // Save to database
+            const { error } = await supabase
+                .from('profiles')
+                .upsert({
+                    user_id: user.id,
+                    notification_prayers: value,
+                    updated_at: new Date().toISOString(),
+                }, { onConflict: 'user_id' });
+
+            if (error) {
+                throw error;
+            }
+
+            // Update cache
+            const cacheKey = `notification_preferences_${user.id}`;
+            const preferences: NotificationPreferences = {
+                announcements: announcementNotifications,
+                prayers: value,
+            };
+            await saveToCache(cacheKey, preferences);
+            setLastUpdated(Date.now());
             
             // Show feedback
             Alert.alert(
@@ -104,7 +204,14 @@ export default function NotificationsScreen() {
             console.error('Error saving prayer settings:', error);
             Alert.alert('Error', 'Failed to save settings');
             setPrayerNotifications(!value); // Revert on error
+        } finally {
+            setSaving(false);
         }
+    };
+
+    const onRefresh = async () => {
+        setRefreshing(true);
+        await loadSettings();
     };
 
     if (loading) {
@@ -116,8 +223,28 @@ export default function NotificationsScreen() {
     }
 
     return (
-        <SafeAreaView className="flex-1 bg-background">
-            <ScrollView className="flex-1" contentContainerStyle={{ paddingBottom: 32 }}>
+        <SafeAreaView className="flex-1 bg-background" edges={['bottom']}>
+            <ScrollView 
+                className="flex-1" 
+                contentContainerStyle={{ paddingBottom: 32 }}
+                refreshControl={
+                    <RefreshControl
+                        refreshing={refreshing}
+                        onRefresh={onRefresh}
+                        tintColor="#4A6741"
+                        colors={['#4A6741']}
+                    />
+                }
+            >
+                {/* Last Updated */}
+                {lastUpdated && (
+                    <View className="px-5 mt-4">
+                        <Text className="text-xs text-muted-foreground">
+                            Last updated {getTimeAgo(lastUpdated)}
+                        </Text>
+                    </View>
+                )}
+
                 {/* Info Box */}
                 <View className="px-5 mt-4">
                     <View className="bg-primary/10 p-4 rounded-xl border border-primary/20">
@@ -222,6 +349,16 @@ export default function NotificationsScreen() {
                         </View>
                     </View>
                 </View>
+
+                 {/* Saving Indicator */}
+                {saving && (
+                    <View className="px-5 mt-2">
+                        <View className="bg-primary/10 p-3 rounded-lg flex-row items-center justify-center">
+                            <ActivityIndicator size="small" color="#4A6741" />
+                            <Text className="text-sm text-primary ml-2">Saving preferences...</Text>
+                        </View>
+                    </View>
+                )}
 
                 {/* Help Text */}
                 <View className="px-5 mt-8">

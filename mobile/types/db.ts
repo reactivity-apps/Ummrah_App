@@ -28,6 +28,10 @@ export interface ProfileRow {
   emergency_contact_name: string | null;
   emergency_contact_phone: string | null;
 
+  // Notification preferences
+  notification_announcements: boolean;
+  notification_prayers: boolean;
+
   // AUTH-WIDE ROLE — single highest privilege
   auth_role: AuthRole | null;  // null = normal authenticated user
 
