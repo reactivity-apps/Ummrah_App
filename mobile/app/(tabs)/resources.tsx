@@ -65,7 +65,7 @@ export default function ResourcesScreen() {
     ];
 
     return (
-        <SafeAreaView className="flex-1 bg-[#FDFBF7]" edges={['top']}>
+        <SafeAreaView className="flex-1 bg-card" edges={['top']}>
             <View className="flex-1">
                 <View className="px-4 pt-6 pb-4 bg-card border-b border-sand-200">
                     <View className="flex-row items-center mb-2">
@@ -77,13 +77,13 @@ export default function ResourcesScreen() {
                     <Text className="text-stone-500 text-base">Everything you need for your journey</Text>
                 </View>
 
-                <Animated.ScrollView style={fadeInStyle} showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 16, paddingBottom: 24 }}>
+                <Animated.ScrollView style={fadeInStyle} className="bg-background" showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 16, paddingBottom: 24 }}>
                     {/* Resource List */}
-                    <View className="space-y-3">
+                    <View>
                         {resources.map((item) => (
                             <Link key={item.id} href={item.route as any} asChild>
                                 <TouchableOpacity
-                                    className={`flex-row items-center p-4 rounded-xl border ${item.borderColor} ${item.color} shadow-sm`}
+                                    className={`flex-row items-center p-4 rounded-xl border ${item.borderColor} ${item.color} shadow-sm mb-3`}
                                 >
                                     <View className="bg-white w-12 h-12 rounded-full items-center justify-center shadow-sm mr-4">
                                         {item.icon}
@@ -120,7 +120,7 @@ export default function ResourcesScreen() {
                                 <Text className="text-2xl mr-4">🕋</Text>
                                 <View className="flex-1">
                                     <Text className="text-base font-medium text-stone-800">Tawaf Guide</Text>
-                                    <Text className="text-xs text-stone-500">Step 3 of Umrah</Text>
+                                    <Text className="text-xs text-stone-500">Steps of Umrah</Text>
                                 </View>
                                 <ChevronRight size={20} color="#CBD5E0" />
                             </TouchableOpacity>

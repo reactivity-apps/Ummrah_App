@@ -191,9 +191,9 @@ export default function GroupDetailsScreen() {
     }
 
     return (
-        <SafeAreaView className="flex-1 bg-sand-50">
+        <SafeAreaView className="flex-1 bg-sand-50" edges={["bottom"]}>
             <ScrollView
-                className="flex-1"
+                className="flex-1 pt-5"
                 contentContainerStyle={{ paddingBottom: 24 }}
                 refreshControl={
                     <RefreshControl

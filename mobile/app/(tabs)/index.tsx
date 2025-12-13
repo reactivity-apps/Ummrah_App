@@ -40,9 +40,9 @@ export default function HomeScreen() {
         : ['#C5A059', '#B8904D', '#A67F42']; // Gold for Madina
 
     return (
-        <SafeAreaView className="flex-1 bg-background" edges={['top']}>
+        <SafeAreaView className="flex-1 bg-card" edges={['top']}>
             {/* Header */}
-            <View className="px-4 pt-6 pb-4 bg-background border-b border-sand-200">
+            <View className="px-4 pt-6 pb-4 bg-card border-b border-sand-200">
                 <View className="flex-row items-center justify-between mb-2">
                     <View className="flex-row items-center">
                         <View className="h-10 w-10 rounded-full border-2 border-[#C5A059]/30 bg-[#C5A059]/10 items-center justify-center mr-3">
@@ -63,7 +63,7 @@ export default function HomeScreen() {
 
             <Animated.ScrollView
                 style={fadeInStyle}
-                className="flex-1"
+                className="flex-1 bg-background"
                 contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 8, paddingBottom: 20 }}
             >
                 {/* Trip Status */}

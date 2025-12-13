@@ -19,9 +19,9 @@ function ZiyaratCard({ item, index }: { item: typeof ZIYARAT[0]; index: number }
             >
                 <Animated.View
                     style={[staggerStyle, pressStyle]}
-                    className="bg-card rounded-xl mb-4 shadow-sm"
+                    className="bg-card rounded-xl mb-4 shadow-sm border-2 border-sand-100 overflow-hidden"
                 >
-                    <View className="border-2 border-sand-100 rounded-xl mb-4 overflow-hidden">
+                    <View className="rounded-xl overflow-hidden">
                         <View className="h-48 bg-gradient-to-br from-primary/10 to-primary/5 items-center justify-center relative">
                             <MapPin size={64} color="hsl(40 30% 50%)" opacity={0.2} />
                             <View className="absolute top-3 right-3 bg-card/90 backdrop-blur px-2.5 py-1.5 rounded-full flex-row items-center border border-sand-200">
@@ -64,7 +64,7 @@ function ZiyaratCard({ item, index }: { item: typeof ZIYARAT[0]; index: number }
 
 export default function MapScreen() {
     return (
-        <SafeAreaView className="flex-1 bg-sand-50">
+        <SafeAreaView className="flex-1 bg-card" edges={['top']}>
             <View className="px-4 pt-6 pb-4 bg-card border-b border-sand-200">
                 <View className="flex-row items-center mb-2">
                     <View className="h-10 w-10 rounded-full border-2 border-[#C5A059]/30 bg-[#C5A059]/10 items-center justify-center mr-3">
@@ -78,7 +78,8 @@ export default function MapScreen() {
             <FlatList
                 data={ZIYARAT}
                 keyExtractor={(item) => item.id}
-                contentContainerStyle={{ paddingHorizontal: 16, paddingVertical: 16 }}
+                className="bg-background"
+                contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 16, paddingBottom: 0 }}
                 renderItem={({ item, index }) => (
                     <ZiyaratCard item={item} index={index} />
                 )}

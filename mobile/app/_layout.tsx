@@ -84,13 +84,13 @@ function AppContent() {
 
     return (
         <>
-            {isAuthenticated && (
+            {/* {isAuthenticated && (
                 <View className="bg-green-100 border-b border-green-300 px-4 py-2">
                     <Text className="text-xs text-green-800 text-center">
                         🟢 Logged in: {userName} ({userEmail})
                     </Text>
                 </View>
-            )}
+            )} */}
             <Stack 
                 screenOptions={{ 
                     headerShown: true,

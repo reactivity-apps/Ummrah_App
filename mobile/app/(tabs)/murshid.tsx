@@ -225,7 +225,7 @@ export default function MurshidScreen() {
     }, [messages, isTyping]);
 
     return (
-        <SafeAreaView className="flex-1 bg-[#FDFBF7]" edges={['top']}>
+        <SafeAreaView className="flex-1 bg-card" edges={['top']}>
             {/* Header */}
             <View className="px-4 pt-6 pb-4 bg-card border-b border-sand-200">
                 <View className="flex-row items-center mb-2">
@@ -246,7 +246,7 @@ export default function MurshidScreen() {
                 <Animated.ScrollView
                     style={contentFadeStyle}
                     ref={scrollViewRef}
-                    className="flex-1"
+                    className="flex-1 bg-background"
                     contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 20 }}
                 >
                     {messages.map((msg) => (

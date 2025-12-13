@@ -24,7 +24,7 @@ export default function ProfileScreen() {
     };
 
     return (
-        <SafeAreaView className="flex-1 bg-sand-50">
+        <SafeAreaView className="flex-1 bg-card" edges={["top"]}>
             <View className="px-4 pt-6 pb-4 bg-card border-b border-sand-200">
                 <View className="flex-row items-center mb-2">
                     <View className="h-10 w-10 rounded-full border-2 border-[#4A6741]/30 bg-[#4A6741]/10 items-center justify-center mr-3">
@@ -37,8 +37,7 @@ export default function ProfileScreen() {
 
             <Animated.ScrollView 
                 style={fadeInStyle} 
-                className="flex-1" 
-                contentContainerStyle={{ paddingBottom: 35 }}
+                className="flex-1 bg-background" 
             >
                 <View className="bg-card pb-6 pt-6">
                     <View className="items-center">

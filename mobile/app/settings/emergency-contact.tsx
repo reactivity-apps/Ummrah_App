@@ -161,7 +161,7 @@ export default function EmergencyContactScreen() {
     }
 
     return (
-        <SafeAreaView className="flex-1 bg-background">
+        <SafeAreaView className="flex-1 bg-background" edges={["bottom"]}>
             <KeyboardAvoidingView 
                 behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
                 className="flex-1"
