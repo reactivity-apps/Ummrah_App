@@ -5,35 +5,23 @@ import { useRouter } from "expo-router";
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { User, Mail, Phone, Save, CheckCircle, XCircle, Send, MapPin, Calendar, FileText, Utensils, Camera, Eye } from "lucide-react-native";
 import { supabase } from "../../lib/supabase";
-import { ProfileRow } from "../../types/db";
 import { useAuth } from "../../lib/context/AuthContext";
-import { loadFromCache, saveToCache, getTimeAgo } from "../../lib/utils";
-
-interface PersonalInfoData {
-    name: string;
-    email: string;
-    phone: string;
-    emailVerified: boolean;
-    country: string;
-    city: string;
-    dateOfBirth: string;
-    medicalNotes: string;
-    dietaryRestrictions: string;
-    profileVisible: boolean;
-}
+import { useProfile } from "../../lib/api/hooks/useProfile";
+import { getTimeAgo } from "../../lib/utils";
 
 export default function PersonalInfoScreen() {
     const router = useRouter();
-    const { user, updateUserProfile } = useAuth();
+    const { user } = useAuth();
+    const { profile, loading, refreshing, lastUpdated, refresh, updateProfile } = useProfile({
+        userId: user?.id,
+        enableRealtime: false,
+    });
+    
     // TODO: Allow editing of verified emails with proper confirmation flow
     const ALLOW_VERIFIED_EMAIL_EDIT = false;
-    const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
     
-    const [loading, setLoading] = useState(true);
-    const [refreshing, setRefreshing] = useState(false);
     const [saving, setSaving] = useState(false);
     const [sendingVerification, setSendingVerification] = useState(false);
-    const [lastUpdated, setLastUpdated] = useState<number | null>(null);
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [phone, setPhone] = useState('');
@@ -59,131 +47,33 @@ export default function PersonalInfoScreen() {
         profileVisible: true,
     });
 
+    // Update local state when profile data loads
     useEffect(() => {
-        loadProfile();
-    }, []);
+        if (profile) {
+            setName(profile.name);
+            setEmail(profile.email);
+            setPhone(profile.phone);
+            setEmailVerified(profile.emailVerified);
+            setCountry(profile.country);
+            setCity(profile.city);
+            setDateOfBirth(profile.dateOfBirth);
+            setMedicalNotes(profile.medicalNotes);
+            setDietaryRestrictions(profile.dietaryRestrictions);
+            setProfileVisible(profile.profileVisible);
 
-    const loadProfile = async (forceRefresh: boolean = false) => {
-        try {
-            if (!forceRefresh) {
-                setLoading(true);
-            }
-            
-            if (!user) {
-                setLoading(false);
-                setRefreshing(false);
-                return;
-            }
-
-            const cacheKey = `@ummrah_personal_info_${user.id}`;
-
-            // Try to load from cache if not forcing refresh
-            if (!forceRefresh) {
-                const cached = await loadFromCache<PersonalInfoData>(cacheKey, CACHE_DURATION, 'PersonalInfo');
-                if (cached) {
-                    setName(cached.data.name);
-                    setEmail(cached.data.email);
-                    setPhone(cached.data.phone);
-                    setEmailVerified(cached.data.emailVerified);
-                    setCountry(cached.data.country);
-                    setCity(cached.data.city);
-                    setDateOfBirth(cached.data.dateOfBirth);
-                    setMedicalNotes(cached.data.medicalNotes);
-                    setDietaryRestrictions(cached.data.dietaryRestrictions);
-                    setProfileVisible(cached.data.profileVisible);
-                    setLastUpdated(cached.timestamp);
-                    
-                    setOriginalValues({
-                        name: cached.data.name,
-                        email: cached.data.email,
-                        phone: cached.data.phone,
-                        country: cached.data.country,
-                        city: cached.data.city,
-                        dateOfBirth: cached.data.dateOfBirth,
-                        medicalNotes: cached.data.medicalNotes,
-                        dietaryRestrictions: cached.data.dietaryRestrictions,
-                        profileVisible: cached.data.profileVisible,
-                    });
-                    
-                    setLoading(false);
-                    return;
-                }
-            }
-
-            // Check email verification status
-            const emailVerified = user.email_confirmed_at !== null;
-            setEmailVerified(emailVerified);
-
-            // Load data from auth user
-            const userName = user.user_metadata?.full_name || '';
-            const userEmail = user.email || '';
-            const userPhone = user.user_metadata?.phone || '';
-            
-            setName(userName);
-            setEmail(userEmail);
-            setPhone(userPhone);
-
-            // Load data from profiles table
-            const { data: profile, error: profileError } = await supabase
-                .from('profiles')
-                .select('*')
-                .eq('user_id', user.id)
-                .single();
-
-            const profileCountry = profile?.country || '';
-            const profileCity = profile?.city || '';
-            const profileDateOfBirth = profile?.date_of_birth || '';
-            const profileMedicalNotes = profile?.medical_notes || '';
-            const profileDietaryRestrictions = profile?.dietary_restrictions || '';
-            const profileVisible = profile?.profile_visible ?? true;
-
-            if (profileError && profileError.code !== 'PGRST116') {
-                console.error('Error fetching profile:', profileError);
-            } else if (profile) {
-                setCountry(profileCountry);
-                setCity(profileCity);
-                setDateOfBirth(profileDateOfBirth);
-                setMedicalNotes(profileMedicalNotes);
-                setDietaryRestrictions(profileDietaryRestrictions);
-                setProfileVisible(profileVisible);
-            }
-
-            // Store original values for change detection
-            const originalData = {
-                name: userName,
-                email: userEmail,
-                phone: userPhone,
-                country: profileCountry,
-                city: profileCity,
-                dateOfBirth: profileDateOfBirth,
-                medicalNotes: profileMedicalNotes,
-                dietaryRestrictions: profileDietaryRestrictions,
-                profileVisible: profileVisible,
-            };
-            setOriginalValues(originalData);
-
-            // Cache the data
-            const dataToCache: PersonalInfoData = {
-                name: userName,
-                email: userEmail,
-                phone: userPhone,
-                emailVerified: emailVerified,
-                country: profileCountry,
-                city: profileCity,
-                dateOfBirth: profileDateOfBirth,
-                medicalNotes: profileMedicalNotes,
-                dietaryRestrictions: profileDietaryRestrictions,
-                profileVisible: profileVisible,
-            };
-            await saveToCache(cacheKey, dataToCache, 'PersonalInfo');
-            setLastUpdated(Date.now());
-        } catch (error) {
-            console.error('Error:', error);
-        } finally {
-            setLoading(false);
-            setRefreshing(false);
+            setOriginalValues({
+                name: profile.name,
+                email: profile.email,
+                phone: profile.phone,
+                country: profile.country,
+                city: profile.city,
+                dateOfBirth: profile.dateOfBirth,
+                medicalNotes: profile.medicalNotes,
+                dietaryRestrictions: profile.dietaryRestrictions,
+                profileVisible: profile.profileVisible,
+            });
         }
-    };
+    }, [profile]);
 
     const hasChanges = () => {
         return (
@@ -200,44 +90,19 @@ export default function PersonalInfoScreen() {
     };
 
     const handleProfileVisibilityChange = async (newValue: boolean) => {
+        const previousValue = profileVisible;
         setProfileVisible(newValue);
         
         try {
-            if (!user) return;
-
-            const { error } = await supabase
-                .from('profiles')
-                .upsert({
-                    user_id: user.id,
-                    profile_visible: newValue,
-                    updated_at: new Date().toISOString(),
-                });
-
-            if (error) {
-                console.error('Error updating profile visibility:', error);
-                // Revert on error
-                setProfileVisible(!newValue);
-            } else {
-                // Update original values so hasChanges() reflects the save
-                setOriginalValues(prev => ({
-                    ...prev,
-                    profileVisible: newValue,
-                }));
-
-                // Update the cache with new visibility value
-                const cacheKey = `@ummrah_personal_info_${user.id}`;
-                const cached = await loadFromCache<PersonalInfoData>(cacheKey, CACHE_DURATION, 'PersonalInfo');
-                if (cached) {
-                    const updatedCache = {
-                        ...cached.data,
-                        profileVisible: newValue,
-                    };
-                    await saveToCache(cacheKey, updatedCache, 'PersonalInfo');
-                }
-            }
+            await updateProfile({ profileVisible: newValue });
+            
+            setOriginalValues(prev => ({
+                ...prev,
+                profileVisible: newValue,
+            }));
         } catch (error) {
-            console.error('Error:', error);
-            setProfileVisible(!newValue);
+            console.error('Error updating profile visibility:', error);
+            setProfileVisible(previousValue);
         }
     };
 
@@ -256,64 +121,43 @@ export default function PersonalInfoScreen() {
 
         try {
             setSaving(true);
-            
-            if (!user) {
-                Alert.alert('Error', 'Not authenticated');
-                return;
-            }
 
-            const updates: any = {
-                data: {
-                    full_name: name.trim(),
-                    phone: phone.trim() || null,
-                }
-            };
+            const emailChanged = email.trim() !== user?.email;
 
-            // Update email if changed
-            if (email.trim() && email.trim() !== user.email) {
-                updates.email = email.trim();
-            }
+            await updateProfile({
+                name: name.trim(),
+                email: email.trim(),
+                phone: phone.trim() || '',
+                country: country.trim() || '',
+                city: city.trim() || '',
+                dateOfBirth: dateOfBirth || '',
+                medicalNotes: medicalNotes.trim() || '',
+                dietaryRestrictions: dietaryRestrictions.trim() || '',
+                profileVisible,
+            });
 
-            // Use AuthContext wrapper to prevent unwanted reloads
-            const { error: authError } = await updateUserProfile(updates);
-
-            if (authError) {
-                console.error('Error updating auth user:', authError);
-                Alert.alert('Error', authError.message || 'Failed to update user information');
-                return;
-            }
-
-            // Update or insert profile data
-            const { error: profileError } = await supabase
-                .from('profiles')
-                .upsert({
-                    user_id: user.id,
-                    country: country.trim() || null,
-                    city: city.trim() || null,
-                    date_of_birth: dateOfBirth || null,
-                    medical_notes: medicalNotes.trim() || null,
-                    dietary_restrictions: dietaryRestrictions.trim() || null,
-                    profile_visible: profileVisible,
-                    updated_at: new Date().toISOString(),
-                });
-
-            if (profileError) {
-                console.error('Error updating profile:', profileError);
-                Alert.alert('Warning', 'Profile info saved to auth but failed to update extended profile data');
-            }
+            // Update original values
+            setOriginalValues({
+                name: name.trim(),
+                email: email.trim(),
+                phone: phone.trim() || '',
+                country: country.trim() || '',
+                city: city.trim() || '',
+                dateOfBirth: dateOfBirth || '',
+                medicalNotes: medicalNotes.trim() || '',
+                dietaryRestrictions: dietaryRestrictions.trim() || '',
+                profileVisible,
+            });
 
             let successMessage = 'Profile updated successfully';
-            if (email.trim() !== user.email) {
+            if (emailChanged) {
                 successMessage += '\n\nA confirmation email has been sent to your new email address. Please verify it to complete the change.';
             }
 
             Alert.alert('Success', successMessage);
-            
-            // Reload profile to get updated data (force refresh to bypass cache)
-            await loadProfile(true);
         } catch (error) {
-            console.error('Error:', error);
-            Alert.alert('Error', 'An unexpected error occurred');
+            console.error('Error saving profile:', error);
+            Alert.alert('Error', 'Failed to update profile');
         } finally {
             setSaving(false);
         }
@@ -369,10 +213,7 @@ export default function PersonalInfoScreen() {
                     refreshControl={
                         <RefreshControl
                             refreshing={refreshing}
-                            onRefresh={async () => {
-                                setRefreshing(true);
-                                await loadProfile(true);
-                            }}
+                            onRefresh={refresh}
                             tintColor="#4A6741"
                             colors={["#4A6741"]}
                         />
