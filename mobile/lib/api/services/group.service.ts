@@ -6,6 +6,7 @@
 
 import { supabase } from '../../supabase';
 import { GroupRow } from '../../../types/db';
+import { getCachedUser } from '../utils/authCache';
 
 /**
  * Get or create a default group for the current user
@@ -13,7 +14,7 @@ import { GroupRow } from '../../../types/db';
  */
 export async function getOrCreateDefaultGroup(): Promise<{ success: boolean; group?: GroupRow; error?: string }> {
     try {
-        const { data: { user } } = await supabase.auth.getUser();
+        const user = await getCachedUser();
 
         if (!user) {
             return { success: false, error: 'Not authenticated' };

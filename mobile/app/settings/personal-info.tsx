@@ -14,6 +14,7 @@ export default function PersonalInfoScreen() {
     const { user } = useAuth();
     const { profile, loading, refreshing, lastUpdated, refresh, updateProfile } = useProfile({
         userId: user?.id,
+        authUser: user || undefined, // Pass auth user to avoid redundant API call
         enableRealtime: false,
     });
     
@@ -202,7 +203,7 @@ export default function PersonalInfoScreen() {
     }
 
     return (
-        <SafeAreaView className="flex-1 bg-background">
+        <SafeAreaView className="flex-1 bg-background" edges={["bottom"]}>
             <KeyboardAvoidingView 
                 behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
                 className="flex-1"

@@ -11,6 +11,7 @@
 
 import { supabase } from '../../supabase';
 import { TripRow } from '../../../types/db';
+import { getCachedUser } from '../utils/authCache';
 
 export interface TripInput {
     group_id: string;
@@ -34,7 +35,7 @@ export interface TripUpdateInput {
  */
 export async function createTrip(input: TripInput): Promise<{ success: boolean; trip?: TripRow; error?: string }> {
     try {
-        const { data: { user } } = await supabase.auth.getUser();
+        const user = await getCachedUser();
 
         if (!user) {
             return { success: false, error: 'Not authenticated' };
@@ -90,7 +91,7 @@ export async function updateTrip(
     input: TripUpdateInput
 ): Promise<{ success: boolean; trip?: TripRow; error?: string }> {
     try {
-        const { data: { user } } = await supabase.auth.getUser();
+        const user = await getCachedUser();
 
         if (!user) {
             return { success: false, error: 'Not authenticated' };
@@ -127,7 +128,7 @@ export async function updateTrip(
  */
 export async function deleteTrip(tripId: string): Promise<{ success: boolean; error?: string }> {
     try {
-        const { data: { user } } = await supabase.auth.getUser();
+        const user = await getCachedUser();
 
         if (!user) {
             return { success: false, error: 'Not authenticated' };
@@ -162,7 +163,7 @@ export async function deleteTrip(tripId: string): Promise<{ success: boolean; er
  */
 export async function getUserTrips(): Promise<{ success: boolean; trips?: TripRow[]; error?: string }> {
     try {
-        const { data: { user } } = await supabase.auth.getUser();
+        const user = await getCachedUser();
 
         if (!user) {
             return { success: false, error: 'Not authenticated' };
@@ -220,7 +221,7 @@ export async function verifyGroupAdmin(tripId: string, userId?: string): Promise
         let uid = userId;
 
         if (!uid) {
-            const { data: { user } } = await supabase.auth.getUser();
+            const user = await getCachedUser();
             if (!user) return false;
             uid = user.id;
         }
@@ -258,6 +259,7 @@ export async function verifyGroupAdmin(tripId: string, userId?: string): Promise
 
 /**
  * Get trip with membership details for current user
+ * Optimized with a single joined query instead of 6 separate queries
  */
 export async function getTripWithMembership(tripId: string): Promise<{
     success: boolean;
@@ -275,7 +277,7 @@ export async function getTripWithMembership(tripId: string): Promise<{
             return { success: false, error: 'Not authenticated', errorCode: 'AUTH_MISSING' };
         }
 
-        const { data: { user } } = await supabase.auth.getUser();
+        const user = await getCachedUser();
 
         if (!user) {
             console.error('[getTripWithMembership] No user found');
@@ -284,44 +286,44 @@ export async function getTripWithMembership(tripId: string): Promise<{
 
         console.log('[getTripWithMembership] Getting trip with membership for user:', user.id, 'tripId:', tripId);
 
-        // Get trip
-        const { data: trip, error: tripError } = await supabase
+        // Single optimized query with joins to get trip, verify membership, and check admin status
+        const { data, error } = await supabase
             .from('trips')
-            .select('*')
+            .select(`
+                *,
+                trip_membership:trip_memberships!inner(id),
+                group:groups!inner(
+                    id,
+                    group_admins:group_memberships(user_id)
+                )
+            `)
             .eq('id', tripId)
+            .eq('trip_memberships.user_id', user.id)
+            .is('trip_memberships.left_at', null)
             .single();
 
-        if (tripError || !trip) {
-            console.error('[getTripWithMembership] Trip fetch error:', tripError);
+        if (error || !data) {
+            console.error('[getTripWithMembership] Error:', error);
+            if (error?.code === 'PGRST116') {
+                return { success: false, error: 'Not a member of this trip', errorCode: 'NOT_MEMBER' };
+            }
             return { success: false, error: 'Trip not found', errorCode: 'TRIP_NOT_FOUND' };
         }
 
-        console.log('[getTripWithMembership] Trip found:', { tripId: trip.id, groupId: trip.group_id });
+        console.log('[getTripWithMembership] Trip found:', { tripId: data.id, groupId: data.group_id });
 
-        // Check if user is a member of this trip
-        const { data: tripMembership, error: membershipError } = await supabase
-            .from('trip_memberships')
-            .select('id')
-            .eq('trip_id', tripId)
-            .eq('user_id', user.id)
-            .is('left_at', null)
-            .single();
-
-        if (membershipError) {
-            console.error('[getTripWithMembership] Error fetching trip membership:', membershipError);
-            return { success: false, error: 'Not a member of this trip', errorCode: 'NOT_MEMBER' };
-        }
-
-        console.log('[getTripWithMembership] Trip membership found:', tripMembership);
-
-        // Check if user is a group admin
-        const isGroupAdmin = await verifyGroupAdmin(tripId, user.id);
+        // Check if user is a group admin from the joined data
+        const isGroupAdmin = Array.isArray(data.group.group_admins) && 
+            data.group.group_admins.some((admin: any) => admin.user_id === user.id);
 
         console.log('[getTripWithMembership] Final result:', { isGroupAdmin });
 
+        // Clean up the response - remove the joined data that's not needed
+        const { trip_membership, group, ...trip } = data;
+
         return {
             success: true,
-            trip,
+            trip: trip as TripRow,
             isGroupAdmin,
         };
     } catch (err) {
@@ -343,7 +345,7 @@ export async function removeTripMember(
     userIdToRemove: string
 ): Promise<{ success: boolean; error?: string }> {
     try {
-        const { data: { user } } = await supabase.auth.getUser();
+        const user = await getCachedUser();
 
         if (!user) {
             return { success: false, error: 'Not authenticated' };

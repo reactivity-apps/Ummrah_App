@@ -5,6 +5,7 @@
  */
 
 import { supabase } from '../../supabase';
+import { getCachedUser } from './authCache';
 
 // ============================================================================
 // AUTH HELPERS
@@ -13,10 +14,11 @@ import { supabase } from '../../supabase';
 /**
  * Get current authenticated user
  * Returns null if not authenticated
+ * Uses cached auth to reduce redundant API calls
  */
 export async function getCurrentUser() {
-    const { data: { user }, error } = await supabase.auth.getUser();
-    if (error || !user) return null;
+    const user = await getCachedUser();
+    if (!user) return null;
     return user;
 }
 

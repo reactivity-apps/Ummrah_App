@@ -9,6 +9,7 @@
 import { supabase } from '../../supabase';
 import { AnnouncementRow } from '../../../types/db';
 import * as Notifications from 'expo-notifications';
+import { getCachedUser } from '../utils/authCache';
 
 /**
  * Store or update a user's push notification token
@@ -269,7 +270,7 @@ export async function requestPushNotificationPermissions(): Promise<{
         const token = tokenData.data;
 
         // Register token with our backend
-        const { data: { user } } = await supabase.auth.getUser();
+        const user = await getCachedUser();
         if (user) {
             await registerPushToken(user.id, token);
         }

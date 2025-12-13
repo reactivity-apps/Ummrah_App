@@ -8,6 +8,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { supabase } from '../supabase';
 import { User, Session } from '@supabase/supabase-js';
+import { clearUserCache } from '../api/utils/authCache';
 
 interface AuthContextType {
     user: User | null;
@@ -57,6 +58,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             
             setSession(newSession);
             setUser(newSession?.user || null);
+            
+            // Clear auth cache on any auth state change
+            clearUserCache();
 
             // Determine if this event should trigger data reloads in dependent contexts
             const reloadEvents = ['SIGNED_IN'];

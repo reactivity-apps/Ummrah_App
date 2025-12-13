@@ -5,6 +5,7 @@
  */
 
 import { useState, useEffect } from 'react';
+import { User } from '@supabase/supabase-js';
 import { supabase } from '../../supabase';
 import { loadFromCache, saveToCache } from '../../utils';
 import { ProfileRow } from '../../../types/db';
@@ -29,10 +30,11 @@ export interface ProfileData {
 interface UseProfileOptions {
     userId?: string;
     enableRealtime?: boolean;
+    authUser?: User; // Accept auth user from context to avoid redundant API call
 }
 
 export function useProfile(options: UseProfileOptions = {}) {
-    const { userId, enableRealtime = false } = options;
+    const { userId, enableRealtime = false, authUser } = options;
     
     const [profile, setProfile] = useState<ProfileData | null>(null);
     const [loading, setLoading] = useState(true);
@@ -61,11 +63,17 @@ export function useProfile(options: UseProfileOptions = {}) {
                 }
             }
 
-            // Get user data from auth
-            const { data: { user }, error: authError } = await supabase.auth.getUser();
+            // Use provided authUser or fetch from API
+            let user = authUser;
             
-            if (authError || !user) {
-                throw new Error('Failed to load user data');
+            if (!user) {
+                const { data: { user: fetchedUser }, error: authError } = await supabase.auth.getUser();
+                
+                if (authError || !fetchedUser) {
+                    throw new Error('Failed to load user data');
+                }
+                
+                user = fetchedUser;
             }
 
             const emailVerified = user.email_confirmed_at !== null;

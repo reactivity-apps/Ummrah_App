@@ -9,6 +9,7 @@
 import { supabase } from '../../supabase';
 import type { AnnouncementRow } from '../../../types/db';
 import { verifyAdminPermission } from '../utils/helpers';
+import { getCachedUser } from '../utils/authCache';
 import { sendAnnouncementPushNotifications } from './pushNotification.service';
 
 export interface AnnouncementInput {
@@ -67,7 +68,7 @@ export async function getVisibleAnnouncementsForTrip(tripId: string): Promise<{
 }> {
     try {
         // Verify user is a member of this trip
-        const { data: { user } } = await supabase.auth.getUser();
+        const user = await getCachedUser();
         if (!user) return { error: 'Not authenticated' };
 
         const { data: membership, error: membershipError } = await supabase

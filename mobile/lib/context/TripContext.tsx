@@ -37,7 +37,7 @@ export function TripProvider({ children }: { children: ReactNode }) {
     
     const { isAuthenticated, shouldReloadData, lastAuthEvent } = useAuth();
 
-    // Effect 1: Initialize trips when auth becomes ready
+    // Single effect to handle authentication state and data loading
     useEffect(() => {
         if (!isAuthenticated) {
             // User logged out - clear everything
@@ -46,28 +46,22 @@ export function TripProvider({ children }: { children: ReactNode }) {
             setAllTrips([]);
             setInitialized(false);
             setLoading(false);
+            setError(null);
             
             // Clear AsyncStorage trip data
             AsyncStorage.removeItem(CURRENT_TRIP_KEY).catch(console.error);
-            // Note: We don't clear individual admin status keys here since they're trip-specific
-            // and will be overwritten when that trip is loaded again
             
             return;
         }
 
-        // User is authenticated - load trips if not already loaded
-        if (!initialized) {
+        // User is authenticated - load trips if:
+        // 1. Not yet initialized (first load after login)
+        // 2. Explicitly requested reload via shouldReloadData
+        if (!initialized || shouldReloadData) {
+            console.log('[TripContext] Loading trips:', { initialized, shouldReloadData, lastAuthEvent });
             loadTrips();
         }
-    }, [isAuthenticated, initialized]);
-
-    // Effect 2: React to auth events that require reload
-    useEffect(() => {
-        if (isAuthenticated && shouldReloadData && initialized) {
-            console.log('[TripContext] Reloading due to auth event:', lastAuthEvent);
-            loadTrips();
-        }
-    }, [shouldReloadData, lastAuthEvent]);
+    }, [isAuthenticated, shouldReloadData, initialized]);
 
     const loadTrips = async () => {
         setLoading(true);
