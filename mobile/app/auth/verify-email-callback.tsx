@@ -3,6 +3,8 @@ import { View, Text, ActivityIndicator } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { supabase } from '../../lib/supabase';
 
+// Note: This callback is now primarily a fallback since we use OTP verification
+// It may still be triggered in some edge cases or if users click old email links
 export default function AuthCallback() {
   const router = useRouter();
   const params = useLocalSearchParams();

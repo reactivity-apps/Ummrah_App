@@ -157,7 +157,7 @@ export default function OtpStep({ setStep, groupCodeText, phoneDisplay }: Props)
           <View className="flex-row items-center justify-center gap-3">
             {otpChars.map((ch, idx) => (
               <View key={idx} className="w-10 h-14 bg-card rounded-lg border-2 items-center justify-center" style={{ borderColor: ch ? '#4A6741' : 'hsl(40 15% 85%)' }}>
-                <TextInput ref={(ref) => { otpInputRefs.current[idx] = ref; }} value={ch} onChangeText={(t) => handleOtpChange(t, idx)} onKeyPress={(e) => handleOtpKeyPress(e, idx)} className="w-full h-full text-center text-foreground font-bold text-xl" maxLength={1} keyboardType="numeric" autoFocus={idx === 0} selectTextOnFocus />
+                <TextInput ref={(ref) => { otpInputRefs.current[idx] = ref; }} value={ch} onChangeText={(t) => handleOtpChange(t, idx)} onKeyPress={(e) => handleOtpKeyPress(e, idx)} className="w-full h-full text-center text-foreground font-bold text-xl" maxLength={1} keyboardType="numeric" selectTextOnFocus />
               </View>
             ))}
           </View>

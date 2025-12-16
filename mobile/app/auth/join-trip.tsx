@@ -6,7 +6,7 @@ import { useRouter, Link } from "expo-router";
 import GroupCodeStep from './join-trip-steps/GroupCodeStep';
 import NameStep from './join-trip-steps/NameStep';
 import EmailPasswordStep from './join-trip-steps/EmailPasswordStep';
-import AccountCreatedStep from "./join-trip-steps/AccountCreatedStep";
+import EmailOtpStep from "./join-trip-steps/EmailOtpStep";
 import { contentContainerConfig } from "../../lib/navigationConfig";
 import DebugInfo from "../../components/DebugInfo";
 import { getRedirectUrl } from "../../lib/utils";
@@ -56,9 +56,8 @@ export default function JoinTripScreen() {
                     return;
                 }
 
-                console.log(getRedirectUrl())
-
                 // Sign up with pending join data stored in metadata
+                // Using email OTP instead of magic link
                 const { data: signData, error: signError } = await supabase.auth.signUp({
                     email: creds.email.trim(),
                     password: creds.password,
@@ -71,7 +70,6 @@ export default function JoinTripScreen() {
                                 join_code_id: activeJoinCodeId,
                             }
                         },
-                        emailRedirectTo: getRedirectUrl(),
                     },
                 });
 
@@ -103,7 +101,7 @@ export default function JoinTripScreen() {
     };
 
     return (
-    <SafeAreaView className="flex-1 bg-background" edges={['top', 'bottom']}>
+    <SafeAreaView className="flex-1 bg-background" edges={['bottom']}>
             <KeyboardAvoidingView
                 behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
                 className="flex-1"
@@ -114,7 +112,6 @@ export default function JoinTripScreen() {
                     keyboardShouldPersistTaps="handled"
                 >
                     <View>
-                        <DebugInfo />
                         {/*
                             Old multi-step flow (commented out):
                             1: GroupCodeStep -> 2: PhoneStep -> 3: OtpStep -> 4: NameStep
@@ -142,9 +139,8 @@ export default function JoinTripScreen() {
                                 handleSignUp={handleSignUp}
                                 groupCodeText={groupCodeText}
                             />
-                          
                         ) : (
-                            <AccountCreatedStep email={email} />
+                            <EmailOtpStep email={email} setStep={setStep} />
                         )}
 
                         {/* Already have account / Footer */}

@@ -43,10 +43,6 @@ export default function SettingsLayout() {
                 options={{ title: "Group Details" }}
             />
             <Stack.Screen
-                name="app-settings"
-                options={{ title: "App Settings" }}
-            />
-            <Stack.Screen
                 name="terms"
                 options={{ title: "Terms of Service" }}
             />

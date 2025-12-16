@@ -108,7 +108,7 @@ export default function PhoneStep({ areaCode, setAreaCode, phoneNumber, setPhone
                   maxLength={4}
                 />
               </View>
-              <TextInput placeholder="5551234567" placeholderTextColor="hsl(40 5% 55%)" value={phoneNumber} onChangeText={setPhoneNumber} className="flex-1 text-foreground" keyboardType="phone-pad" autoFocus />
+              <TextInput placeholder="5551234567" placeholderTextColor="hsl(40 5% 55%)" value={phoneNumber} onChangeText={setPhoneNumber} className="flex-1 text-foreground" keyboardType="phone-pad" />
             </View>
           </View>
         </View>

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Mail, Lock, ArrowRight } from 'lucide-react-native';
+import { Mail, Lock, ArrowRight, ChevronLeft } from 'lucide-react-native';
 import { supabase } from '../../lib/supabase';
 import { useRouter, Link, useLocalSearchParams } from 'expo-router';
 import { contentContainerConfig } from '../../lib/navigationConfig';
@@ -145,7 +145,7 @@ export default function LoginScreen() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-background" edges={['top', 'bottom']}>
+    <SafeAreaView className="flex-1 bg-background" edges={['bottom']}>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         className="flex-1"
@@ -156,10 +156,10 @@ export default function LoginScreen() {
           keyboardShouldPersistTaps="handled"
         >
           <View className="flex-1 bg">
-          {/* <TouchableOpacity onPress={() => router.back()} className="flex-row items-center mb-4">
+          <TouchableOpacity onPress={() => router.back()} className="flex-row items-center mb-4">
             <ChevronLeft size={24} color="#4A6741" />
             <Text className="text-primary font-medium ml-1">Back</Text>
-          </TouchableOpacity> */}
+          </TouchableOpacity>
 
           <View className="items-center mb-12">
               <View className="h-20 w-20 bg-primary/10 rounded-full items-center justify-center mb-4 border-2 border-primary/20">
@@ -236,12 +236,11 @@ export default function LoginScreen() {
               </TouchableOpacity>
 
               {/* Forgot password link */}
-              <TouchableOpacity 
-                onPress={() => router.push('/auth/forgot-password')}
-                className="items-center mt-4"
-              >
-                <Text className="text-sm text-primary font-medium">Forgot password?</Text>
-              </TouchableOpacity>
+              <View className="items-center mt-4">
+                <Link href='/auth/forgot-password' asChild>
+                  <Text className="text-sm text-primary font-medium">Forgot password?</Text>
+                </Link>
+              </View>
             </View>
 
             {/* Sign up link */}
