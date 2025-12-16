@@ -23,7 +23,7 @@ export default function NameStep({ name, setName, setStep, groupCodeText }: Prop
         <Text className="text-primary font-medium ml-1">Back</Text>
       </TouchableOpacity>
 
-      <View className="items-center mb-5 mt-4">
+      <View className="items-center mb-5">
         <View className="h-20 w-20 bg-primary/10 rounded-full items-center justify-center mb-4 border-2 border-primary/20">
           <User size={40} color="#4A6741" />
         </View>
@@ -41,7 +41,7 @@ export default function NameStep({ name, setName, setStep, groupCodeText }: Prop
           <Text className="text-sm font-medium text-foreground mb-2">Full Name</Text>
           <View className="flex-row items-center bg-card rounded-xl px-4 py-3 border border-sand-200">
             <User size={20} color="hsl(40 5% 55%)" />
-            <TextInput placeholder="Ahmed Hassan" placeholderTextColor="hsl(40 5% 55%)" value={name} onChangeText={setName} className="ml-3 flex-1 text-foreground" autoCapitalize="words" autoFocus />
+            <TextInput placeholder="Ahmed Hassan" placeholderTextColor="hsl(40 5% 55%)" value={name} onChangeText={setName} className="ml-3 flex-1 text-foreground" autoCapitalize="words" />
           </View>
         </View>
 
