@@ -1,3 +1,7 @@
+// ==========================
+// TYPES & ENUMS
+// ==========================
+
 export type AuthRole = 'super_admin';
 
 export type TripVisibility =
@@ -11,20 +15,26 @@ export type TripStatus =
 
 
 // ==========================
-// PROFILE (auth-level roles)
+// PROFILES
 // ==========================
 
 export interface ProfileRow {
   user_id: string;
 
-  photo: string | null;
+  // Basic info
+  name: string | null;
+  email: string | null;
+  phone: string | null;
   country: string | null;
   city: string | null;
+  photo: string | null;
 
+  // Personal details
   date_of_birth: string | null;
   medical_notes: string | null;
   dietary_restrictions: string | null;
 
+  // Emergency contact
   emergency_contact_name: string | null;
   emergency_contact_phone: string | null;
 
@@ -32,12 +42,13 @@ export interface ProfileRow {
   notification_announcements: boolean;
   notification_prayers: boolean;
 
-  // AUTH-WIDE ROLE — single highest privilege
-  auth_role: AuthRole | null;  // null = normal authenticated user
-
+  // Account status
+  auth_role: AuthRole | null;
   profile_visible: boolean;
-  is_active: boolean;  // false = account deactivated (soft delete)
+  is_active: boolean;
 
+  // Timestamps
+  created_at: string;
   updated_at: string;
 }
 
@@ -49,6 +60,7 @@ export interface ProfileRow {
 export interface GroupRow {
   id: string;
   name: string;
+  description: string | null;
   logo_url: string | null;
   phone_number: string | null;
   whatsapp_link: string | null;
@@ -61,13 +73,14 @@ export interface GroupRow {
 
 // ==========================
 // GROUP MEMBERSHIPS
-// If in group membership, is group admin
+// Members in this table are group admins
 // ==========================
 
 export interface GroupMembershipRow {
   id: string;
   group_id: string;
   user_id: string;
+  created_by: string | null;
 
   created_at: string;
   updated_at: string;
@@ -82,11 +95,12 @@ export interface TripRow {
   id: string;
   group_id: string;
   name: string;
+  description: string | null;
 
   start_date: string | null;
   end_date: string | null;
 
-  cities: string[];    
+  cities: string[];
 
   visibility: TripVisibility;
   status: TripStatus;
@@ -100,7 +114,7 @@ export interface TripRow {
 
 // ==========================
 // TRIP MEMBERSHIPS
-// If in trip membership, is user 
+// Regular users in a trip
 // ==========================
 
 export interface TripMembershipRow {
@@ -114,19 +128,18 @@ export interface TripMembershipRow {
 
 
 // ==========================
-// JOIN CODES
+// TRIP JOIN CODES
 // ==========================
 
 export interface TripJoinCodeRow {
   id: string;
   trip_id: string;
-
   code: string;
+
   is_active: boolean;
-
   expires_at: string | null;
-  join_limit: number | null;
 
+  join_limit: number | null;
   uses_count: number;
 
   created_at: string;
@@ -165,14 +178,26 @@ export interface AnnouncementRow {
 
   title: string;
   body: string;
-
   link_url: string | null;
-  is_high_priority: boolean;
 
+  is_high_priority: boolean;
   scheduled_for: string | null;
   sent_at: string | null;
 
   created_by: string | null;
+  created_at: string;
+}
+
+
+// ==========================
+// PUSH TOKENS
+// ==========================
+
+export interface PushTokenRow {
+  id: string;
+  user_id: string;
+  push_token: string;
 
   created_at: string;
+  updated_at: string;
 }

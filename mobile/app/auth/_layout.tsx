@@ -13,6 +13,7 @@ export default function AuthLayout() {
       <Stack.Screen name="login-verify-email" />
       <Stack.Screen name="verify-email-callback" />
       <Stack.Screen name="join-trip-steps" />
+      <Stack.Screen name="enable-notifications" />
     </Stack>
   );
 }

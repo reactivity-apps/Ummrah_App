@@ -134,15 +134,80 @@ function QuickActions() {
 }
 
 function DailyQuote() {
+    // 14 different quotes that cycle every day (2 weeks cycle)
+    const quotes = [
+        {
+            text: "The best of you are those who are best to their families, and I am the best to my family.",
+            source: "Prophet Muhammad ﷺ"
+        },
+        {
+            text: "The strong person is not the one who can wrestle someone else down. The strong person is the one who can control himself when he is angry.",
+            source: "Prophet Muhammad ﷺ"
+        },
+        {
+            text: "A kind word is a form of charity.",
+            source: "Prophet Muhammad ﷺ"
+        },
+        {
+            text: "The believer does not slander, curse, or speak in an obscene or foul manner.",
+            source: "Prophet Muhammad ﷺ"
+        },
+        {
+            text: "The most beloved deed to Allah is the most regular and constant even if it were little.",
+            source: "Prophet Muhammad ﷺ"
+        },
+        {
+            text: "None of you truly believes until he loves for his brother what he loves for himself.",
+            source: "Prophet Muhammad ﷺ"
+        },
+        {
+            text: "Kindness is a mark of faith, and whoever is not kind has no faith.",
+            source: "Prophet Muhammad ﷺ"
+        },
+        {
+            text: "The best among you are those who have the best manners and character.",
+            source: "Prophet Muhammad ﷺ"
+        },
+        {
+            text: "Whoever believes in Allah and the Last Day should speak good or remain silent.",
+            source: "Prophet Muhammad ﷺ"
+        },
+        {
+            text: "When you see a person who has been given more than you in money and beauty, look to those who have been given less.",
+            source: "Prophet Muhammad ﷺ"
+        },
+        {
+            text: "Feed the hungry, visit the sick, and set free the captives.",
+            source: "Prophet Muhammad ﷺ"
+        },
+        {
+            text: "Make things easy and do not make them difficult, cheer the people up and do not rebuke them.",
+            source: "Prophet Muhammad ﷺ"
+        },
+        {
+            text: "The merciful will be shown mercy by the Most Merciful. Be merciful to those on the earth and the One in the heavens will have mercy upon you.",
+            source: "Prophet Muhammad ﷺ"
+        },
+        {
+            text: "Verily, Allah is more pleased with the repentance of His slave than a person who lost his camel in the desert and then finds it unexpectedly.",
+            source: "Prophet Muhammad ﷺ"
+        }
+    ];
+
+    // Get day of year to cycle through quotes (changes daily)
+    const dayOfYear = Math.floor((new Date().getTime() - new Date(new Date().getFullYear(), 0, 0).getTime()) / (1000 * 60 * 60 * 24));
+    const quoteIndex = dayOfYear % quotes.length;
+    const dailyQuote = quotes[quoteIndex];
+
     return (
         <View className="bg-gradient-to-br from-[#C5A059]/10 to-[#C5A059]/5 rounded-xl p-5 relative shadow-none border border-[#C5A059]/20">
             <Moon size={32} color="#C5A059" style={{ position: 'absolute', top: 16, left: 16, opacity: 0.3 }} />
             <View className="items-center gap-3">
                 <Text className="text-foreground font-medium italic leading-relaxed text-center">
-                    "The best of you are those who are best to their families, and I am the best to my family."
+                    "{dailyQuote.text}"
                 </Text>
                 <Text className="text-xs text-[#C5A059] font-semibold uppercase tracking-wider">
-                    — Prophet Muhammad ﷺ
+                    — {dailyQuote.source}
                 </Text>
             </View>
         </View>

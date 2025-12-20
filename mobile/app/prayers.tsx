@@ -48,7 +48,7 @@ export default function PrayersScreen() {
         : ['#C5A059', '#B8904D', '#A67F42']; // Gold for Madina
 
     return (
-        <SafeAreaView className="flex-1 bg-[#FDFBF7]" edges={['bottom']}>
+        <SafeAreaView className="flex-1 bg-[#FDFBF7]" edges={['top']}>
             <View className="px-6 py-4 border-b border-[#C5A059]/20">
                 <View className="flex-row gap-2">
                     <TouchableOpacity 
@@ -77,7 +77,7 @@ export default function PrayersScreen() {
                 style={fadeInStyle}
                 className="flex-1"
                 showsVerticalScrollIndicator={false}
-                contentContainerStyle={{ paddingHorizontal: 24, paddingVertical: 24, paddingBottom: 24 }}
+                contentContainerStyle={{ paddingHorizontal: 24, paddingVertical: 24, paddingBottom: 100 }}
             >
                 {/* Loading State */}
                 {isLoading && (

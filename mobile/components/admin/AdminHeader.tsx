@@ -15,35 +15,35 @@ export function AdminHeader({
     onTripSelectorPress,
 }: AdminHeaderProps) {
     return (
-        <View className="px-4 py-4 bg-card border-b border-[#C5A059]/20">
-            <View className="flex-row items-center justify-between mb-3">
-                <View className="flex-row items-center gap-2">
-                    <Shield size={24} color="#C5A059" />
-                    <View>
-                        <Text className="text-2xl font-bold text-foreground">Group Admin</Text>
-                        <Text className="text-sm text-muted-foreground mt-1">Manage your Umrah group</Text>
+        <View className="px-4 pt-4 pb-3 bg-card border-b border-sand-200">
+            <View className="flex-row items-center justify-between mb-1">
+                <View className="flex-row items-center">
+                    <View className="h-8 w-8 rounded-full border-2 border-[#C5A059]/30 bg-[#C5A059]/10 items-center justify-center mr-2.5">
+                        <Shield size={16} color="#C5A059" />
                     </View>
+                    <Text className="text-2xl font-bold text-stone-800">Group Admin</Text>
                 </View>
-                <View className="bg-[#C5A059]/10 px-3 py-1.5 rounded-full border border-[#C5A059]/30">
-                    <Text className="text-[#C5A059] text-xs font-semibold">ADMIN</Text>
+                <View className="bg-[#C5A059]/10 px-2.5 py-1 rounded-full border border-[#C5A059]/30">
+                    <Text className="text-[#C5A059] text-[10px] font-semibold">ADMIN</Text>
                 </View>
             </View>
+            <Text className="text-stone-500 text-sm mb-3">Manage your Umrah group</Text>
 
             {/* Current Trip Selector */}
             <TouchableOpacity
                 onPress={onTripSelectorPress}
-                className="bg-[#4A6741]/10 border border-[#4A6741]/30 rounded-xl p-3 flex-row items-center justify-between"
+                className="bg-sand-50 border border-sand-200 rounded-lg p-2.5 flex-row items-center justify-between"
             >
                 <View className="flex-1">
-                    <Text className="text-xs text-[#4A6741] font-semibold mb-1">CURRENT TRIP</Text>
-                    <Text className="text-base font-bold text-foreground">{currentTripName}</Text>
+                    <Text className="text-[10px] text-muted-foreground font-semibold mb-0.5">CURRENT TRIP</Text>
+                    <Text className="text-sm font-bold text-foreground">{currentTripName}</Text>
                     {currentTripStartDate && currentTripEndDate && (
-                        <Text className="text-xs text-muted-foreground mt-1">
-                            {new Date(currentTripStartDate).toLocaleDateString()} - {new Date(currentTripEndDate).toLocaleDateString()}
+                        <Text className="text-[10px] text-muted-foreground mt-0.5">
+                            {new Date(currentTripStartDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - {new Date(currentTripEndDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                         </Text>
                     )}
                 </View>
-                <ChevronDown size={20} color="#4A6741" />
+                <ChevronDown size={16} color="#4A6741" />
             </TouchableOpacity>
         </View>
     );

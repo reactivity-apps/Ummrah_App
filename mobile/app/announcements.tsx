@@ -32,7 +32,7 @@ export default function AnnouncementsScreen() {
     return (
         <SafeAreaView className="flex-1 bg-sand-50" edges={['bottom']}>
             {/* Content */}
-            <ScrollView className="flex-1">
+            <ScrollView className="flex-1" contentContainerStyle={{ paddingBottom: 32 }}>
                 {!loading && (
                     <View className="px-4 pt-4 pb-2">
                         <Text className="text-sm text-muted-foreground">
