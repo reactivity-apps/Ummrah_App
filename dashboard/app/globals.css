@@ -1,32 +1,72 @@
 @import "tailwindcss";
 
 @theme {
-  --color-emerald-50: #ecfdf5;
-  --color-emerald-100: #d1fae5;
-  --color-emerald-200: #a7f3d0;
-  --color-emerald-400: #34d399;
-  --color-emerald-500: #10b981;
-  --color-emerald-600: #059669;
-  --color-emerald-700: #047857;
-  
-  --color-amber-50: #fffbeb;
-  --color-amber-500: #f59e0b;
-  --color-amber-600: #d97706;
-  
-  --color-gray-50: #f9fafb;
-  --color-gray-100: #f3f4f6;
-  --color-gray-300: #d1d5db;
-  --color-gray-400: #9ca3af;
-  --color-gray-500: #6b7280;
-  --color-gray-600: #4b5563;
-  --color-gray-700: #374151;
-  --color-gray-800: #1f2937;
-  --color-gray-900: #111827;
+  /* Primary Green - Matches Mobile App */
+  --color-primary-50: #f0f4f0;
+  --color-primary-100: #d9e4d8;
+  --color-primary-200: #b3c9b1;
+  --color-primary-300: #8dae8a;
+  --color-primary-400: #6b8f68;
+  --color-primary-500: #4A6741;
+  --color-primary-600: #3f5838;
+  --color-primary-700: #34492f;
+  --color-primary-800: #293a26;
+  --color-primary-900: #1e2b1d;
+
+  /* Gold/Sand - Matches Mobile App */
+  --color-gold-50: #fdfbf7;
+  --color-gold-100: #f9f4e8;
+  --color-gold-200: #f0e5c5;
+  --color-gold-300: #e7d6a2;
+  --color-gold-400: #dec77f;
+  --color-gold-500: #C5A059;
+  --color-gold-600: #b8904d;
+  --color-gold-700: #a67f42;
+  --color-gold-800: #8b6b38;
+  --color-gold-900: #70572d;
+
+  /* Sand - Neutral Colors */
+  --color-sand-50: #fdfbf7;
+  --color-sand-100: #f5f1e9;
+  --color-sand-200: #e8dfc8;
+  --color-sand-300: #d4c5a1;
+  --color-sand-400: #bfab7a;
+  --color-sand-500: #a89153;
+
+  /* Stone - Text Colors (matching mobile) */
+  --color-stone-50: #fafaf9;
+  --color-stone-100: #f5f5f4;
+  --color-stone-200: #e7e5e4;
+  --color-stone-300: #d6d3d1;
+  --color-stone-400: #a8a29e;
+  --color-stone-500: #78716c;
+  --color-stone-600: #57534e;
+  --color-stone-700: #44403c;
+  --color-stone-800: #292524;
+  --color-stone-900: #1c1917;
+
+  /* Semantic Colors */
+  --color-background: #fdfbf7;
+  --color-foreground: #292524;
+  --color-card: #ffffff;
+  --color-muted: #78716c;
+
+  /* Keep red/green for status */
+  --color-red-50: #fef2f2;
+  --color-red-500: #ef4444;
+  --color-red-600: #dc2626;
+
+  --color-green-50: #f0fdf4;
+  --color-green-500: #22c55e;
+  --color-green-600: #16a34a;
 }
 
 body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+  background-color: var(--color-background);
+  color: var(--color-foreground);
 }
 
 .crescent-accent {
@@ -37,6 +77,6 @@ body {
   content: '☪';
   position: absolute;
   font-size: 1.5rem;
-  color: #f59e0b;
+  color: var(--color-gold-500);
   opacity: 0.3;
 }

@@ -48,10 +48,13 @@ export default function GuideScreen() {
     const router = useRouter();
 
     return (
-        <SafeAreaView className="flex-1 bg-sand-50" edges={['bottom']}>
-            <View className="px-4 py-4 bg-card border-b border-sand-200">
+        <SafeAreaView className="flex-1 bg-sand-50" edges={['top', 'bottom']}>
+            <View className="px-4 pt-4 pb-3 bg-card border-b border-sand-200">
                 <View className="flex-row items-center justify-between">
-                    <Text className="text-stone-500 text-base">Step-by-step instructions</Text>
+                    <View className="flex-1">
+                        <Text className="text-2xl font-bold text-stone-800 mb-1">Umrah Guide</Text>
+                        <Text className="text-stone-500 text-sm">Step-by-step instructions</Text>
+                    </View>
                     <View className="bg-primary/10 px-3 py-1.5 rounded-md border border-primary/20">
                         <Text className="text-primary font-semibold text-sm">{GUIDES.length} Steps</Text>
                     </View>
@@ -61,7 +64,7 @@ export default function GuideScreen() {
             <FlatList
                 data={GUIDES}
                 keyExtractor={(item) => item.id}
-                contentContainerStyle={{ paddingHorizontal: 16, paddingVertical: 16 }}
+                contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 16, paddingBottom: 24 }}
                 renderItem={({ item, index }) => (
                     <GuideCard item={item} index={index} />
                 )}

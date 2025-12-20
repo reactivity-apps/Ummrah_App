@@ -54,35 +54,34 @@ export default function FeatureHighlights() {
   ];
 
   return (
-    <section id="features" className="py-24 px-6 bg-white">
+    <section id="features" className="py-16 px-6 bg-white">
       <div className="max-w-6xl mx-auto">
-        <div className="text-center mb-20">
-          <h2 className="text-4xl font-bold text-gray-900 mb-4">Everything your group needs</h2>
-          <p className="text-xl text-gray-600">Comprehensive tools to guide your travelers every step of the way</p>
+        <div className="text-center mb-16">
+          <h2 className="text-3xl font-bold text-[#292524] mb-3">Everything your group needs</h2>
+          <p className="text-lg text-[#78716c]">Comprehensive tools to guide your travelers every step of the way</p>
         </div>
-        
-        <div className="space-y-24">
+
+        <div className="space-y-16">
           {features.map((feature, index) => (
-          <div
-            key={index}
-            className={`grid md:grid-cols-2 gap-12 items-center ${
-              feature.imagePosition === 'right' ? 'md:grid-flow-dense' : ''
-            }`}
-          >
-            <div className={feature.imagePosition === 'right' ? 'md:col-start-2' : ''}>
-              <div className="flex items-center gap-3 mb-4">
-                <span className="text-emerald-600">{feature.icon}</span>
-                <h3 className="text-3xl font-bold text-gray-900">{feature.title}</h3>
+            <div
+              key={index}
+              className={`grid md:grid-cols-2 gap-10 items-center ${feature.imagePosition === 'right' ? 'md:grid-flow-dense' : ''
+                }`}
+            >
+              <div className={feature.imagePosition === 'right' ? 'md:col-start-2' : ''}>
+                <div className="flex items-center gap-3 mb-3">
+                  <span className="text-[#4A6741]">{feature.icon}</span>
+                  <h3 className="text-2xl font-bold text-[#292524]">{feature.title}</h3>
+                </div>
+                <p className="text-base text-[#78716c] leading-relaxed">{feature.description}</p>
               </div>
-              <p className="text-xl text-gray-600 leading-relaxed">{feature.description}</p>
-            </div>
-            <div className={feature.imagePosition === 'right' ? 'md:col-start-1 md:row-start-1' : ''}>
-              <div className="bg-gray-100 rounded-2xl aspect-video flex items-center justify-center text-gray-400">
-                [ Image / video placeholder ]
+              <div className={feature.imagePosition === 'right' ? 'md:col-start-1 md:row-start-1' : ''}>
+                <div className="bg-[#fdfbf7] rounded-2xl aspect-video flex items-center justify-center text-[#78716c] border border-[#e8dfc8]">
+                  [ Image / video placeholder ]
+                </div>
               </div>
             </div>
-          </div>
-        ))}
+          ))}
         </div>
       </div>
     </section>

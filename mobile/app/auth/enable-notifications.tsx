@@ -16,16 +16,16 @@ export default function EnableNotificationsScreen() {
         setIsLoading(true);
         try {
             const result = await requestPushNotificationPermissions();
-            
+
             // Mark that we've shown the prompt
             await AsyncStorage.setItem(NOTIFICATION_PROMPT_KEY, 'true');
-            
+
             if (result.success) {
                 console.log('✅ Notifications enabled successfully');
             } else {
                 console.log('⚠️ User declined notifications or error occurred');
             }
-            
+
             // Navigate to main app regardless of result
             router.replace('/(tabs)');
         } catch (error) {
