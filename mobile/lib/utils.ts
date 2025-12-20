@@ -94,22 +94,6 @@ export function isPrayerDone(prayerTime: string): boolean {
 }
 
 /**
- * Get the correct redirect URL for deep linking
- * Works for both Expo Go and standalone builds
- * @param path - Optional path to append (e.g., 'auth/reset-password')
- */
-import * as Linking from 'expo-linking';
-
-export function getRedirectUrl(path?: string): string {
-    const baseUrl = Linking.createURL("");
-    // If a path is provided, append it
-    if (path) {
-        return `${baseUrl}${path}`;
-    }
-    return baseUrl;
-}
-
-/**
  * Cache utility functions
  */
 import AsyncStorage from '@react-native-async-storage/async-storage';

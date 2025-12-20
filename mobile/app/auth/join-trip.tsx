@@ -8,8 +8,6 @@ import NameStep from './join-trip-steps/NameStep';
 import EmailPasswordStep from './join-trip-steps/EmailPasswordStep';
 import EmailOtpStep from "./join-trip-steps/EmailOtpStep";
 import { contentContainerConfig } from "../../lib/navigationConfig";
-import DebugInfo from "../../components/DebugInfo";
-import { getRedirectUrl } from "../../lib/utils";
 
 export default function JoinTripScreen() {
     const router = useRouter();
