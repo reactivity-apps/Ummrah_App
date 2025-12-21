@@ -10,7 +10,9 @@ import {
     ChevronUp,
     AlertCircle,
     ArrowRight,
-    Sparkles
+    Sparkles,
+    ArrowLeft,
+    X
 } from "lucide-react-native";
 import { useFadeIn } from "../../lib/sharedElementTransitions";
 import { DetailSkeleton } from "../../components/SkeletonLoader";
@@ -88,9 +90,18 @@ export default function GuideDetailScreen() {
     }
 
     return (
-        <SafeAreaView className="flex-1 bg-sand-50" edges={['bottom']}>
+        <SafeAreaView className="flex-1 bg-sand-50" edges={['top']}>
+            {/* Header with Back Button */}
             <View className="px-4 py-3 bg-card border-b border-sand-200">
                 <View className="flex-row items-center mb-3">
+                    <TouchableOpacity
+                        onPress={() => router.back()}
+                        className="mr-3 p-2 -ml-2"
+                        activeOpacity={0.6}
+                        hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                    >
+                        <ArrowLeft size={24} color="#4A6741" />
+                    </TouchableOpacity>
                     <View className="flex-1">
                         <View className="flex-row items-center gap-2 mb-1">
                             <Text className="text-xs font-semibold text-primary uppercase tracking-wide">
@@ -111,9 +122,9 @@ export default function GuideDetailScreen() {
                 </View>
             </View>
 
-            <ScrollView className="flex-1" contentContainerStyle={{ paddingBottom: 24 }}>
+            <ScrollView className="flex-1" contentContainerStyle={{ paddingBottom: 100, paddingHorizontal: 16 }}>
                 {/* Hero Section with Icon */}
-                <Animated.View style={heroStyle} className="px-4 pt-6">
+                <Animated.View style={heroStyle} className="pt-6">
                     <View className="bg-gradient-to-br from-primary/10 to-primary/5 rounded-2xl p-8 items-center border border-primary/20">
                         <View className="w-20 h-20 bg-white/80 rounded-full items-center justify-center mb-4 shadow-sm">
                             <BookOpen size={40} color="#4A6741" />
@@ -123,7 +134,7 @@ export default function GuideDetailScreen() {
                     </View>
                 </Animated.View>
 
-                <Animated.View style={contentStyle} className="px-4">
+                <Animated.View style={contentStyle}>
                     {/* Status Badge */}
                     <View className="mt-6 mb-6">
                         <View className={`self-start px-4 py-2.5 rounded-full border shadow-sm ${guide.status === 'completed'

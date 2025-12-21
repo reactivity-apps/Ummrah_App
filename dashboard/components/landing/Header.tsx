@@ -20,30 +20,33 @@ export default function Header() {
   return (
     <>
       <header
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-          scrolled
-            ? 'bg-white/90 backdrop-blur-md shadow-sm'
-            : 'bg-white/95 backdrop-blur-sm'
-        }`}
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled
+          ? 'bg-white/90 backdrop-blur-md shadow-sm'
+          : 'bg-white/95 backdrop-blur-sm'
+          }`}
       >
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <span className="text-xl font-semibold text-gray-900">Umrah App Name</span>
+            <div className="text-xl text-[#C5A059]">☪</div>
+            <span className="text-xl font-semibold text-[#292524]">Umrah Companion</span>
           </div>
 
           <nav className="hidden md:flex items-center gap-8">
-            <Link href="#how-it-works" className="text-gray-600 hover:text-gray-900 transition-colors">
+            <Link href="#how-it-works" className="text-sm text-[#78716c] hover:text-[#292524] transition-colors">
               How it works
             </Link>
-            <Link href="#features" className="text-gray-600 hover:text-gray-900 transition-colors">
+            <Link href="#features" className="text-sm text-[#78716c] hover:text-[#292524] transition-colors">
               Features
             </Link>
-            <Link href="#for-leaders" className="text-gray-600 hover:text-gray-900 transition-colors">
+            <Link href="#for-leaders" className="text-sm text-[#78716c] hover:text-[#292524] transition-colors">
               For group leaders
+            </Link>
+            <Link href="/admin/login" className="text-sm text-[#78716c] hover:text-[#292524] transition-colors">
+              Already an admin?
             </Link>
             <Link
               href="#get-started"
-              className="px-6 py-2 border-2 border-emerald-600 text-emerald-600 rounded-lg hover:bg-emerald-50 transition-colors font-medium"
+              className="px-5 py-2 border-2 border-[#4A6741] text-[#4A6741] rounded-lg hover:bg-[#4A6741] hover:text-white transition-colors font-medium text-sm"
             >
               Get started
             </Link>
@@ -51,7 +54,7 @@ export default function Header() {
 
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="md:hidden p-2 text-gray-600 hover:text-gray-900"
+            className="md:hidden p-2 text-[#78716c] hover:text-[#292524]"
             aria-label="Toggle menu"
           >
             <svg
@@ -91,28 +94,35 @@ export default function Header() {
             <Link
               href="#how-it-works"
               onClick={closeMobileMenu}
-              className="block py-3 text-gray-600 hover:text-gray-900 transition-colors"
+              className="block py-3 text-[#78716c] hover:text-[#292524] transition-colors"
             >
               How it works
             </Link>
             <Link
               href="#features"
               onClick={closeMobileMenu}
-              className="block py-3 text-gray-600 hover:text-gray-900 transition-colors"
+              className="block py-3 text-[#78716c] hover:text-[#292524] transition-colors"
             >
               Features
             </Link>
             <Link
               href="#for-leaders"
               onClick={closeMobileMenu}
-              className="block py-3 text-gray-600 hover:text-gray-900 transition-colors"
+              className="block py-3 text-[#78716c] hover:text-[#292524] transition-colors"
             >
               For group leaders
             </Link>
             <Link
+              href="/admin/login"
+              onClick={closeMobileMenu}
+              className="block py-3 text-[#78716c] hover:text-[#292524] transition-colors"
+            >
+              Already an admin?
+            </Link>
+            <Link
               href="#get-started"
               onClick={closeMobileMenu}
-              className="block py-3 px-6 text-center border-2 border-emerald-600 text-emerald-600 rounded-lg hover:bg-emerald-50 transition-colors font-medium"
+              className="block py-3 px-6 text-center border-2 border-[#4A6741] text-[#4A6741] rounded-lg hover:bg-[#4A6741] hover:text-white transition-colors font-medium"
             >
               Get started
             </Link>

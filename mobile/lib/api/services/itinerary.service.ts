@@ -23,7 +23,6 @@ export interface ItineraryItemInput {
     location?: string | null;
     starts_at?: string | null;
     ends_at?: string | null;
-    sort_order?: number;
 }
 
 export interface BatchUpdateInput {
@@ -45,7 +44,6 @@ export async function getItineraryForTrip(tripId: string): Promise<{ data?: Itin
             .select('*')
             .eq('trip_id', tripId)
             .order('day_date', { ascending: true, nullsFirst: false })
-            .order('sort_order', { ascending: true })
             .order('starts_at', { ascending: true, nullsFirst: false });
 
         if (error) return { error: `Failed to fetch itinerary: ${error.message}` };
@@ -78,8 +76,6 @@ export async function createItineraryItem(input: ItineraryItemInput): Promise<{ 
                 day_date: input.day_date,
                 starts_at: input.starts_at,
                 ends_at: input.ends_at,
-                sort_order: input.sort_order ?? 0,
-                created_by: permission.userId,
             })
             .select()
             .single();
@@ -132,7 +128,6 @@ export async function updateItineraryItem(
                 ...(updates.day_date !== undefined && { day_date: updates.day_date }),
                 ...(updates.starts_at !== undefined && { starts_at: updates.starts_at }),
                 ...(updates.ends_at !== undefined && { ends_at: updates.ends_at }),
-                ...(updates.sort_order !== undefined && { sort_order: updates.sort_order }),
                 updated_at: new Date().toISOString(),
             })
             .eq('id', itemId)
@@ -173,8 +168,6 @@ export async function updateItineraryItemsBatch(batch: BatchUpdateInput): Promis
                     day_date: item.day_date,
                     starts_at: item.starts_at,
                     ends_at: item.ends_at,
-                    sort_order: item.sort_order ?? 0,
-                    created_by: permission.userId,
                 }))).select()
                 : Promise.resolve({ data: [], error: null }),
             Promise.all(updates.map(item => updateItineraryItem(item.id!, item)))
@@ -223,7 +216,8 @@ export async function deleteItineraryItem(itemId: string): Promise<{ success: bo
 // ============================================================================
 
 /**
- * Reorder itinerary items by updating sort_order
+ * Reorder itinerary items (currently disabled - sort_order field doesn't exist)
+ * Items are automatically sorted by starts_at time
  */
 export async function reorderItineraryItems(
     reorderData: Array<{ id: string; sort_order: number }>,
@@ -233,15 +227,9 @@ export async function reorderItineraryItems(
     if (!permission.hasPermission) return { success: false, error: permission.error || 'Permission denied' };
 
     try {
-        // Update all sort_orders in parallel
-        await Promise.all(
-            reorderData.map(item =>
-                supabase
-                    .from('itinerary_items')
-                    .update({ sort_order: item.sort_order, updated_at: new Date().toISOString() })
-                    .eq('id', item.id)
-            )
-        );
+        // Note: sort_order field doesn't exist in database schema
+        // Items are sorted by starts_at time automatically
+        // To implement manual reordering, add sort_order column to itinerary_items table
 
         // Fetch updated list
         const { data } = await getItineraryForTrip(tripId);

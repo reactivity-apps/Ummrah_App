@@ -2,15 +2,15 @@ import Link from 'next/link';
 
 export default function Footer() {
   return (
-    <footer className="bg-gray-900 text-gray-300 py-12 px-6">
+    <footer className="bg-[#292524] text-[#a8a29e] py-12 px-6">
       <div className="max-w-7xl mx-auto">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8">
           <div className="space-y-4">
             <div className="flex items-center gap-3">
-              <div className="text-2xl text-amber-500">☪</div>
+              <div className="text-2xl text-[#C5A059]">☪</div>
               <span className="text-xl font-semibold text-white">Umrah Companion</span>
             </div>
-            <p className="text-gray-400 max-w-md">
+            <p className="text-[#a8a29e] max-w-md">
               Calm, unified trip companion for Umrah groups
             </p>
           </div>
@@ -49,7 +49,7 @@ export default function Footer() {
           </div>
         </div>
 
-        <div className="border-t border-gray-800 mt-8 pt-8 text-center text-sm text-gray-500">
+        <div className="border-t border-[#44403c] mt-8 pt-8 text-center text-sm text-[#78716c]">
           <p>&copy; {new Date().getFullYear()} Umrah Companion. All rights reserved.</p>
         </div>
       </div>

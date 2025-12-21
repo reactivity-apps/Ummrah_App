@@ -25,16 +25,9 @@ function AppContent() {
 
     return (
         <>
-            {/* {isAuthenticated && (
-                <View className="bg-green-100 border-b border-green-300 px-4 py-2">
-                    <Text className="text-xs text-green-800 text-center">
-                        🟢 Logged in: {userName} ({userEmail})
-                    </Text>
-                </View>
-            )} */}
-            <Stack 
-                screenOptions={{ 
-                    headerShown: true,
+            <Stack
+                screenOptions={{
+                    headerShown: false,
                     headerStyle: {
                         backgroundColor: '#FFFFFF',
                     },
@@ -47,13 +40,15 @@ function AppContent() {
                 <Stack.Screen name="index" options={{ headerShown: false }} />
                 <Stack.Screen name="auth" options={{ headerShown: false }} />
                 <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-                <Stack.Screen name="itinerary" options={{ title: 'Trip Itinerary' }} />
-                <Stack.Screen name="announcements" options={{ title: 'Announcements' }} />
-                <Stack.Screen name="prayers" options={{ title: 'Prayer Times' }} />
-                <Stack.Screen name="duas" options={{ title: 'Duas' }} />
-                <Stack.Screen name="umrah-guide" options={{ title: 'Umrah Guide' }} />
-                <Stack.Screen name="umrah-guide/[id]" options={{ title: 'Guide Details' }} />
-                <Stack.Screen name="map/[id]" options={{ title: 'Location Details' }} />
+                <Stack.Screen name="itinerary" options={{ headerShown: false }} />
+                <Stack.Screen name="itinerary-builder" options={{ headerShown: false }} />
+                <Stack.Screen name="announcements" options={{ headerShown: false }} />
+                <Stack.Screen name="prayers" options={{ headerShown: false }} />
+                <Stack.Screen name="duas" options={{ headerShown: false }} />
+                <Stack.Screen name="umrah-guide" options={{ headerShown: false }} />
+                <Stack.Screen name="umrah-guide/[id]" options={{ headerShown: false }} />
+                <Stack.Screen name="guide/[id]" options={{ headerShown: false }} />
+                <Stack.Screen name="map/[id]" options={{ headerShown: false }} />
                 <Stack.Screen name="settings" options={{ headerShown: false }} />
             </Stack>
             <StatusBar style="auto" />
@@ -63,16 +58,16 @@ function AppContent() {
 
 export default function RootLayout() {
     useEffect(() => {
-        // Initialize push notifications
-        async function initPushNotifications() {
+        // Initialize notification configuration only (don't request permissions yet)
+        async function initNotifications() {
             try {
                 await configureNotifications();
-                await requestPushNotificationPermissions();
+                console.log("Notification handler configured");
             } catch (err) {
-                console.error("Push notification setup failed:", err);
+                console.error("Notification configuration failed:", err);
             }
         }
-        initPushNotifications();
+        initNotifications();
     }, []);
 
     return (

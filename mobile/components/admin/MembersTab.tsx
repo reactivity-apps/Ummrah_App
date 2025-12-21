@@ -3,13 +3,12 @@ import { useState, useEffect } from "react";
 import { Users, UserMinus } from "lucide-react-native";
 import { Alert } from "react-native";
 import { getTripMembers, removeTripMember } from "../../lib/api/services/trip.service";
-import { TripMemberRole } from "../../types/db";
 
 interface Member {
     id: string;
     user_id: string;
     name: string;
-    role: TripMemberRole;
+    isGroupAdmin: boolean;
     joined_at: string;
 }
 
@@ -99,7 +98,7 @@ export function MembersTab({ tripId }: MembersTabProps) {
                             <View className="flex-1">
                                 <View className="flex-row items-center gap-2 mb-1">
                                     <Text className="text-foreground font-semibold text-base">{member.name}</Text>
-                                    {member.role === 'group_owner' && (
+                                    {member.isGroupAdmin && (
                                         <View className="bg-[#C5A059]/10 px-2 py-0.5 rounded border border-[#C5A059]/30">
                                             <Text className="text-[#C5A059] text-xs font-medium">ADMIN</Text>
                                         </View>
@@ -133,7 +132,7 @@ export function MembersTab({ tripId }: MembersTabProps) {
                         <Text className="text-xs text-muted-foreground">Total</Text>
                     </View>
                     <View>
-                        <Text className="text-2xl font-bold text-[#C5A059]">{members.filter(m => m.role === 'group_owner').length}</Text>
+                        <Text className="text-2xl font-bold text-[#C5A059]">{members.filter(m => m.isGroupAdmin).length}</Text>
                         <Text className="text-xs text-muted-foreground">Admins</Text>
                     </View>
                 </View>

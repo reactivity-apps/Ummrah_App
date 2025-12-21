@@ -410,12 +410,7 @@ export async function getTripMembers(tripId: string): Promise<{
 
         const { data: memberships, error } = await supabase
             .from('trip_memberships')
-            .select(`
-                id,
-                user_id,
-                joined_at,
-                profile:profiles(name)
-            `)
+            .select('id, user_id, joined_at')
             .eq('trip_id', tripId)
             .is('left_at', null)
             .order('joined_at', { ascending: true });
@@ -425,6 +420,28 @@ export async function getTripMembers(tripId: string): Promise<{
             return { success: false, error: error.message };
         }
 
+        if (!memberships || memberships.length === 0) {
+            return { success: true, members: [] };
+        }
+
+        // Get user IDs
+        const userIds = memberships.map(m => m.user_id);
+
+        // Fetch user emails from auth.users (via profiles which should have email)
+        // Note: If profiles.name doesn't exist in DB, we'll use email as identifier
+        const { data: profiles } = await supabase
+            .from('profiles')
+            .select('user_id, email')
+            .in('user_id', userIds);
+
+        // Create a map of user_id to email (or extract name from email)
+        const profileMap = new Map(
+            profiles?.map(p => [
+                p.user_id, 
+                p.email ? p.email.split('@')[0] : 'User'
+            ]) || []
+        );
+
         // Get group admins for this trip's group
         const { data: groupAdmins } = await supabase
             .from('group_memberships')
@@ -433,13 +450,13 @@ export async function getTripMembers(tripId: string): Promise<{
 
         const adminUserIds = new Set(groupAdmins?.map(g => g.user_id) || []);
 
-        const members = memberships?.map((m: any) => ({
+        const members = memberships.map((m: any) => ({
             id: m.id,
             user_id: m.user_id,
-            name: m.profile?.name || 'Unknown',
+            name: profileMap.get(m.user_id) || 'Unknown',
             isGroupAdmin: adminUserIds.has(m.user_id),
             joined_at: m.joined_at,
-        })) || [];
+        }));
 
         return { success: true, members };
     } catch (err) {

@@ -42,20 +42,14 @@ export default function ZiyaratDetailScreen() {
     }
 
     return (
-        <SafeAreaView className="flex-1 bg-sand-50" edges={['bottom']}>
-            <View className="px-4 py-3 bg-card border-b border-sand-200 flex-row items-center justify-between">
-                <View className="flex-row items-center flex-1">
-                    <Text className="text-xl font-bold text-foreground flex-1" numberOfLines={1}>
-                        {location.title}
-                    </Text>
-                </View>
-                {/* TODO: Add bookmark functionality */}
-                <TouchableOpacity className="ml-2 p-2">
-                    <Bookmark size={22} color="#4A6741" />
-                </TouchableOpacity>
+        <SafeAreaView className="flex-1 bg-sand-50" edges={['top']}>
+            <View className="px-4 py-3 bg-card border-b border-sand-200">
+                <Text className="text-xl font-bold text-foreground" numberOfLines={1}>
+                    {location.title}
+                </Text>
             </View>
 
-            <ScrollView className="flex-1" contentContainerStyle={{ padding: 20, paddingBottom: 20 }}>
+            <ScrollView className="flex-1" contentContainerStyle={{ padding: 20, paddingBottom: 100 }}>
                 {/* Hero Section - Animated entrance */}
                 <Animated.View
                     style={heroStyle}

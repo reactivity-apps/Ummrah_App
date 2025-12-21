@@ -14,8 +14,8 @@ export default function ResourcesScreen() {
             subtitle: 'Daily salah schedule',
             icon: <Clock size={20} color="#4A6741" />,
             route: '/prayers',
-            color: 'bg-emerald-50',
-            borderColor: 'border-emerald-100'
+            color: 'bg-[#4A6741]/5',
+            borderColor: 'border-[#4A6741]/20'
         },
         {
             id: 'duas',
@@ -23,8 +23,8 @@ export default function ResourcesScreen() {
             subtitle: 'Supplications',
             icon: <ScrollText size={20} color="#4A6741" />,
             route: '/duas',
-            color: 'bg-emerald-50',
-            borderColor: 'border-emerald-100'
+            color: 'bg-[#4A6741]/5',
+            borderColor: 'border-[#4A6741]/20'
         },
         {
             id: 'murshid-chat',
@@ -32,8 +32,8 @@ export default function ResourcesScreen() {
             subtitle: 'Ask for guidance',
             icon: <MessageCircle size={20} color="#C5A059" />,
             route: '/(tabs)/murshid',
-            color: 'bg-purple-50',
-            borderColor: 'border-purple-100'
+            color: 'bg-[#C5A059]/5',
+            borderColor: 'border-[#C5A059]/20'
         },
         {
             id: 'ziyarat',
@@ -41,8 +41,8 @@ export default function ResourcesScreen() {
             subtitle: 'Historical Sites',
             icon: <MapPin size={20} color="#C5A059" />,
             route: '/(tabs)/map',
-            color: 'bg-amber-50',
-            borderColor: 'border-amber-100'
+            color: 'bg-[#C5A059]/5',
+            borderColor: 'border-[#C5A059]/20'
         },
         {
             id: 'guide',
@@ -50,17 +50,17 @@ export default function ResourcesScreen() {
             subtitle: 'Step by Step',
             icon: <BookOpen size={20} color="#4A6741" />,
             route: '/umrah-guide',
-            color: 'bg-stone-50',
-            borderColor: 'border-stone-200'
+            color: 'bg-[#4A6741]/5',
+            borderColor: 'border-[#4A6741]/20'
         },
         {
             id: 'profile',
             title: 'Profile',
             subtitle: 'Account & Settings',
-            icon: <FileText size={20} color="#718096" />,
+            icon: <FileText size={20} color="#4A6741" />,
             route: '/(tabs)/profile',
-            color: 'bg-blue-50',
-            borderColor: 'border-blue-100'
+            color: 'bg-sand-50',
+            borderColor: 'border-sand-200'
         }
     ];
 
@@ -89,29 +89,29 @@ export default function ResourcesScreen() {
                                         {item.icon}
                                     </View>
                                     <View className="flex-1">
-                                        <Text className="text-base font-semibold text-stone-800">{item.title}</Text>
-                                        <Text className="text-xs text-stone-500">{item.subtitle}</Text>
+                                        <Text className="text-base font-semibold text-foreground">{item.title}</Text>
+                                        <Text className="text-xs text-muted-foreground">{item.subtitle}</Text>
                                     </View>
-                                    <ChevronRight size={20} color="#CBD5E0" />
+                                    <ChevronRight size={20} color="#C5A059" />
                                 </TouchableOpacity>
                             </Link>
                         ))}
                     </View>
 
                     {/* Featured / Quick Access */}
-                    <View className="mt-6 bg-white rounded-2xl p-5 border border-stone-100 shadow-sm">
+                    <View className="mt-6 bg-card rounded-2xl p-5 border border-sand-200 shadow-sm">
                         <View className="flex-row items-center justify-between mb-4">
-                            <Text className="text-lg font-semibold text-stone-800">Quick Access</Text>
+                            <Text className="text-lg font-semibold text-foreground">Quick Access</Text>
                         </View>
 
                         <Link href="/duas" asChild>
-                            <TouchableOpacity className="flex-row items-center py-3 border-b border-stone-100">
+                            <TouchableOpacity className="flex-row items-center py-3 border-b border-sand-100">
                                 <Text className="text-2xl mr-4">🤲</Text>
                                 <View className="flex-1">
-                                    <Text className="text-base font-medium text-stone-800">Morning Adhkar</Text>
-                                    <Text className="text-xs text-stone-500">Recommended for now</Text>
+                                    <Text className="text-base font-medium text-foreground">Morning Adhkar</Text>
+                                    <Text className="text-xs text-muted-foreground">Recommended for now</Text>
                                 </View>
-                                <ChevronRight size={20} color="#CBD5E0" />
+                                <ChevronRight size={20} color="#C5A059" />
                             </TouchableOpacity>
                         </Link>
 
@@ -119,10 +119,10 @@ export default function ResourcesScreen() {
                             <TouchableOpacity className="flex-row items-center py-3 pt-4">
                                 <Text className="text-2xl mr-4">🕋</Text>
                                 <View className="flex-1">
-                                    <Text className="text-base font-medium text-stone-800">Tawaf Guide</Text>
-                                    <Text className="text-xs text-stone-500">Steps of Umrah</Text>
+                                    <Text className="text-base font-medium text-foreground">Tawaf Guide</Text>
+                                    <Text className="text-xs text-muted-foreground">Steps of Umrah</Text>
                                 </View>
-                                <ChevronRight size={20} color="#CBD5E0" />
+                                <ChevronRight size={20} color="#C5A059" />
                             </TouchableOpacity>
                         </Link>
                     </View>

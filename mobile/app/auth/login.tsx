@@ -5,8 +5,10 @@ import { Mail, Lock, ArrowRight, ChevronLeft } from 'lucide-react-native';
 import { supabase } from '../../lib/supabase';
 import { useRouter, Link, useLocalSearchParams } from 'expo-router';
 import { contentContainerConfig } from '../../lib/navigationConfig';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const NOTIFICATION_PROMPT_KEY = '@notification_prompt_shown';
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -133,9 +135,18 @@ export default function LoginScreen() {
       // Success - wait briefly for TripContext to load
       await new Promise(resolve => setTimeout(resolve, 1000));
       
-      console.log('[Login] Navigating to main tabs');
-      // Navigate to main tabs
-      router.replace('/(tabs)');
+      // Check if we've shown the notification prompt before
+      const hasShownPrompt = await AsyncStorage.getItem(NOTIFICATION_PROMPT_KEY);
+      
+      console.log('[Login] Navigating to', hasShownPrompt ? 'main tabs' : 'notification prompt');
+      
+      if (hasShownPrompt) {
+        // User has seen the prompt before, go straight to main tabs
+        router.replace('/(tabs)');
+      } else {
+        // First time user, show notification prompt
+        router.replace('/auth/enable-notifications');
+      }
     } catch (e) {
       console.error('Exception during login', e);
       setError('An unexpected error occurred. Please try again.');

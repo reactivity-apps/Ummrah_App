@@ -2,12 +2,11 @@ import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, Animated }
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
 import { Calendar, MapPin, Clock, Users, Utensils, Plane, Hotel, AlertCircle } from "lucide-react-native";
-import RadialMenu from "../components/RadialMenu";
-import { useFadeIn } from "../lib/sharedElementTransitions";
+import { useFadeIn } from "../../lib/sharedElementTransitions";
 import Svg, { Path, Rect } from "react-native-svg";
-import { useItinerary } from "../lib/api/hooks/useItinerary";
-import { useTrip } from "../lib/context/TripContext";
-import { ItineraryItemRow } from "../types/db";
+import { useItinerary } from "../../lib/api/hooks/useItinerary";
+import { useTrip } from "../../lib/context/TripContext";
+import { ItineraryItemRow } from "../../types/db";
 
 // Kaaba Icon Component
 const KaabaIcon = ({ size = 16, color = "#C5A059" }) => (
@@ -98,9 +97,19 @@ export default function ItineraryScreen() {
         ? Math.ceil((new Date(endDate).getTime() - new Date(startDate).getTime()) / (1000 * 60 * 60 * 24)) + 1
         : null;
 
-    // Calculate current day
+    // Calculate current day (Day 1 = start date)
     const currentDay = startDate
-        ? Math.min(Math.ceil((new Date().getTime() - new Date(startDate).getTime()) / (1000 * 60 * 60 * 24)) + 1, duration || 1)
+        ? (() => {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const tripStart = new Date(startDate);
+            tripStart.setHours(0, 0, 0, 0);
+            const daysSinceStart = Math.floor((today.getTime() - tripStart.getTime()) / (1000 * 60 * 60 * 24));
+
+            if (daysSinceStart < 0) return null; // Trip hasn't started yet
+            if (duration && daysSinceStart >= duration) return null; // Trip has ended
+            return daysSinceStart + 1; // Day 1 = start date
+        })()
         : null;
 
     if (tripsLoading || loading) {
@@ -110,7 +119,6 @@ export default function ItineraryScreen() {
                     <ActivityIndicator size="large" color="#4A6741" />
                     <Text className="text-muted-foreground mt-4">Loading itinerary...</Text>
                 </View>
-                <RadialMenu />
             </SafeAreaView>
         );
     }
@@ -123,7 +131,6 @@ export default function ItineraryScreen() {
                     <Text className="text-foreground font-semibold text-lg mt-4">Error Loading Itinerary</Text>
                     <Text className="text-muted-foreground text-center mt-2">{error}</Text>
                 </View>
-                <RadialMenu />
             </SafeAreaView>
         );
     }
@@ -138,44 +145,41 @@ export default function ItineraryScreen() {
                         Join or create a trip to view the itinerary
                     </Text>
                 </View>
-                <RadialMenu />
             </SafeAreaView>
         );
     }
 
     return (
-        <SafeAreaView className="flex-1 bg-sand-50" edges={['bottom']}>
+        <SafeAreaView className="flex-1 bg-sand-50" edges={['top']}>
             <View className="px-4 py-3 bg-card border-b border-[#C5A059]/20">
                 <View className="flex-row items-center mb-3">
-                    <Calendar size={24} color="#C5A059" />
-                    <View>
-                        <Text className="text-sm text-[#C5A059]">{tripName}</Text>
-                    </View>
+                    <Calendar size={20} color="#C5A059" className="mr-2" />
+                    <Text className="text-lg font-bold text-foreground">{tripName}</Text>
                 </View>
 
                 {/* Trip Overview */}
-                <View className="flex-row gap-2 mt-2">
+                <View className="flex-row gap-2">
                     {duration && (
-                        <View className="flex-1 bg-[#C5A059]/10 p-3 rounded-lg border border-[#C5A059]/20">
-                            <Text className="text-xs text-[#C5A059] font-medium mb-1">DURATION</Text>
-                            <Text className="text-foreground font-semibold">{duration} Days</Text>
+                        <View className="flex-1 bg-[#C5A059]/10 p-2 rounded-lg border border-[#C5A059]/20">
+                            <Text className="text-[10px] text-[#C5A059] font-medium mb-0.5">DURATION</Text>
+                            <Text className="text-foreground font-semibold text-sm">{duration} Days</Text>
                         </View>
                     )}
-                    <View className="flex-1 bg-[#C5A059]/10 p-3 rounded-lg border border-[#C5A059]/20">
-                        <Text className="text-xs text-[#C5A059] font-medium mb-1">ACTIVITIES</Text>
-                        <Text className="text-foreground font-semibold">{items.length} Items</Text>
+                    <View className="flex-1 bg-[#C5A059]/10 p-2 rounded-lg border border-[#C5A059]/20">
+                        <Text className="text-[10px] text-[#C5A059] font-medium mb-0.5">ACTIVITIES</Text>
+                        <Text className="text-foreground font-semibold text-sm">{items.length} Items</Text>
                     </View>
                     {currentDay && duration && currentDay <= duration && (
-                        <View className="flex-1 bg-[#4A6741]/10 p-3 rounded-lg border border-[#4A6741]/20">
-                            <Text className="text-xs text-primary font-medium mb-1">CURRENT</Text>
-                            <Text className="text-primary font-semibold">Day {currentDay}</Text>
+                        <View className="flex-1 bg-[#4A6741]/10 p-2 rounded-lg border border-[#4A6741]/20">
+                            <Text className="text-[10px] text-primary font-medium mb-0.5">CURRENT</Text>
+                            <Text className="text-primary font-semibold text-sm">Day {currentDay}</Text>
                         </View>
                     )}
                 </View>
             </View>
 
             {/* Animated content */}
-            <Animated.ScrollView style={fadeStyle} className="flex-1" contentContainerStyle={{ paddingHorizontal: 16, paddingVertical: 16 }}>
+            <Animated.ScrollView style={fadeStyle} className="flex-1" contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 20, paddingBottom: 100 }}>
                 {items.length === 0 ? (
                     <View className="bg-card rounded-xl p-8 border border-sand-200 border-dashed">
                         <View className="items-center">
@@ -254,8 +258,6 @@ export default function ItineraryScreen() {
                     ))
                 )}
             </Animated.ScrollView>
-
-            <RadialMenu />
         </SafeAreaView>
     );
 }

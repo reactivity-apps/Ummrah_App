@@ -275,8 +275,8 @@ export default function MurshidScreen() {
                     </ScrollView>
 
                     {/* Input Field */}
-                    <View className="px-4 flex-row items-center space-x-3">
-                        <View className="flex-1 bg-white rounded-full px-4 py-3 shadow-sm flex-row items-center" style={{ borderColor: '#4A6741', borderWidth: 1 }}>
+                    <View className="px-4 flex-row items-center">
+                        <View className="flex-1 bg-white rounded-full px-4 py-3 shadow-sm flex-row items-center mr-3" style={{ borderColor: '#4A6741', borderWidth: 1 }}>
                             <TextInput
                                 className="flex-1 text-base h-6" // Fixed height for alignment
                                 style={{ color: '#4A6741' }}

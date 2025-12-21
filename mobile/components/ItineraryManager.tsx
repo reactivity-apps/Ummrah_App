@@ -50,6 +50,7 @@ export default function ItineraryManager({ tripId, tripName }: ItineraryManagerP
     const [editingItem, setEditingItem] = useState<EditingItem | null>(null);
     const [saving, setSaving] = useState(false);
     const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
+    const [selectedDateForTemplate, setSelectedDateForTemplate] = useState<string>('');
 
     // Group items by day
     const groupedItems = items.reduce((acc, item) => {
@@ -75,7 +76,6 @@ export default function ItineraryManager({ tripId, tripName }: ItineraryManagerP
             day_date: '',
             starts_at: '',
             ends_at: '',
-            sort_order: items.length,
             isNew: true,
         });
         setShowEditModal(true);
@@ -100,7 +100,6 @@ export default function ItineraryManager({ tripId, tripName }: ItineraryManagerP
             day_date: defaultDate.toISOString().split('T')[0],
             starts_at: defaultDate.toISOString(),
             ends_at: endDate.toISOString(),
-            sort_order: items.length,
             isNew: true,
         });
 
@@ -117,7 +116,6 @@ export default function ItineraryManager({ tripId, tripName }: ItineraryManagerP
             day_date: item.day_date || '',
             starts_at: item.starts_at || '',
             ends_at: item.ends_at || '',
-            sort_order: item.sort_order,
             isNew: false,
         });
         setShowEditModal(true);
@@ -163,7 +161,6 @@ export default function ItineraryManager({ tripId, tripName }: ItineraryManagerP
                     day_date: editingItem.day_date || null,
                     starts_at: editingItem.starts_at || null,
                     ends_at: editingItem.ends_at || null,
-                    sort_order: editingItem.sort_order ?? items.length,
                 };
                 success = await createItem(input);
             } else {
@@ -176,7 +173,6 @@ export default function ItineraryManager({ tripId, tripName }: ItineraryManagerP
                         day_date: editingItem.day_date,
                         starts_at: editingItem.starts_at,
                         ends_at: editingItem.ends_at,
-                        sort_order: editingItem.sort_order,
                     },
                     true
                 );
@@ -317,6 +313,7 @@ export default function ItineraryManager({ tripId, tripName }: ItineraryManagerP
                 visible={showTemplateModal}
                 onClose={() => setShowTemplateModal(false)}
                 onSelectTemplate={handleSelectTemplate}
+                selectedDate={selectedDateForTemplate}
             />
         </View>
     );

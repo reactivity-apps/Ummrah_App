@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
-import { SafeAreaView, View, ActivityIndicator, Text } from 'react-native';
+import { View, ActivityIndicator, Text } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useAuth } from '../lib/context/AuthContext';
 

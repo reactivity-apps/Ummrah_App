@@ -37,24 +37,36 @@ export async function requireAuth() {
 
 /**
  * Check if user has admin permission for a trip
- * Admin = group_owner or super_admin role
+ * Admin = user exists in group_memberships for the trip's group
  */
 export async function hasAdminPermission(tripId: string, userId?: string): Promise<boolean> {
     try {
         const uid = userId || (await getCurrentUser())?.id;
         if (!uid) return false;
 
-        const { data, error } = await supabase
-            .from('trip_memberships')
-            .select('role')
-            .eq('trip_id', tripId)
+        // Get the trip's group_id
+        const { data: trip, error: tripError } = await supabase
+            .from('trips')
+            .select('group_id')
+            .eq('id', tripId)
+            .single();
+
+        if (tripError || !trip) {
+            console.error('Trip not found for admin check:', tripError);
+            return false;
+        }
+
+        // Check if user is in group_memberships for this group
+        const { data: membership, error: membershipError } = await supabase
+            .from('group_memberships')
+            .select('id')
+            .eq('group_id', trip.group_id)
             .eq('user_id', uid)
-            .is('left_at', null)
             .maybeSingle();
 
-        if (error || !data) return false;
-        return data.role === 'group_owner' || data.role === 'super_admin';
-    } catch {
+        return !membershipError && !!membership;
+    } catch (err) {
+        console.error('Error checking admin permission:', err);
         return false;
     }
 }

@@ -25,45 +25,43 @@ export default function ProfileScreen() {
 
     return (
         <SafeAreaView className="flex-1 bg-card" edges={["top"]}>
-            <View className="px-4 pt-6 pb-4 bg-card border-b border-sand-200">
-                <View className="flex-row items-center mb-2">
-                    <View className="h-10 w-10 rounded-full border-2 border-[#4A6741]/30 bg-[#4A6741]/10 items-center justify-center mr-3">
-                        <User size={20} color="#4A6741" />
+            <View className="px-4 pt-4 pb-3 bg-card border-b border-sand-200">
+                <View className="flex-row items-center mb-1">
+                    <View className="h-8 w-8 rounded-full border-2 border-[#4A6741]/30 bg-[#4A6741]/10 items-center justify-center mr-2.5">
+                        <User size={16} color="#4A6741" />
                     </View>
-                    <Text className="text-3xl font-bold text-stone-800">Profile</Text>
+                    <Text className="text-2xl font-bold text-stone-800">Profile</Text>
                 </View>
-                <Text className="text-stone-500 text-base">Manage your account</Text>
+                <Text className="text-stone-500 text-sm">Manage your account</Text>
             </View>
 
             <Animated.ScrollView 
                 style={fadeInStyle} 
                 className="flex-1 bg-background" 
             >
-                <View className="bg-card pb-6 pt-6">
+                <View className="bg-card pb-4 pt-3">
                     <View className="items-center">
-                        <View className="h-24 w-24 bg-primary/10 rounded-full items-center justify-center mb-4 border-2 border-primary/20">
-                            <Text className="text-primary font-bold text-3xl">
+                        <View className="h-16 w-16 bg-primary/10 rounded-full items-center justify-center mb-3 border-2 border-primary/20">
+                            <Text className="text-primary font-bold text-xl">
                                 {userName?.charAt(0) || 'U'}
                             </Text>
                         </View>
-                        <View className="flex-row items-center">
-                            <Text className="text-2xl font-bold text-foreground">{userName}</Text>
-                            {isGroupAdmin && (
-                                <View className="ml-2 bg-amber-100 px-2 py-1 rounded-full flex-row items-center">
-                                    <Crown size={12} color="#D97706" />
-                                    <Text className="text-amber-700 text-xs font-semibold ml-1">Admin</Text>
-                                </View>
-                            )}
-                        </View>
-                        {userEmail && <Text className="text-muted-foreground mt-1">{userEmail}</Text>}
+                        <Text className="text-xl font-bold text-foreground">{userName}</Text>
+                        {isGroupAdmin && (
+                            <View className="mt-1.5 bg-amber-100 px-2 py-0.5 rounded-full flex-row items-center">
+                                <Crown size={10} color="#D97706" />
+                                <Text className="text-amber-700 text-[10px] font-semibold ml-1">Admin</Text>
+                            </View>
+                        )}
+                        {userEmail && <Text className="text-muted-foreground text-sm mt-1">{userEmail}</Text>}
                     </View>
 
                     {currentTrip && (
-                        <View className="mx-4 mt-4 p-3 bg-sand-50 rounded-lg border border-sand-100">
-                            <Text className="text-xs text-muted-foreground font-medium mb-1">CURRENT TRIP</Text>
-                            <Text className="text-foreground font-semibold">{currentTrip.name}</Text>
+                        <View className="mx-4 mt-3 p-2.5 bg-sand-50 rounded-lg border border-sand-100">
+                            <Text className="text-[10px] text-muted-foreground font-medium mb-0.5">CURRENT TRIP</Text>
+                            <Text className="text-foreground font-semibold text-sm">{currentTrip.name}</Text>
                             {currentTrip.start_date && currentTrip.end_date && (
-                                <Text className="text-xs text-muted-foreground mt-1">
+                                <Text className="text-[10px] text-muted-foreground mt-0.5">
                                     {new Date(currentTrip.start_date).toLocaleDateString()} - {new Date(currentTrip.end_date).toLocaleDateString()}
                                 </Text>
                             )}
