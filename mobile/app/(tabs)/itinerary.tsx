@@ -6,6 +6,7 @@ import { useFadeIn } from "../../lib/sharedElementTransitions";
 import Svg, { Path, Rect } from "react-native-svg";
 import { useItinerary } from "../../lib/api/hooks/useItinerary";
 import { useTrip } from "../../lib/context/TripContext";
+import { useTripStatus } from "../../lib/api/hooks/useTripStatus";
 import { ItineraryItemRow } from "../../types/db";
 
 // Kaaba Icon Component
@@ -33,6 +34,9 @@ export default function ItineraryScreen() {
         tripId: currentTrip?.id || '',
         enableRealtime: true,
     });
+
+    // Calculate trip status using centralized hook
+    const tripStatus = useTripStatus(currentTrip);
 
     const ActivityIcon = ({ title }: { title: string }) => {
         const lowerTitle = title.toLowerCase();
@@ -89,28 +93,6 @@ export default function ItineraryScreen() {
 
     // Get trip info
     const tripName = currentTrip?.name || 'Your Trip';
-    const startDate = currentTrip?.start_date;
-    const endDate = currentTrip?.end_date;
-
-    // Calculate duration
-    const duration = startDate && endDate
-        ? Math.ceil((new Date(endDate).getTime() - new Date(startDate).getTime()) / (1000 * 60 * 60 * 24)) + 1
-        : null;
-
-    // Calculate current day (Day 1 = start date)
-    const currentDay = startDate
-        ? (() => {
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
-            const tripStart = new Date(startDate);
-            tripStart.setHours(0, 0, 0, 0);
-            const daysSinceStart = Math.floor((today.getTime() - tripStart.getTime()) / (1000 * 60 * 60 * 24));
-
-            if (daysSinceStart < 0) return null; // Trip hasn't started yet
-            if (duration && daysSinceStart >= duration) return null; // Trip has ended
-            return daysSinceStart + 1; // Day 1 = start date
-        })()
-        : null;
 
     if (tripsLoading || loading) {
         return (
@@ -152,27 +134,52 @@ export default function ItineraryScreen() {
     return (
         <SafeAreaView className="flex-1 bg-sand-50" edges={['top']}>
             <View className="px-4 py-3 bg-card border-b border-[#C5A059]/20">
-                <View className="flex-row items-center mb-3">
-                    <Calendar size={20} color="#C5A059" className="mr-2" />
-                    <Text className="text-lg font-bold text-foreground">{tripName}</Text>
+                <View className="flex-row items-center justify-between mb-3">
+                    <View className="flex-row items-center flex-1">
+                        <Calendar size={20} color="#C5A059" className="mr-2" />
+                        <Text className="text-lg font-bold text-foreground">{tripName}</Text>
+                    </View>
+                    {tripStatus.type && (
+                        <View className={`px-3 py-1 rounded-full ${
+                            tripStatus.type === 'active' ? 'bg-[#4A6741]/10 border border-[#4A6741]/20' :
+                            tripStatus.type === 'upcoming' ? 'bg-[#C5A059]/10 border border-[#C5A059]/20' :
+                            'bg-gray-100 border border-gray-200'
+                        }`}>
+                            <Text className={`text-xs font-medium ${
+                                tripStatus.type === 'active' ? 'text-primary' :
+                                tripStatus.type === 'upcoming' ? 'text-[#C5A059]' :
+                                'text-muted-foreground'
+                            }`}>
+                                {tripStatus.type === 'active' ? 'Active' :
+                                 tripStatus.type === 'upcoming' ? 'Upcoming' :
+                                 'Completed'}
+                            </Text>
+                        </View>
+                    )}
                 </View>
 
                 {/* Trip Overview */}
                 <View className="flex-row gap-2">
-                    {duration && (
+                    {tripStatus.totalDays && (
                         <View className="flex-1 bg-[#C5A059]/10 p-2 rounded-lg border border-[#C5A059]/20">
                             <Text className="text-[10px] text-[#C5A059] font-medium mb-0.5">DURATION</Text>
-                            <Text className="text-foreground font-semibold text-sm">{duration} Days</Text>
+                            <Text className="text-foreground font-semibold text-sm">{tripStatus.totalDays} Days</Text>
                         </View>
                     )}
                     <View className="flex-1 bg-[#C5A059]/10 p-2 rounded-lg border border-[#C5A059]/20">
                         <Text className="text-[10px] text-[#C5A059] font-medium mb-0.5">ACTIVITIES</Text>
                         <Text className="text-foreground font-semibold text-sm">{items.length} Items</Text>
                     </View>
-                    {currentDay && duration && currentDay <= duration && (
+                    {tripStatus.currentDay && tripStatus.totalDays && tripStatus.currentDay <= tripStatus.totalDays && (
                         <View className="flex-1 bg-[#4A6741]/10 p-2 rounded-lg border border-[#4A6741]/20">
                             <Text className="text-[10px] text-primary font-medium mb-0.5">CURRENT</Text>
-                            <Text className="text-primary font-semibold text-sm">Day {currentDay}</Text>
+                            <Text className="text-primary font-semibold text-sm">Day {tripStatus.currentDay}</Text>
+                        </View>
+                    )}
+                    {tripStatus.daysUntilStart && (
+                        <View className="flex-1 bg-[#C5A059]/10 p-2 rounded-lg border border-[#C5A059]/20">
+                            <Text className="text-[10px] text-[#C5A059] font-medium mb-0.5">STARTS IN</Text>
+                            <Text className="text-foreground font-semibold text-sm">{tripStatus.daysUntilStart} {tripStatus.daysUntilStart === 1 ? 'Day' : 'Days'}</Text>
                         </View>
                     )}
                 </View>
@@ -197,7 +204,7 @@ export default function ItineraryScreen() {
                             <View className="flex-row items-center mb-3">
                                 <View className="px-3 py-1.5 rounded-full mr-3 bg-sand-200">
                                     <Text className="font-bold text-sm text-foreground">
-                                        {day === 'No Date' ? 'Unscheduled' : new Date(day).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
+                                        {day === 'No Date' ? 'Unscheduled' : new Date(day + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
                                     </Text>
                                 </View>
                                 <View className="flex-1">
@@ -226,7 +233,7 @@ export default function ItineraryScreen() {
                                                     </View>
                                                     {activity.starts_at && (
                                                         <Text className="text-xs text-muted-foreground font-semibold">
-                                                            {new Date(`2000-01-01T${activity.starts_at}`).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}
+                                                            {new Date(activity.starts_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}
                                                         </Text>
                                                     )}
                                                 </View>

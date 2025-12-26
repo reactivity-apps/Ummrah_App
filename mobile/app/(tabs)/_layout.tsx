@@ -51,17 +51,17 @@ export default function TabLayout() {
                     }}
                 />
                 <Tabs.Screen
-                    name="resources"
-                    options={{
-                        title: 'Resources',
-                        tabBarIcon: ({ color, size }) => <BookOpen size={size} color={color} />,
-                    }}
-                />
-                <Tabs.Screen
                     name="itinerary"
                     options={{
                         title: 'Itinerary',
                         tabBarIcon: ({ color, size }) => <Calendar size={size} color={color} />,
+                    }}
+                />
+                 <Tabs.Screen
+                    name="resources"
+                    options={{
+                        title: 'Resources',
+                        tabBarIcon: ({ color, size }) => <BookOpen size={size} color={color} />,
                     }}
                 />
                 <Tabs.Screen
