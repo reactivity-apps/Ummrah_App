@@ -1,145 +1,18 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { View, Text, ScrollView, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, Dimensions, Alert, Animated } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import { View, Text, ScrollView, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, Alert, Animated } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Send, Sparkles, BookOpen, MapPin, Moon, Info, ChevronRight, ArrowLeft } from 'lucide-react-native';
-import Svg, { Circle, Path, G } from 'react-native-svg';
+import { Send, Sparkles, BookOpen, MapPin, Moon } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 import { useFadeIn } from '../../lib/sharedElementTransitions';
 import { sendChatMessage } from '../../lib/api/services/openai.service';
-
-// --- Constants & Theme ---
-const COLORS = {
-    primary: '#4A6741', // Muted Green
-    secondary: '#8C9E84', // Lighter Green
-    gold: '#C5A059', // Soft Gold
-    ivory: '#FDFBF7', // Background
-    white: '#FFFFFF',
-    text: '#2D3748',
-    textLight: '#718096',
-    border: '#E2E8F0',
-};
+import { MessageItem, TypingIndicator, type Message } from '../../components/murshid';
 
 // --- Types ---
-interface Message {
-    id: string;
-    role: 'user' | 'assistant';
-    content: string;
-}
-
 interface Suggestion {
     id: string;
     text: string;
     icon: React.ReactNode;
 }
-
-// --- Components ---
-
-// 1. Geometric Pattern SVG (Simplified 8-point star motif)
-const GeometricPattern = ({ size = 100, color = COLORS.gold, opacity = 0.1 }: { size?: number, color?: string, opacity?: number }) => (
-    <Svg height={size} width={size} viewBox="0 0 100 100" style={{ position: 'absolute', opacity }}>
-        <G stroke={color} strokeWidth="1" fill="none">
-            <Path d="M50 0 L61 35 L97 35 L68 57 L79 91 L50 70 L21 91 L32 57 L3 35 L39 35 Z" />
-            <Circle cx="50" cy="50" r="45" />
-            <Circle cx="50" cy="50" r="35" />
-        </G>
-    </Svg>
-);
-
-// 2. Typing Indicator with Pulsing Light
-const TypingIndicator = () => {
-    const opacity = useRef(new Animated.Value(0.3)).current;
-
-    useEffect(() => {
-        const animation = Animated.loop(
-            Animated.sequence([
-                Animated.timing(opacity, {
-                    toValue: 1,
-                    duration: 800,
-                    useNativeDriver: true,
-                }),
-                Animated.timing(opacity, {
-                    toValue: 0.3,
-                    duration: 800,
-                    useNativeDriver: true,
-                }),
-            ])
-        );
-        animation.start();
-
-        return () => animation.stop();
-    }, []);
-
-    return (
-        <View className="flex-row items-center space-x-2 p-4 bg-white rounded-2xl rounded-tl-none shadow-sm border border-sand-100 self-start mt-2">
-            <Animated.View style={[{ width: 8, height: 8, borderRadius: 4, backgroundColor: COLORS.primary, opacity }]} />
-            <Animated.View style={[{ width: 8, height: 8, borderRadius: 4, backgroundColor: COLORS.primary, opacity, transform: [{ scale: 0.8 }] }]} />
-            <Animated.View style={[{ width: 8, height: 8, borderRadius: 4, backgroundColor: COLORS.primary, opacity, transform: [{ scale: 0.6 }] }]} />
-            <Text className="text-xs text-sand-400 ml-2 font-medium">Murshid is reflecting...</Text>
-        </View>
-    );
-};
-
-// 3. Message Components
-const MessageItem = ({ message }: { message: Message }) => {
-    const isUser = message.role === 'user';
-
-    if (isUser) {
-        return (
-            <View
-                className="self-end rounded-2xl rounded-tr-none px-5 py-3.5 max-w-[85%] my-2"
-                style={{ backgroundColor: 'transparent' }}
-            >
-                <Text className="text-[#4A6741] text-base leading-6">{message.content}</Text>
-            </View>
-        );
-    }
-
-    // Murshid Message (Guidance Card)
-    return (
-        <View className="self-start bg-white rounded-2xl rounded-tl-none max-w-[90%] my-3 shadow-sm border border-sand-100 overflow-hidden">
-            {/* Decorative Top Border */}
-            <View className="h-1 w-full bg-sand-100" />
-
-            <View className="p-5">
-                {/* Content */}
-                {message.content.split('\n').map((paragraph: string, idx: number) => {
-                    // Check for Arabic text (simple heuristic)
-                    const isArabic = /[\u0600-\u06FF]/.test(paragraph);
-
-                    if (isArabic) {
-                        return (
-                            <Text key={idx} className="text-right text-2xl text-sand-800 leading-10 mb-4 font-medium" style={{ fontFamily: Platform.OS === 'ios' ? 'Geeza Pro' : 'serif' }}>
-                                {paragraph}
-                            </Text>
-                        );
-                    }
-
-                    // Check for dividers
-                    if (paragraph.trim() === '---') {
-                        return <View key={idx} className="h-[1px] bg-sand-200 my-3 w-1/2 self-center" />;
-                    }
-
-                    return (
-                        <Text key={idx} className="text-sand-700 text-base leading-7 mb-2">
-                            {paragraph}
-                        </Text>
-                    );
-                })}
-            </View>
-
-            {/* Footer / Filigree */}
-            <View className="px-4 py-2 flex-row justify-between items-center border-t border-sand-100">
-                <View className="flex-row items-center">
-                    <Sparkles size={12} color={COLORS.gold} />
-                    <Text className="text-[10px] text-[#4A6741] uppercase tracking-widest ml-2 font-semibold">Guidance</Text>
-                </View>
-                <View className="opacity-20">
-                    <GeometricPattern size={20} color={COLORS.primary} />
-                </View>
-            </View>
-        </View>
-    );
-};
 
 // --- Main Screen ---
 export default function MurshidScreen() {
@@ -264,11 +137,12 @@ export default function MurshidScreen() {
                             <TouchableOpacity
                                 key={chip.id}
                                 onPress={() => handleSend(chip.text)}
-                                className="flex-row items-center bg-white border rounded-full px-4 py-2 mr-3 shadow-sm"
-                                style={{ borderColor: '#4A6741' }}
+                                disabled={isTyping}
+                                className="flex-row items-center bg-card border-2 border-sand-200 rounded-full px-4 py-2 mr-3"
+                                style={{ opacity: isTyping ? 0.5 : 1 }}
                             >
                                 {chip.icon}
-                                <Text style={{ color: '#4A6741' }} className="ml-2 text-sm font-medium">{chip.text}</Text>
+                                <Text className="ml-2 text-sm font-medium text-muted-foreground">{chip.text}</Text>
                             </TouchableOpacity>
                         ))}
                         <View className="w-4" />
@@ -276,24 +150,26 @@ export default function MurshidScreen() {
 
                     {/* Input Field */}
                     <View className="px-4 flex-row items-center">
-                        <View className="flex-1 bg-white rounded-full px-4 py-3 shadow-sm flex-row items-center mr-3" style={{ borderColor: '#4A6741', borderWidth: 1 }}>
+                        <View className="flex-1 bg-card border-2 border-sand-200 rounded-full px-4 py-3 flex-row items-center mr-3">
                             <TextInput
-                                className="flex-1 text-base h-6" // Fixed height for alignment
-                                style={{ color: '#4A6741' }}
+                                className="flex-1 text-base h-6 text-foreground"
                                 placeholder="Ask for guidance..."
-                                placeholderTextColor="#A0AEC0"
+                                placeholderTextColor="hsl(40 5% 55%)"
                                 value={inputText}
                                 onChangeText={setInputText}
                                 multiline={false}
                                 returnKeyType="send"
                                 onSubmitEditing={() => handleSend(inputText)}
+                                editable={!isTyping}
                             />
                         </View>
                         <TouchableOpacity
                             onPress={() => handleSend(inputText)}
-                            className="w-12 h-12 bg-white border border-[#4A6741] rounded-full items-center justify-center shadow-md"
+                            disabled={isTyping || !inputText.trim()}
+                            className="w-12 h-12 bg-[#4A6741] border-2 border-[#4A6741] rounded-full items-center justify-center"
+                            style={{ opacity: (isTyping || !inputText.trim()) ? 0.5 : 1 }}
                         >
-                            <Send size={20} color="#4A6741" />
+                            <Send size={20} color="white" />
                         </TouchableOpacity>
                     </View>
 
