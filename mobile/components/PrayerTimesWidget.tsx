@@ -12,7 +12,7 @@
 
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { MapPin, Clock } from 'lucide-react-native';
+import { MapPin, Clock, AlertCircle } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 import type React from 'react';
 
@@ -42,7 +42,7 @@ export default function PrayerTimesWidget({
     timeUntil = '45 mins',
     onPress,
     clickable = true,
-    themeColors = ['#4A6741', '#3A5234', '#2A3E28'] // Default: Makkah green
+    themeColors = ['#4A6741', '#3A5234', '#2A3E28'], // Default: Makkah green
 }: PrayerTimesWidgetProps) {
     const router = useRouter();
 
@@ -54,6 +54,29 @@ export default function PrayerTimesWidget({
         }
     };
 
+    // Validation checks - detect missing or invalid data
+    const hasValidPrayers = prayers && prayers.length > 0;
+    const hasValidNextPrayer = nextPrayer && nextPrayer.name && nextPrayer.time;
+
+    // Error state: Critical data is missing (likely API failure)
+    if (!hasValidNextPrayer || !hasValidPrayers) {
+        return (
+            <View style={styles.container}>
+                <View style={styles.errorContainer}>
+                    <View style={styles.errorIconContainer}>
+                        <AlertCircle size={24} color="#DC2626" />
+                    </View>
+                    <Text style={styles.errorTitle}>Unable to load prayer times</Text>
+                    <Text style={styles.errorMessage}>
+                        {!hasValidPrayers 
+                            ? 'Prayer times are currently unavailable'
+                            : 'Next prayer information is missing'}
+                    </Text>
+                </View>
+            </View>
+        );
+    }
+
     const content = (
         // @ts-ignore - LinearGradient type compatibility issue with React 19
         <LinearGradient
@@ -62,11 +85,6 @@ export default function PrayerTimesWidget({
             end={{ x: 1, y: 1 }}
             style={styles.gradient}
         >
-            {/* Decorative circle */}
-            <View style={styles.decorativeCircle}>
-                <View style={styles.circle} />
-            </View>
-
             <View style={styles.header}>
                 <View style={styles.locationBadge}>
                     <MapPin size={12} color="rgba(255,255,255,0.9)" />
@@ -121,24 +139,35 @@ const styles = StyleSheet.create({
     container: {
         // Shadow removed for cleaner appearance
     },
+    errorContainer: {
+        backgroundColor: '#FEE2E2',
+        borderRadius: 16,
+        padding: 20,
+        borderWidth: 1,
+        borderColor: '#FECACA',
+        alignItems: 'center',
+    },
+    errorIconContainer: {
+        marginBottom: 12,
+    },
+    errorTitle: {
+        color: '#991B1B',
+        fontSize: 16,
+        fontWeight: '600',
+        marginBottom: 6,
+        textAlign: 'center',
+    },
+    errorMessage: {
+        color: '#DC2626',
+        fontSize: 14,
+        textAlign: 'center',
+        marginBottom: 16,
+    },
     gradient: {
         borderRadius: 16,
         padding: 20,
         overflow: 'hidden',
         position: 'relative',
-    },
-    decorativeCircle: {
-        position: 'absolute',
-        top: -30,
-        right: -30,
-        opacity: 0.1,
-    },
-    circle: {
-        width: 128,
-        height: 128,
-        borderRadius: 64,
-        borderWidth: 8,
-        borderColor: 'white',
     },
     header: {
         flexDirection: 'row',

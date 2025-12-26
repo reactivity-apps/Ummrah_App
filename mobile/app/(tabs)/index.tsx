@@ -79,7 +79,7 @@ export default function HomeScreen() {
                             <ActivityIndicator size="large" color="#C5A059" />
                             <Text className="text-white/70 mt-2">Loading prayer times...</Text>
                         </View>
-                    ) : nextPrayer ? (
+                    ) : (
                         <PrayerTimesWidget
                             prayers={prayers}
                             nextPrayer={nextPrayer}
@@ -88,7 +88,7 @@ export default function HomeScreen() {
                             clickable={true}
                             themeColors={themeColors}
                         />
-                    ) : null}
+                    )}
                 </View>
 
                 {/* Quick Access */}
