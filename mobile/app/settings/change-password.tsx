@@ -129,9 +129,9 @@ export default function ChangePasswordScreen() {
                                 />
                                 <TouchableOpacity onPress={() => setShowCurrentPassword(!showCurrentPassword)}>
                                     {showCurrentPassword ? (
-                                        <EyeOff size={20} color="hsl(40 5% 55%)" />
-                                    ) : (
                                         <Eye size={20} color="hsl(40 5% 55%)" />
+                                    ) : (
+                                        <EyeOff size={20} color="hsl(40 5% 55%)" />
                                     )}
                                 </TouchableOpacity>
                             </View>
@@ -153,9 +153,9 @@ export default function ChangePasswordScreen() {
                                 />
                                 <TouchableOpacity onPress={() => setShowNewPassword(!showNewPassword)}>
                                     {showNewPassword ? (
-                                        <EyeOff size={20} color="hsl(40 5% 55%)" />
-                                    ) : (
                                         <Eye size={20} color="hsl(40 5% 55%)" />
+                                    ) : (
+                                        <EyeOff size={20} color="hsl(40 5% 55%)" />
                                     )}
                                 </TouchableOpacity>
                             </View>
@@ -180,9 +180,9 @@ export default function ChangePasswordScreen() {
                                 />
                                 <TouchableOpacity onPress={() => setShowConfirmPassword(!showConfirmPassword)}>
                                     {showConfirmPassword ? (
-                                        <EyeOff size={20} color="hsl(40 5% 55%)" />
-                                    ) : (
                                         <Eye size={20} color="hsl(40 5% 55%)" />
+                                    ) : (
+                                        <EyeOff size={20} color="hsl(40 5% 55%)" />
                                     )}
                                 </TouchableOpacity>
                             </View>

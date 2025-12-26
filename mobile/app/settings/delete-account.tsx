@@ -2,15 +2,13 @@ import { View, Text, TouchableOpacity, ScrollView, Alert, ActivityIndicator, Tex
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useState } from "react";
 import { useRouter } from "expo-router";
-import { Lock, Trash2, AlertTriangle, Eye, EyeOff } from "lucide-react-native";
+import { Lock, AlertTriangle, Eye, EyeOff } from "lucide-react-native";
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../lib/context/AuthContext";
-import { useTrip } from "../../lib/context/TripContext";
 
 export default function DeleteAccountScreen() {
     const router = useRouter();
     const { user } = useAuth();
-    const { currentTrip } = useTrip();
     const [deleting, setDeleting] = useState(false);
     const [showPasswordModal, setShowPasswordModal] = useState(false);
     const [password, setPassword] = useState('');
@@ -143,117 +141,46 @@ export default function DeleteAccountScreen() {
     return (
         <SafeAreaView className="flex-1 bg-background" edges={['bottom']}>
             <ScrollView className="flex-1" contentContainerStyle={{ paddingBottom: 32 }}>
-                {/* Warning Message */}
                 <View className="px-5 mt-6">
-                    <View className="bg-red-50 p-4 rounded-xl border border-red-200 mb-6">
-                        <View className="flex-row items-start">
-                            <AlertTriangle size={20} color="hsl(0 84% 60%)" style={{ marginTop: 2 }} />
-                            <View className="flex-1 ml-3">
-                                <Text className="text-red-900 font-bold mb-2">
-                                    Warning: This action is irreversible
-                                </Text>
-                                <Text className="text-red-800 text-sm leading-relaxed">
-                                    Once you delete your account, there is no going back. Please be certain before proceeding.
-                                </Text>
+
+                    {/* Warning Box */}
+                    <View className="bg-white p-5 rounded-xl border border-sand-200 mb-6">
+                        <View className="items-center mb-4">
+                            <View className="h-14 w-14 bg-red-50 rounded-full items-center justify-center mb-3">
+                                <AlertTriangle size={28} color="hsl(0 84% 60%)" />
                             </View>
                         </View>
-                    </View>
 
-                    {currentTrip && (
-                        <>
-                            <Text className="text-sm font-bold text-muted-foreground mb-3 uppercase tracking-wider">
-                                Current Trip Impact
-                            </Text>
-
-                            <View className="bg-amber-50 p-4 rounded-xl border border-amber-200 mb-6">
-                                <View className="flex-row items-start">
-                                    <AlertTriangle size={18} color="#D97706" style={{ marginTop: 2 }} />
-                                    <View className="flex-1 ml-3">
-                                        <Text className="text-amber-900 font-semibold mb-1">
-                                            You're currently on a trip
-                                        </Text>
-                                        <Text className="text-amber-800 text-sm mb-2">
-                                            <Text className="font-semibold">{currentTrip.name}</Text>
-                                        </Text>
-                                        <Text className="text-amber-800 text-sm leading-relaxed">
-                                            Deleting your account will remove you from this trip. Your trip organizers will be notified.
-                                        </Text>
-                                    </View>
-                                </View>
-                            </View>
-                        </>
-                    )}
-
-                    {/* What Will Be Deleted */}
-                    <Text className="text-sm font-bold text-muted-foreground mb-3 uppercase tracking-wider">
-                        What Will Be Deleted
-                    </Text>
-
-                    <View className="bg-card rounded-xl border border-sand-200 p-4 mb-6">
-                        <Text className="text-sm text-foreground leading-relaxed">
-                            • <Text className="font-semibold">Personal Information</Text> - Your name, email, phone number, and profile details
-                            {'\n\n'}• <Text className="font-semibold">Emergency Contacts</Text> - All saved emergency contact information
-                            {'\n\n'}• <Text className="font-semibold">Trip Memberships</Text> - You will be removed from all current and past trips
-                            {'\n\n'}• <Text className="font-semibold">Trip History</Text> - All records of trips you've participated in
-                            {'\n\n'}• <Text className="font-semibold">Account Access</Text> - You will be immediately logged out and unable to sign in
+                        <Text className="text-red-900 font-bold text-base mb-3">
+                            Warning: This action cannot be undone
                         </Text>
-                    </View>
 
-                    {/* Alternatives */}
-                    <Text className="text-sm font-bold text-muted-foreground mb-3 uppercase tracking-wider">
-                        Consider These Alternatives
-                    </Text>
+                        <Text className="text-red-600 text-sm mb-4">
+                            Deleting your account will permanently remove all your data, including:
+                        </Text>
 
-                    <View className="bg-card rounded-xl border border-sand-200 mb-6">
-                        <View className="p-4 border-b border-sand-100">
-                            <Text className="text-foreground font-semibold mb-1">
-                                Just need a break?
-                            </Text>
-                            <Text className="text-sm text-muted-foreground leading-relaxed">
-                                You can simply log out and come back anytime. Your data will be waiting for you.
-                            </Text>
+                        <View className="mb-4">
+                            <Text className="text-red-600 text-sm mb-2">• Your profile information</Text>
+                            <Text className="text-red-600 text-sm mb-2">• Trip memberships</Text>
+                            <Text className="text-red-600 text-sm mb-2">• All personal data</Text>
+                            <Text className="text-red-600 text-sm">• Data will be kept for 30 days - contact support@ummrahapp.com if you want to reactivate your account</Text>
                         </View>
-                        <View className="p-4 border-b border-sand-100">
-                            <Text className="text-foreground font-semibold mb-1">
-                                Privacy concerns?
-                            </Text>
-                            <Text className="text-sm text-muted-foreground leading-relaxed">
-                                Adjust your privacy settings and control who can see your information without deleting everything.
-                            </Text>
-                        </View>
-                        <View className="p-4">
-                            <Text className="text-foreground font-semibold mb-1">
-                                Having issues?
-                            </Text>
-                            <Text className="text-sm text-muted-foreground leading-relaxed">
-                                Contact our support team at support@ummrahapp.com - we're here to help!
-                            </Text>
-                        </View>
-                    </View>
 
-                    {/* Delete Button */}
-                    <TouchableOpacity
-                        onPress={handleDeleteAccount}
-                        disabled={deleting}
-                        className="bg-red-600 p-4 rounded-xl flex-row items-center justify-center"
-                        style={{ opacity: deleting ? 0.7 : 1 }}
-                    >
-                        {deleting ? (
-                            <>
+                        <TouchableOpacity
+                            onPress={handleDeleteAccount}
+                            disabled={deleting}
+                            className="bg-red-600 p-4 rounded-xl items-center"
+                            style={{ opacity: deleting ? 0.7 : 1 }}
+                        >
+                            {deleting ? (
                                 <ActivityIndicator size="small" color="white" />
-                                <Text className="text-white font-bold ml-2">
-                                    Deactivating Account...
+                            ) : (
+                                <Text className="text-white font-bold">
+                                    I want to delete my account
                                 </Text>
-                            </>
-                        ) : (
-                            <>
-                                <Trash2 size={20} color="white" />
-                                <Text className="text-white font-bold ml-2">
-                                    I Understand, Deactivate My Account
-                                </Text>
-                            </>
-                        )}
-                    </TouchableOpacity>
+                            )}
+                        </TouchableOpacity>
+                    </View>
                 </View>
             </ScrollView>
 
