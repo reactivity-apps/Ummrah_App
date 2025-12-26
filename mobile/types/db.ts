@@ -64,6 +64,9 @@ export interface GroupRow {
   logo_url: string | null;
   phone_number: string | null;
   whatsapp_link: string | null;
+  email: string | null;
+  website: string | null;
+  address: string | null;
 
   created_by: string;
   created_at: string;

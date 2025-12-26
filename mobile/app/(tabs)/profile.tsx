@@ -1,6 +1,6 @@
-import { View, Text, TouchableOpacity, ScrollView, Alert, Animated, ActivityIndicator } from "react-native";
+import { View, Text, TouchableOpacity, Alert, Animated } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { User, Settings, LogOut, ChevronRight, Bell, Shield, Calendar, Phone, ArrowLeft, Crown, Users, Lock, Trash2 } from "lucide-react-native";
+import { User, LogOut, ChevronRight, Bell, Shield, Phone, Crown, Users, Lock, Trash2 } from "lucide-react-native";
 import { useRouter, Link } from "expo-router";
 import { useFadeIn } from "../../lib/sharedElementTransitions";
 import { supabase } from "../../lib/supabase";
@@ -46,13 +46,15 @@ export default function ProfileScreen() {
                                 {userName?.charAt(0) || 'U'}
                             </Text>
                         </View>
-                        <Text className="text-xl font-bold text-foreground">{userName}</Text>
-                        {isGroupAdmin && (
-                            <View className="mt-1.5 bg-amber-100 px-2 py-0.5 rounded-full flex-row items-center">
-                                <Crown size={10} color="#D97706" />
-                                <Text className="text-amber-700 text-[10px] font-semibold ml-1">Admin</Text>
-                            </View>
-                        )}
+                        <View className="flex-row items-center">
+                            <Text className="text-xl font-bold text-foreground">{userName}</Text>
+                            {isGroupAdmin && (
+                                <View className="ml-2 bg-amber-100 px-2 py-0.5 rounded-full flex-row items-center">
+                                    <Crown size={10} color="#D97706" />
+                                    <Text className="text-amber-700 text-[10px] font-semibold ml-1">Admin</Text>
+                                </View>
+                            )}
+                        </View>
                         {userEmail && <Text className="text-muted-foreground text-sm mt-1">{userEmail}</Text>}
                     </View>
 

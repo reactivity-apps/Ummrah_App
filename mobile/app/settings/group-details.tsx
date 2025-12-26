@@ -9,9 +9,9 @@
  * Consider creating GroupContext only when building group management features.
  */
 
-import { View, Text, TouchableOpacity, ScrollView, ActivityIndicator, RefreshControl } from "react-native";
+import { View, Text, TouchableOpacity, ScrollView, ActivityIndicator, RefreshControl, Linking } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Users, Calendar, Clock, MapPin, Crown } from "lucide-react-native";
+import { Users, Calendar, Clock, MapPin, Crown, Phone, Mail, Globe, MapPinned, MessageCircle } from "lucide-react-native";
 import { useRouter } from "expo-router";
 import { useState, useEffect } from "react";
 import { useTrip } from "../../lib/context/TripContext";
@@ -35,7 +35,6 @@ const CACHE_KEY_PREFIX = '@ummrah_group_details_';
 const CACHE_DURATION = 60 * 60 * 1000; // 1 hour
 
 export default function GroupDetailsScreen() {
-    const router = useRouter();
     const { currentTrip, isGroupAdmin } = useTrip();
     const [group, setGroup] = useState<GroupRow | null>(null);
     const [stats, setStats] = useState<GroupStats | null>(null);
@@ -193,7 +192,7 @@ export default function GroupDetailsScreen() {
     return (
         <SafeAreaView className="flex-1 bg-sand-50" edges={["bottom"]}>
             <ScrollView
-                className="flex-1 pt-5"
+                className="flex-1"
                 contentContainerStyle={{ paddingBottom: 24 }}
                 refreshControl={
                     <RefreshControl
@@ -241,9 +240,114 @@ export default function GroupDetailsScreen() {
                     </View>
                 </View>
 
+                {/* Group Details Section */}
+                <View className="px-4 mt-4">
+                    <Text className="text-sm font-bold text-muted-foreground mb-3 uppercase tracking-wider">
+                        About
+                    </Text>
+                    <View className="bg-card rounded-xl border border-sand-200 overflow-hidden">
+                        {/* Description */}
+                        <View className="p-4 border-b border-sand-100">
+                            <Text className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
+                                Description
+                            </Text>
+                            <Text className="text-muted-foreground">
+                                {group?.description || 'No description provided'}
+                            </Text>
+                        </View>
+
+                        {/* Contact Information */}
+                        <View className="p-4 border-b border-sand-100">
+                            <Text className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
+                                Contact
+                            </Text>
+                            
+                            {group?.phone_number ? (
+                                <TouchableOpacity 
+                                    className="flex-row items-center mb-3"
+                                    onPress={() => Linking.openURL(`tel:${group.phone_number}`)}
+                                >
+                                    <View className="h-8 w-8 bg-primary/10 rounded-full items-center justify-center mr-3">
+                                        <Phone size={16} color="#4A6741" />
+                                    </View>
+                                    <Text className="text-primary font-medium">{group.phone_number}</Text>
+                                </TouchableOpacity>
+                            ) : null}
+
+                            {group?.email ? (
+                                <TouchableOpacity 
+                                    className="flex-row items-center mb-3"
+                                    onPress={() => Linking.openURL(`mailto:${group.email}`)}
+                                >
+                                    <View className="h-8 w-8 bg-primary/10 rounded-full items-center justify-center mr-3">
+                                        <Mail size={16} color="#4A6741" />
+                                    </View>
+                                    <Text className="text-primary font-medium">{group.email}</Text>
+                                </TouchableOpacity>
+                            ) : null}
+
+                            {group?.whatsapp_link ? (
+                                <TouchableOpacity 
+                                    className="flex-row items-center"
+                                    onPress={() => Linking.openURL(group.whatsapp_link!)}
+                                >
+                                    <View className="h-8 w-8 bg-[#25D366]/10 rounded-full items-center justify-center mr-3">
+                                        <MessageCircle size={16} color="#25D366" />
+                                    </View>
+                                    <Text className="text-[#25D366] font-medium">WhatsApp Group</Text>
+                                </TouchableOpacity>
+                            ) : null}
+
+                            {!group?.phone_number && !group?.email && !group?.whatsapp_link && (
+                                <Text className="text-muted-foreground">No contact information provided</Text>
+                            )}
+                        </View>
+
+                        {/* Website */}
+                        {group?.website && (
+                            <View className="p-4 border-b border-sand-100">
+                                <Text className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
+                                    Website
+                                </Text>
+                                <TouchableOpacity 
+                                    className="flex-row items-center"
+                                    onPress={() => Linking.openURL(group.website!)}
+                                >
+                                    <View className="h-8 w-8 bg-primary/10 rounded-full items-center justify-center mr-3">
+                                        <Globe size={16} color="#4A6741" />
+                                    </View>
+                                    <Text className="text-primary font-medium flex-1" numberOfLines={1}>
+                                        {group.website}
+                                    </Text>
+                                </TouchableOpacity>
+                            </View>
+                        )}
+
+                        {/* Address */}
+                        <View className="p-4">
+                            <Text className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
+                                Address
+                            </Text>
+                            {group?.address ? (
+                                <View className="flex-row items-start">
+                                    <View className="h-8 w-8 bg-primary/10 rounded-full items-center justify-center mr-3 mt-0.5">
+                                        <MapPinned size={16} color="#4A6741" />
+                                    </View>
+                                    <Text className="text-foreground flex-1">{group.address}</Text>
+                                </View>
+                            ) : (
+                                <Text className="text-muted-foreground">No address provided</Text>
+                            )}
+                        </View>
+                    </View>
+                </View>
+
                 {/* Stats Grid */}
                 {stats && (
                     <View className="px-4 mt-4">
+                        <Text className="text-sm font-bold text-muted-foreground mb-3 uppercase tracking-wider">
+                            Statistics
+                        </Text>
                         <View className="bg-card rounded-xl border border-sand-200 overflow-hidden">
                             <View className="p-4 border-b border-sand-100">
                                 <View className="flex-row items-center justify-between">
@@ -338,15 +442,6 @@ export default function GroupDetailsScreen() {
                                 </View>
                             )}
                         </View>
-                    </View>
-                )}
-
-                {/* WhatsApp Link */}
-                {group?.whatsapp_link && (
-                    <View className="px-4 mt-4">
-                        <TouchableOpacity className="bg-[#25D366] p-4 rounded-xl flex-row items-center justify-center">
-                            <Text className="text-white font-semibold">Join Group WhatsApp</Text>
-                        </TouchableOpacity>
                     </View>
                 )}
             </ScrollView>
