@@ -120,7 +120,7 @@ export default function TripStatus() {
                         </View>
                         <View className="flex-1">
                             <Text className="text-xs text-muted-foreground font-medium uppercase">
-                                Next Activity • {new Date(nextActivity.starts_at!).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
+                                Next Activity • {new Date(nextActivity.starts_at!).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} at {new Date(nextActivity.starts_at!).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
                             </Text>
                             <Text className="text-sm font-semibold text-foreground">{nextActivity.title}</Text>
                         </View>

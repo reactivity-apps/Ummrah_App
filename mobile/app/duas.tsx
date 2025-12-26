@@ -3,12 +3,13 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useState, useEffect } from "react";
 import { DUAS } from "../data/mock";
 import { Search } from "lucide-react-native";
-import { useRouter } from "expo-router";
+import { useRouter, useLocalSearchParams } from "expo-router";
 import { DuasSkeleton } from "../components/SkeletonLoader";
 
 export default function DuasScreen() {
     const router = useRouter();
-    const [selectedCategory, setSelectedCategory] = useState("All");
+    const { category } = useLocalSearchParams<{ category?: string }>();
+    const [selectedCategory, setSelectedCategory] = useState(category || "All");
     const [isLoading, setIsLoading] = useState(true);
     const categories = ["All", "Tawaf", "Sa'i", "Morning", "Evening", "Mosque", "Kaaba", "General"];
 

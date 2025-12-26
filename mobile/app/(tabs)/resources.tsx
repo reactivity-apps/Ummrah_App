@@ -104,7 +104,7 @@ export default function ResourcesScreen() {
                             <Text className="text-lg font-semibold text-foreground">Quick Access</Text>
                         </View>
 
-                        <Link href="/duas" asChild>
+                        <Link href="/duas?category=Morning" asChild>
                             <TouchableOpacity className="flex-row items-center py-3 border-b border-sand-100">
                                 <Text className="text-2xl mr-4">🤲</Text>
                                 <View className="flex-1">
@@ -115,7 +115,7 @@ export default function ResourcesScreen() {
                             </TouchableOpacity>
                         </Link>
 
-                        <Link href="/umrah-guide" asChild>
+                        <Link href="/umrah-guide/2" asChild>
                             <TouchableOpacity className="flex-row items-center py-3 pt-4">
                                 <Text className="text-2xl mr-4">🕋</Text>
                                 <View className="flex-1">
