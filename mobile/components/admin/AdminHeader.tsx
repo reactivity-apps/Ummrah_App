@@ -23,9 +23,7 @@ export function AdminHeader({
                     </View>
                     <Text className="text-2xl font-bold text-stone-800">Group Admin</Text>
                 </View>
-                <View className="bg-[#C5A059]/10 px-2.5 py-1 rounded-full border border-[#C5A059]/30">
-                    <Text className="text-[#C5A059] text-[10px] font-semibold">ADMIN</Text>
-                </View>
+
             </View>
             <Text className="text-stone-500 text-sm mb-3">Manage your Umrah group</Text>
 

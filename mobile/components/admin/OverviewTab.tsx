@@ -16,6 +16,7 @@ import { useActivity } from "../../lib/api/hooks/useActivity";
 import { getTripMembers } from "../../lib/api/services/trip.service";
 import { QuickActionItem } from "./QuickActionItem";
 import { GroupCodeCard } from "./GroupCodeCard";
+import { supabase } from "../../lib/supabase";
 
 interface OverviewTabProps {
     data: {
@@ -51,6 +52,7 @@ export function OverviewTab({
     const [memberCount, setMemberCount] = useState(0);
     const [adminCount, setAdminCount] = useState(0);
     const [loadingMembers, setLoadingMembers] = useState(true);
+    const [joinCode, setJoinCode] = useState<string | null>(null);
 
     // Fetch real activity data if we have a trip ID
     const { activities, loading: activitiesLoading } = useActivity({
@@ -67,11 +69,44 @@ export function OverviewTab({
         }
 
         async function loadMemberStats() {
+            // Get trip members (regular users)
             const result = await getTripMembers(tripId!);
             if (result.success && result.members) {
                 setMemberCount(result.members.length);
-                setAdminCount(result.members.filter(m => m.role === 'group_owner' || m.role === 'super_admin').length);
             }
+
+            // Get group admins (users in group_memberships)
+            const { data: trip } = await supabase
+                .from('trips')
+                .select('group_id')
+                .eq('id', tripId!)
+                .single();
+
+            if (trip?.group_id) {
+                const { data: groupMemberships, error } = await supabase
+                    .from('group_memberships')
+                    .select('id')
+                    .eq('group_id', trip.group_id);
+
+                if (!error && groupMemberships) {
+                    setAdminCount(groupMemberships.length);
+                }
+            }
+
+            // Get trip join code
+            const { data: joinCodeData } = await supabase
+                .from('trip_join_codes')
+                .select('code')
+                .eq('trip_id', tripId!)
+                .eq('is_active', true)
+                .order('created_at', { ascending: false })
+                .limit(1)
+                .maybeSingle();
+
+            if (joinCodeData) {
+                setJoinCode(joinCodeData.code);
+            }
+
             setLoadingMembers(false);
         }
 
@@ -104,7 +139,7 @@ export function OverviewTab({
                     <View className="flex-1 bg-[#4A6741]/5 p-3 rounded-lg border border-[#4A6741]/20">
                         <View className="flex-row items-center mb-1">
                             <Users size={14} color="#4A6741" />
-                            <Text className="text-xs text-muted-foreground ml-1 font-medium">MEMBERS</Text>
+                            <Text className="text-xs text-muted-foreground ml-1 font-medium">MEMBER(S)</Text>
                         </View>
                         <Text className="text-foreground text-lg font-bold">
                             {loadingMembers ? '...' : memberCount}
@@ -113,7 +148,7 @@ export function OverviewTab({
                     <View className="flex-1 bg-[#C5A059]/5 p-3 rounded-lg border border-[#C5A059]/20">
                         <View className="flex-row items-center mb-1">
                             <UserPlus size={14} color="#C5A059" />
-                            <Text className="text-xs text-muted-foreground ml-1 font-medium">ADMINS</Text>
+                            <Text className="text-xs text-muted-foreground ml-1 font-medium">ADMIN(S)</Text>
                         </View>
                         <Text className="text-foreground text-lg font-bold">
                             {loadingMembers ? '...' : adminCount}
@@ -123,18 +158,18 @@ export function OverviewTab({
             </View>
 
             {/* Group Code Card */}
-            <GroupCodeCard code={data.groupCode} />
+            <GroupCodeCard code={joinCode || data.groupCode} />
 
             {/* Quick Actions */}
             <View className="mb-4">
                 <Text className="text-lg font-bold text-foreground mb-3">Quick Actions</Text>
                 <View className="bg-card rounded-xl border border-[#C5A059]/20 overflow-hidden">
-                    <QuickActionItem
+                    {/* <QuickActionItem
                         icon={MessageSquare}
                         title="Group Chat"
                         subtitle={`${data.unreadMessages} unread messages`}
                         onPress={() => onNavigate('communication')}
-                    />
+                    /> */}
                     <QuickActionItem
                         icon={Bell}
                         title="Send Announcement"
@@ -206,7 +241,7 @@ export function OverviewTab({
             </View>
 
             {/* Stats Overview */}
-            <View className="bg-gradient-to-br from-primary/10 to-primary/5 rounded-xl p-4 border border-primary/20 mb-4">
+            {/* <View className="bg-gradient-to-br from-primary/10 to-primary/5 rounded-xl p-4 border border-primary/20 mb-4">
                 <View className="flex-row items-center mb-3">
                     <BarChart3 size={20} color="#4A6741" />
                     <Text className="text-lg font-bold text-foreground ml-2">Group Health</Text>
@@ -216,13 +251,13 @@ export function OverviewTab({
                         <Text className="text-2xl font-bold text-[#4A6741]">
                             {loadingMembers ? '...' : `${memberCount}`}
                         </Text>
-                        <Text className="text-xs text-muted-foreground">Total Members</Text>
+                        <Text className="text-xs text-muted-foreground">Total Member(s)</Text>
                     </View>
                     <View>
                         <Text className="text-2xl font-bold text-[#C5A059]">
                             {loadingMembers ? '...' : `${adminCount}`}
                         </Text>
-                        <Text className="text-xs text-muted-foreground">Admins</Text>
+                        <Text className="text-xs text-muted-foreground">Admin(s)</Text>
                     </View>
                     <View>
                         <Text className="text-2xl font-bold text-[#4A6741]">
@@ -231,7 +266,7 @@ export function OverviewTab({
                         <Text className="text-xs text-muted-foreground">Recent Activity</Text>
                     </View>
                 </View>
-            </View>
+            </View> */}
         </View>
     );
 }

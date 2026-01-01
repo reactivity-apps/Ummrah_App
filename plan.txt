@@ -1,0 +1,618 @@
+# Web + Admin Dashboard Design Document
+
+### 0. Summary
+
+A single web property with two facets:
+
+- Public marketing site: explains the Umrah app, links to mobile apps, and includes a lead-capture form for new groups.
+- Secure admin dashboard: accessible only to authenticated Group Admins and Super Admins to manage groups, trips, members, and content.
+
+This document covers information architecture, UX flows, routes, auth and role-based access controls, data mapping to the existing schema, CRUD use-cases, non-functional requirements, and build plan.
+
+---
+
+### 1) Goals and non-goals
+
+- Goals
+    - Clear, credible marketing presence to convert new groups
+    - Fast path for group sign‑ups and demos
+    - Single admin surface to manage content already used in mobile
+    - Reuse existing schema and rules where possible
+- Non-goals (initial)
+    - Traveler self-serve web experience (mobile app is primary)
+    - Full CMS for public content beyond a simple marketing site
+
+---
+
+### 2) Information architecture
+
+- Public
+    - /              Landing page
+    - /product       App overview, screenshots, feature highlights
+    - /pricing       Simple pricing or "Contact sales"
+    - /contact       Contact + group sign-up form (lead capture)
+    - /privacy, /terms
+- Auth-gated (Admin only)
+    - /login         Admin sign-in
+    - /dashboard     Role-gated shell
+        - /groups                List + create
+        - /groups/:groupId       Overview
+            - /settings           Group profile, WhatsApp link, logo
+            - /members            Group members and roles
+            - /trips              Trip index
+                - /:tripId          Trip overview
+                    - /details        Name, dates, cities, status, visibility
+                    - /itinerary      Items CRUD
+                    - /announcements  CRUD + schedule + priority flag
+                    - /codes          Join codes lifecycle
+                    - /people         Trip memberships
+        - /analytics            Basic charts (later)
+        - /admin                Super Admin zone (tenants, templates)
+
+---
+
+### 3) Schema
+
+```jsx
+export type AuthRole = 'super_admin';
+
+export type TripVisibility =
+  | 'draft'
+  | 'published'
+  | 'hidden';
+
+export type TripStatus =
+  | 'active'
+  | 'completed';
+
+// ==========================
+// PROFILE (auth-level roles)
+// ==========================
+
+export interface ProfileRow {
+  user_id: string;
+
+  photo: string | null;
+  country: string | null;
+  city: string | null;
+
+  date_of_birth: string | null;
+  medical_notes: string | null;
+  dietary_restrictions: string | null;
+
+  emergency_contact_name: string | null;
+  emergency_contact_phone: string | null;
+
+  // Notification preferences
+  notification_announcements: boolean;
+  notification_prayers: boolean;
+
+  // AUTH-WIDE ROLE — single highest privilege
+  auth_role: AuthRole | null;  // null = normal authenticated user
+
+  profile_visible: boolean;
+  is_active: boolean;  // false = account deactivated (soft delete)
+
+  updated_at: string;
+}
+
+// ==========================
+// GROUPS
+// ==========================
+
+export interface GroupRow {
+  id: string;
+  name: string;
+  logo_url: string | null;
+  phone_number: string | null;
+  whatsapp_link: string | null;
+
+  created_by: string;
+  created_at: string;
+  updated_at: string;
+}
+
+// ==========================
+// GROUP MEMBERSHIPS
+// If in group membership, is group admin
+// ==========================
+
+export interface GroupMembershipRow {
+  id: string;
+  group_id: string;
+  user_id: string;
+
+  created_at: string;
+  updated_at: string;
+}
+
+// ==========================
+// TRIPS
+// ==========================
+
+export interface TripRow {
+  id: string;
+  group_id: string;
+  name: string;
+
+  start_date: string | null;
+  end_date: string | null;
+
+  cities: string[];    
+
+  visibility: TripVisibility;
+  status: TripStatus;
+
+  group_size: number;
+
+  created_at: string;
+  updated_at: string;
+}
+
+// ==========================
+// TRIP MEMBERSHIPS
+// If in trip membership, is user 
+// ==========================
+
+export interface TripMembershipRow {
+  id: string;
+  trip_id: string;
+  user_id: string;
+
+  joined_at: string;
+  left_at: string | null;
+}
+
+// ==========================
+// JOIN CODES
+// ==========================
+
+export interface TripJoinCodeRow {
+  id: string;
+  trip_id: string;
+
+  code: string;
+  is_active: boolean;
+
+  expires_at: string | null;
+  join_limit: number | null;
+
+  uses_count: number;
+
+  created_at: string;
+}
+
+// ==========================
+// ITINERARY ITEMS
+// ==========================
+
+export interface ItineraryItemRow {
+  id: string;
+  trip_id: string;
+
+  day_date: string | null;
+  title: string;
+  description: string | null;
+  link_url: string | null;
+  location: string | null;
+
+  starts_at: string | null;
+  ends_at: string | null;
+
+  created_at: string;
+  updated_at: string;
+}
+
+// ==========================
+// ANNOUNCEMENTS
+// ==========================
+
+export interface AnnouncementRow {
+  id: string;
+  trip_id: string;
+
+  title: string;
+  body: string;
+
+  link_url: string | null;
+  is_high_priority: boolean;
+
+  scheduled_for: string | null;
+  sent_at: string | null;
+
+  created_by: string | null;
+
+  created_at: string;
+}
+
+```
+
+---
+
+### 4) UX flows (high-level)
+
+- Marketing → Lead
+    - Visitor reviews overview → clicks "Get started" → submits Group sign-up form (email, group name, previous travel experience, years active, expected group size) → CRM + email notification → Super Admin reviews and provisions a Group → sends invite link to Group Admin.
+- Admin sign-in (Group Admin or Super Admin)
+    - Email/phone OTP or provider → role-based access controls check → /dashboard
+- Group Admin
+    - Create or open a Trip → edit details → add itinerary → generate join code → share with travelers → manage members & announcements
+- Super Admin
+    - Review new group leads → create Group → assign initial Group Admin → manage global templates
+
+---
+
+### 5) Roles and access control
+
+- Roles
+    - Super Admin: full platform access
+    - Group Admin: access limited to owned groups and their trips/members
+- Principles
+    - Server-side enforcement on all reads/writes
+    - UI hides or disables actions user cannot perform
+    - Route guards for admin paths
+
+---
+
+### 6) Data model mapping to existing schema
+
+Mapping to fields in Umrah App Design Document.
+
+- Groups
+    - List, create, update GroupRow fields: name, logo_url, phone_number, whatsapp_link
+- Group memberships
+    - View members per group, add or remove members, promote to Group Admin
+- Trips
+    - Create/update TripRow: name, dates, cities[], visibility, status, group_size
+- Trip memberships
+    - Add or remove members from a trip; view joined_at/left_at
+- Join codes
+    - Create, revoke, regenerate, set limits and expiry, track uses_count
+- Itinerary items
+    - CRUD with starts_at/ends_at, title, description, link_url, location
+- Announcements
+    - CRUD, schedule (scheduled_for), send now, priority flag, link
+- Profiles
+    - Read-only in MVP for admins; future: notes and admin-only fields
+
+---
+
+### 7) Required admin functionality (CRUD)
+
+- Groups
+    - Create group
+    - Edit group settings and branding
+    - Manage group admins and members
+- Trips
+    - Create trip wizard
+    - Edit details, visibility, and status
+    - Manage cities[] and group_size
+- Trip memberships
+    - Invite by link or add existing user
+    - Remove, restore, change role within group context
+- Join codes
+    - Generate, deactivate, regenerate, set join_limit and expires_at
+- Itinerary items
+    - Add, edit, reorder, bulk delete
+- Announcements
+    - Draft, schedule, send now, mark high priority
+    - View sent_at; basic delivery log
+
+---
+
+### 8) Additional functions suggested by the schema
+
+- Audit fields surfacing
+    - Show created_at/updated_at on rows where relevant
+- Status controls
+    - Trip visibility and status toggles with safe-guards when travelers are enrolled
+- Analytics (phase 1.1)
+    - Trip join funnel, active members, announcement sends/opens
+- Templates
+    - Super Admin managed templates for itinerary items and announcements
+- Code safety
+    - Invalid attempt counter, optional code lockout window
+
+---
+
+### 8) Marketing site content plan
+
+## Overall visual direction
+
+- **Style**: Calm, minimal, modern
+- **Palette**: White base, soft green accents, muted gold highlights
+- **Typography**: Clean sans-serif (Inter, SF Pro, or similar)
+- **Iconography**: Thin-line icons, subtle crescent motif used sparingly
+- **Motion**: Gentle fades and vertical slide-ins, nothing flashy
+- **Spacing**: Large margins, generous whitespace
+- **Header**: Transparent, fixed to top, becomes slightly opaque on scroll
+
+---
+
+## Fixed transparent header (global)
+
+**Left**
+
+- Crescent logo mark
+- Wordmark
+
+**Right**
+
+- How it works
+- Features
+- For group leaders
+- Get started (primary button, gold or green outline)
+
+**Behavior**
+
+- Transparent on top of page
+- On scroll: white background with slight blur and soft shadow
+- Always fixed
+
+---
+
+## Above the fold (hero section)
+
+**Layout**
+
+- Full viewport height
+- Center-left text, right-side visual placeholder
+- Background stays white
+
+**Headline**
+
+> Calm, unified Umrah trip companion for groups
+> 
+
+**Subheadline**
+
+> Plan, guide, and support every traveler from preparation to return, all in one place.
+> 
+
+**Primary CTAs**
+
+- Get started as a group (solid green or gold)
+- See the app (outline button)
+
+**Visual placeholder**
+
+- Phone mockup or short looping video
+- Subtle crescent watermark in background
+
+---
+
+## How it works
+
+**Section tone**
+
+- Simple
+- Reassuring
+- Very linear
+
+**Layout**
+
+- Horizontal steps on desktop
+- Vertical stack on mobile
+
+**Steps**
+
+1. Create a group
+2. Set up your trip
+3. Share a join code
+4. Guide travelers before and during Umrah
+
+**Visuals**
+
+- Simple line illustrations or short UI clips
+- Placeholder blocks for images/videos
+
+---
+
+## Feature highlights
+
+**Layout**
+
+- Alternating text and media blocks
+- Each feature gets breathing room
+
+**Features**
+
+### Itinerary
+
+Keep everyone aligned with day-by-day plans, locations, and reminders.
+
+[ Image / video placeholder ]
+
+### Announcements
+
+Send updates instantly so no one misses important information.
+
+[ Image / video placeholder ]
+
+### Dua library
+
+Curated duas for each stage of the journey, accessible anytime.
+
+[ Image / video placeholder ]
+
+### Ziyarat resources
+
+Context, etiquette, and historical background in one place.
+
+[ Image / video placeholder ]
+
+### Offline-friendly
+
+Access essentials even without reliable connectivity.
+
+[ Image / video placeholder ]
+
+**Design notes**
+
+- Small crescent icon next to feature titles
+- Gold accent lines used sparingly to separate sections
+
+---
+
+## Social proof
+
+**Layout**
+
+- Light gray or off-white background
+- Centered content
+
+**Logos**
+
+- Placeholder row for pilot group logos
+
+**Quotes**
+
+> “This made coordinating our entire group effortless.”
+> 
+
+> “Everything our travelers needed, without overwhelming them.”
+> 
+
+---
+
+## Call to action: for group leaders
+
+**Tone**
+
+- Empowering
+- Calm confidence
+
+**Headline**
+
+> Built for group leaders and organizers
+> 
+
+**Copy**
+
+Guide your group with clarity, reduce confusion, and spend less time repeating information.
+
+**CTA**
+
+- Get started as a group
+- Contact us
+
+**Form placeholder**
+
+- Name
+- Email
+- Group size
+- Optional message
+
+**Visual**
+
+- Minimal illustration or leader dashboard mockup
+- Crescent accent in corner
+
+---
+
+## Footer
+
+- Logo and short tagline
+- Contact email
+- Privacy
+- Terms
+
+---
+
+### 9) Group sign-up form (public)
+
+- Fields
+    - Organization/Group name
+    - Contact person name
+    - Contact email
+    - Phone (optional)
+    - Expected group size and timing
+    - Notes
+- Behavior
+    - On submit: create lead record and notify Super Admin email/Slack
+    - Optional: auto-schedule a 15‑min intro via Calendly link
+- Anti-spam
+    - Invisible captcha or hCaptcha
+
+---
+
+### 10) Routes and navigation
+
+- Public
+    - /, /product, /pricing, /contact
+- Auth
+    - /login → /dashboard
+    - /dashboard with top-level nav: Groups, Trips, Announcements, Admin (if Super Admin)
+- Deep links
+    - Direct links to /groups/:groupId and /groups/:groupId/trips/:tripId
+
+---
+
+### 11) Authentication and security
+
+- Auth methods
+    - Phone or email OTP; optional Google/Microsoft for admins
+- Session
+    - Short-lived tokens with refresh; httpOnly cookies if SSR
+- role-based access controls enforcement
+    - Super Admin vs Group Admin checks on every API
+- Multi-tenant boundaries
+    - All queries scoped by group_id and trip_id
+- Logging
+    - Admin actions logged for audit
+
+---
+
+### 12) Tech stack
+
+- Web app
+    - React + Next.js (App Router) for marketing and dashboard in one codebase
+    - Design system: Tailwind + Radix UI; dark mode
+    - Forms: React Hook Form + Zod
+- Backend
+    - Reuse existing Supabase
+    - Background jobs with Supabase Functions
+- Analytics
+    - PostHog or Plausible for marketing; custom admin metrics later
+
+---
+
+### 13) Pages and components (dashboard)
+
+- Shell: sidebar, topbar, breadcrumbs, role badge, org switcher
+- Groups table: name, members, created_at, actions
+- Group editor: profile, WhatsApp link, logo uploader
+- Members tab: searchable list, role toggles, remove
+- Trips table: name, dates, visibility, status, members count
+- Trip editor: details form, cities[] chip input, status/visibility
+- Itinerary editor: day/date grouped list with reorder and bulk ops
+- Announcements: list, editor with schedule and priority
+- Join codes: generate, revoke, limits, expiry, uses_count
+
+---
+
+### 14) Error states and validation
+
+- Guard rails
+    - Prevent publish if trip missing name/dates
+    - Warn on deleting trips with members
+    - Prevent join code generation for hidden trips
+
+---
+
+### 15) Performance and reliability
+
+- Optimistic UI for CRUD lists
+- Pagination and query limits per group
+- Caching with React Query and server-side data loading for admin routes. USE THIS EXTENSIVELY
+- Accessibility and keyboard-first forms
+
+---
+
+---
+
+### 17) Risks and alternatives
+
+- Single site vs separate subdomain
+    - Recommend one Next.js app with sub-path routing initially for speed
+    - Option to split later into [marketing.example.com](http://marketing.example.com) and [admin.example.com](http://admin.example.com) by moving /dashboard to a separate app sharing the AP
