@@ -82,7 +82,7 @@ export function AdminModals({
                 onRequestClose={() => setShowAddMemberModal(false)}
             >
                 <View className="flex-1 bg-black/60 justify-center items-center px-6">
-                    <KeyboardAvoidingView 
+                    <KeyboardAvoidingView
                         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
                         className="w-full max-w-md"
                     >
@@ -103,59 +103,59 @@ export function AdminModals({
                                 </TouchableOpacity>
                             </View>
 
-                        <Text className="text-sm text-muted-foreground mb-4">
-                            Enter member details to send them an invitation
-                        </Text>
+                            <Text className="text-sm text-muted-foreground mb-4">
+                                Enter member details to send them an invitation
+                            </Text>
 
-                        <View className="mb-4">
-                            <Text className="text-sm font-medium text-foreground mb-2">Phone Number</Text>
-                            <TextInput
-                                placeholder="+1 555-123-4567"
-                                placeholderTextColor="#A0AEC0"
-                                value={newMemberPhone}
-                                onChangeText={setNewMemberPhone}
-                                className="bg-sand-50 border border-sand-200 rounded-xl px-4 py-3 text-foreground"
-                                keyboardType="phone-pad"
-                            />
-                        </View>
+                            <View className="mb-4">
+                                <Text className="text-sm font-medium text-foreground mb-2">Phone Number</Text>
+                                <TextInput
+                                    placeholder="+1 555-123-4567"
+                                    placeholderTextColor="#A0AEC0"
+                                    value={newMemberPhone}
+                                    onChangeText={setNewMemberPhone}
+                                    className="bg-sand-50 border border-sand-200 rounded-xl px-4 py-3 text-foreground"
+                                    keyboardType="phone-pad"
+                                />
+                            </View>
 
-                        <View className="mb-4">
-                            <Text className="text-sm font-medium text-foreground mb-2">First Name</Text>
-                            <TextInput
-                                placeholder="Ahmed"
-                                placeholderTextColor="#A0AEC0"
-                                value={newMemberFirstName}
-                                onChangeText={setNewMemberFirstName}
-                                className="bg-sand-50 border border-sand-200 rounded-xl px-4 py-3 text-foreground"
-                            />
-                        </View>
+                            <View className="mb-4">
+                                <Text className="text-sm font-medium text-foreground mb-2">First Name</Text>
+                                <TextInput
+                                    placeholder="Ahmed"
+                                    placeholderTextColor="#A0AEC0"
+                                    value={newMemberFirstName}
+                                    onChangeText={setNewMemberFirstName}
+                                    className="bg-sand-50 border border-sand-200 rounded-xl px-4 py-3 text-foreground"
+                                />
+                            </View>
 
-                        <View className="mb-6">
-                            <Text className="text-sm font-medium text-foreground mb-2">Last Name</Text>
-                            <TextInput
-                                placeholder="Hassan"
-                                placeholderTextColor="#A0AEC0"
-                                value={newMemberLastName}
-                                onChangeText={setNewMemberLastName}
-                                className="bg-sand-50 border border-sand-200 rounded-xl px-4 py-3 text-foreground"
-                            />
-                        </View>
+                            <View className="mb-6">
+                                <Text className="text-sm font-medium text-foreground mb-2">Last Name</Text>
+                                <TextInput
+                                    placeholder="Hassan"
+                                    placeholderTextColor="#A0AEC0"
+                                    value={newMemberLastName}
+                                    onChangeText={setNewMemberLastName}
+                                    className="bg-sand-50 border border-sand-200 rounded-xl px-4 py-3 text-foreground"
+                                />
+                            </View>
 
-                        <View className="flex-row gap-3">
-                            <TouchableOpacity
-                                onPress={() => setShowAddMemberModal(false)}
-                                className="flex-1 bg-sand-100 rounded-xl p-4"
-                            >
-                                <Text className="text-muted-foreground font-semibold text-center">Cancel</Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity
-                                onPress={handleAddMember}
-                                className="flex-1 bg-[#4A6741] rounded-xl p-4"
-                            >
-                                <Text className="text-white font-semibold text-center">Send Invite</Text>
-                            </TouchableOpacity>
+                            <View className="flex-row gap-3">
+                                <TouchableOpacity
+                                    onPress={() => setShowAddMemberModal(false)}
+                                    className="flex-1 bg-sand-100 rounded-xl p-4"
+                                >
+                                    <Text className="text-muted-foreground font-semibold text-center">Cancel</Text>
+                                </TouchableOpacity>
+                                <TouchableOpacity
+                                    onPress={handleAddMember}
+                                    className="flex-1 bg-[#4A6741] rounded-xl p-4"
+                                >
+                                    <Text className="text-white font-semibold text-center">Send Invite</Text>
+                                </TouchableOpacity>
+                            </View>
                         </View>
-                    </View>
                     </KeyboardAvoidingView>
                 </View>
             </Modal>
@@ -168,7 +168,7 @@ export function AdminModals({
                 onRequestClose={() => setShowCreateTripModal(false)}
             >
                 <View className="flex-1 bg-black/60 justify-center items-center px-6">
-                    <KeyboardAvoidingView 
+                    <KeyboardAvoidingView
                         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
                         className="w-full max-w-md"
                     >
@@ -189,102 +189,102 @@ export function AdminModals({
                                 </TouchableOpacity>
                             </View>
 
-                        <ScrollView showsVerticalScrollIndicator={false}>
-                            <View className="mb-4">
-                                <Text className="text-sm font-medium text-foreground mb-2">Trip Name *</Text>
-                                <TextInput
-                                    placeholder="Umrah February 2025"
-                                    placeholderTextColor="#A0AEC0"
-                                    value={newTripName}
-                                    onChangeText={setNewTripName}
-                                    className="bg-sand-50 border border-sand-200 rounded-xl px-4 py-3 text-foreground"
-                                />
-                            </View>
-
-                            <View className="mb-4">
-                                <Text className="text-sm font-medium text-foreground mb-2">Start Date</Text>
-                                <TouchableOpacity
-                                    onPress={() => setShowStartDatePicker(true)}
-                                    className="bg-sand-50 border border-sand-200 rounded-xl px-4 py-3"
-                                >
-                                    <Text className={newTripStartDate ? "text-foreground" : "text-muted-foreground"}>
-                                        {newTripStartDate ? newTripStartDate.toLocaleDateString() : "Select start date"}
-                                    </Text>
-                                </TouchableOpacity>
-                                {showStartDatePicker && (
-                                    <DateTimePicker
-                                        value={newTripStartDate || new Date()}
-                                        mode="date"
-                                        display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-                                        onChange={(_event: any, selectedDate?: Date) => {
-                                            setShowStartDatePicker(Platform.OS === 'ios');
-                                            if (selectedDate) {
-                                                setNewTripStartDate(selectedDate);
-                                            }
-                                        }}
+                            <ScrollView showsVerticalScrollIndicator={false}>
+                                <View className="mb-4">
+                                    <Text className="text-sm font-medium text-foreground mb-2">Trip Name *</Text>
+                                    <TextInput
+                                        placeholder="Umrah February 2025"
+                                        placeholderTextColor="#A0AEC0"
+                                        value={newTripName}
+                                        onChangeText={setNewTripName}
+                                        className="bg-sand-50 border border-sand-200 rounded-xl px-4 py-3 text-foreground"
                                     />
-                                )}
-                            </View>
+                                </View>
 
-                            <View className="mb-4">
-                                <Text className="text-sm font-medium text-foreground mb-2">End Date</Text>
-                                <TouchableOpacity
-                                    onPress={() => setShowEndDatePicker(true)}
-                                    className="bg-sand-50 border border-sand-200 rounded-xl px-4 py-3"
-                                >
-                                    <Text className={newTripEndDate ? "text-foreground" : "text-muted-foreground"}>
-                                        {newTripEndDate ? newTripEndDate.toLocaleDateString() : "Select end date"}
-                                    </Text>
-                                </TouchableOpacity>
-                                {showEndDatePicker && (
-                                    <DateTimePicker
-                                        value={newTripEndDate || newTripStartDate || new Date()}
-                                        mode="date"
-                                        display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-                                        minimumDate={newTripStartDate || undefined}
-                                        onChange={(_event: any, selectedDate?: Date) => {
-                                            setShowEndDatePicker(Platform.OS === 'ios');
-                                            if (selectedDate) {
-                                                setNewTripEndDate(selectedDate);
-                                            }
-                                        }}
-                                    />
-                                )}
-                            </View>
-
-                            <View className="mb-6">
-                                <Text className="text-sm font-medium text-foreground mb-2">Base City</Text>
-                                <TextInput
-                                    placeholder="Makkah"
-                                    placeholderTextColor="#A0AEC0"
-                                    value={newTripCity}
-                                    onChangeText={setNewTripCity}
-                                    className="bg-sand-50 border border-sand-200 rounded-xl px-4 py-3 text-foreground"
-                                />
-                            </View>
-
-                            <View className="flex-row gap-3">
-                                <TouchableOpacity
-                                    onPress={() => setShowCreateTripModal(false)}
-                                    disabled={creatingTrip}
-                                    className="flex-1 bg-sand-100 rounded-xl p-4"
-                                >
-                                    <Text className="text-muted-foreground font-semibold text-center">Cancel</Text>
-                                </TouchableOpacity>
-                                <TouchableOpacity
-                                    onPress={handleCreateTrip}
-                                    disabled={creatingTrip}
-                                    className="flex-1 bg-[#4A6741] rounded-xl p-4"
-                                >
-                                    {creatingTrip ? (
-                                        <ActivityIndicator size="small" color="white" />
-                                    ) : (
-                                        <Text className="text-white font-semibold text-center">Create Trip</Text>
+                                <View className="mb-4">
+                                    <Text className="text-sm font-medium text-foreground mb-2">Start Date</Text>
+                                    <TouchableOpacity
+                                        onPress={() => setShowStartDatePicker(true)}
+                                        className="bg-sand-50 border border-sand-200 rounded-xl px-4 py-3"
+                                    >
+                                        <Text className={newTripStartDate ? "text-foreground" : "text-muted-foreground"}>
+                                            {newTripStartDate ? newTripStartDate.toLocaleDateString() : "Select start date"}
+                                        </Text>
+                                    </TouchableOpacity>
+                                    {showStartDatePicker && (
+                                        <DateTimePicker
+                                            value={newTripStartDate || new Date()}
+                                            mode="date"
+                                            display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                                            onChange={(_event: any, selectedDate?: Date) => {
+                                                setShowStartDatePicker(Platform.OS === 'ios');
+                                                if (selectedDate) {
+                                                    setNewTripStartDate(selectedDate);
+                                                }
+                                            }}
+                                        />
                                     )}
-                                </TouchableOpacity>
-                            </View>
-                        </ScrollView>
-                    </View>
+                                </View>
+
+                                <View className="mb-4">
+                                    <Text className="text-sm font-medium text-foreground mb-2">End Date</Text>
+                                    <TouchableOpacity
+                                        onPress={() => setShowEndDatePicker(true)}
+                                        className="bg-sand-50 border border-sand-200 rounded-xl px-4 py-3"
+                                    >
+                                        <Text className={newTripEndDate ? "text-foreground" : "text-muted-foreground"}>
+                                            {newTripEndDate ? newTripEndDate.toLocaleDateString() : "Select end date"}
+                                        </Text>
+                                    </TouchableOpacity>
+                                    {showEndDatePicker && (
+                                        <DateTimePicker
+                                            value={newTripEndDate || newTripStartDate || new Date()}
+                                            mode="date"
+                                            display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                                            minimumDate={newTripStartDate || undefined}
+                                            onChange={(_event: any, selectedDate?: Date) => {
+                                                setShowEndDatePicker(Platform.OS === 'ios');
+                                                if (selectedDate) {
+                                                    setNewTripEndDate(selectedDate);
+                                                }
+                                            }}
+                                        />
+                                    )}
+                                </View>
+
+                                <View className="mb-6">
+                                    <Text className="text-sm font-medium text-foreground mb-2">Base City</Text>
+                                    <TextInput
+                                        placeholder="Makkah"
+                                        placeholderTextColor="#A0AEC0"
+                                        value={newTripCity}
+                                        onChangeText={setNewTripCity}
+                                        className="bg-sand-50 border border-sand-200 rounded-xl px-4 py-3 text-foreground"
+                                    />
+                                </View>
+
+                                <View className="flex-row gap-3">
+                                    <TouchableOpacity
+                                        onPress={() => setShowCreateTripModal(false)}
+                                        disabled={creatingTrip}
+                                        className="flex-1 bg-sand-100 rounded-xl p-4"
+                                    >
+                                        <Text className="text-muted-foreground font-semibold text-center">Cancel</Text>
+                                    </TouchableOpacity>
+                                    <TouchableOpacity
+                                        onPress={handleCreateTrip}
+                                        disabled={creatingTrip}
+                                        className="flex-1 bg-[#4A6741] rounded-xl p-4"
+                                    >
+                                        {creatingTrip ? (
+                                            <ActivityIndicator size="small" color="white" />
+                                        ) : (
+                                            <Text className="text-white font-semibold text-center">Create Trip</Text>
+                                        )}
+                                    </TouchableOpacity>
+                                </View>
+                            </ScrollView>
+                        </View>
                     </KeyboardAvoidingView>
                 </View>
             </Modal>

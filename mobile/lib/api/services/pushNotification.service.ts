@@ -80,12 +80,12 @@ async function getTripMemberTokens(tripId: string): Promise<{
 
         // Get push tokens for these users
         const userIds = memberships.map(m => m.user_id);
-        
+
         if (userIds.length === 0) {
             console.log('No trip members found');
             return [];
         }
-        
+
         const { data: tokens, error: tokensError } = await supabase
             .from('push_tokens')
             .select('user_id, push_token')
