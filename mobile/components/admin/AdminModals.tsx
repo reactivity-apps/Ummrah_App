@@ -1,4 +1,4 @@
-import { View, Text, TextInput, TouchableOpacity, ScrollView, Modal, ActivityIndicator, Platform, Alert } from "react-native";
+import { View, Text, TextInput, TouchableOpacity, ScrollView, Modal, ActivityIndicator, Platform, Alert, KeyboardAvoidingView } from "react-native";
 import { UserPlus, Plus, X, Calendar, ChevronDown } from "lucide-react-native";
 import DateTimePicker from '@react-native-community/datetimepicker';
 
@@ -81,17 +81,27 @@ export function AdminModals({
                 animationType="fade"
                 onRequestClose={() => setShowAddMemberModal(false)}
             >
-                <View className="flex-1 bg-black/50 justify-center items-center px-6">
-                    <View className="bg-card rounded-2xl w-full max-w-md p-6 border border-[#C5A059]/20">
-                        <View className="flex-row items-center justify-between mb-4">
-                            <View className="flex-row items-center gap-2">
-                                <UserPlus size={24} color="#4A6741" />
-                                <Text className="text-xl font-bold text-foreground">Add New Member</Text>
+                <View className="flex-1 bg-black/60 justify-center items-center px-6">
+                    <KeyboardAvoidingView 
+                        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+                        className="w-full max-w-md"
+                    >
+                        <View className="bg-card rounded-2xl w-full p-6 border border-[#C5A059]/20" style={{
+                            shadowColor: '#000',
+                            shadowOffset: { width: 0, height: 10 },
+                            shadowOpacity: 0.3,
+                            shadowRadius: 20,
+                            elevation: 10,
+                        }}>
+                            <View className="flex-row items-center justify-between mb-4">
+                                <View className="flex-row items-center gap-2">
+                                    <UserPlus size={24} color="#4A6741" />
+                                    <Text className="text-xl font-bold text-foreground">Add New Member</Text>
+                                </View>
+                                <TouchableOpacity onPress={() => setShowAddMemberModal(false)} className="p-1 bg-sand-100 rounded-full">
+                                    <X size={20} color="#718096" />
+                                </TouchableOpacity>
                             </View>
-                            <TouchableOpacity onPress={() => setShowAddMemberModal(false)} className="p-1">
-                                <X size={24} color="#718096" />
-                            </TouchableOpacity>
-                        </View>
 
                         <Text className="text-sm text-muted-foreground mb-4">
                             Enter member details to send them an invitation
@@ -146,6 +156,7 @@ export function AdminModals({
                             </TouchableOpacity>
                         </View>
                     </View>
+                    </KeyboardAvoidingView>
                 </View>
             </Modal>
 
@@ -153,20 +164,30 @@ export function AdminModals({
             <Modal
                 visible={showCreateTripModal}
                 transparent={true}
-                animationType="slide"
+                animationType="fade"
                 onRequestClose={() => setShowCreateTripModal(false)}
             >
-                <View className="flex-1 bg-black/50 justify-end">
-                    <View className="bg-card rounded-t-3xl p-6 border-t border-[#C5A059]/20">
-                        <View className="flex-row items-center justify-between mb-4">
-                            <View className="flex-row items-center gap-2">
-                                <Plus size={24} color="#4A6741" />
-                                <Text className="text-xl font-bold text-foreground">Create New Trip</Text>
+                <View className="flex-1 bg-black/60 justify-center items-center px-6">
+                    <KeyboardAvoidingView 
+                        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+                        className="w-full max-w-md"
+                    >
+                        <View className="bg-card rounded-3xl p-6 border border-[#C5A059]/20 max-h-[85%]" style={{
+                            shadowColor: '#000',
+                            shadowOffset: { width: 0, height: 10 },
+                            shadowOpacity: 0.3,
+                            shadowRadius: 20,
+                            elevation: 10,
+                        }}>
+                            <View className="flex-row items-center justify-between mb-4">
+                                <View className="flex-row items-center gap-2">
+                                    <Plus size={24} color="#4A6741" />
+                                    <Text className="text-xl font-bold text-foreground">Create New Trip</Text>
+                                </View>
+                                <TouchableOpacity onPress={() => setShowCreateTripModal(false)} className="p-1 bg-sand-100 rounded-full">
+                                    <X size={20} color="#718096" />
+                                </TouchableOpacity>
                             </View>
-                            <TouchableOpacity onPress={() => setShowCreateTripModal(false)} className="p-1">
-                                <X size={24} color="#718096" />
-                            </TouchableOpacity>
-                        </View>
 
                         <ScrollView showsVerticalScrollIndicator={false}>
                             <View className="mb-4">
@@ -264,6 +285,7 @@ export function AdminModals({
                             </View>
                         </ScrollView>
                     </View>
+                    </KeyboardAvoidingView>
                 </View>
             </Modal>
 
@@ -271,15 +293,21 @@ export function AdminModals({
             <Modal
                 visible={showTripSwitcher}
                 transparent={true}
-                animationType="slide"
+                animationType="fade"
                 onRequestClose={() => setShowTripSwitcher(false)}
             >
-                <View className="flex-1 bg-black/50 justify-end">
-                    <View className="bg-card rounded-t-3xl p-6 border-t border-[#C5A059]/20" style={{ maxHeight: '70%' }}>
+                <View className="flex-1 bg-black/60 justify-center items-center px-6">
+                    <View className="bg-card rounded-3xl p-6 border border-[#C5A059]/20 w-full max-w-md max-h-[70%]" style={{
+                        shadowColor: '#000',
+                        shadowOffset: { width: 0, height: 10 },
+                        shadowOpacity: 0.3,
+                        shadowRadius: 20,
+                        elevation: 10,
+                    }}>
                         <View className="flex-row items-center justify-between mb-4">
                             <Text className="text-xl font-bold text-foreground">Select Trip</Text>
-                            <TouchableOpacity onPress={() => setShowTripSwitcher(false)} className="p-1">
-                                <X size={24} color="#718096" />
+                            <TouchableOpacity onPress={() => setShowTripSwitcher(false)} className="p-1 bg-sand-100 rounded-full">
+                                <X size={20} color="#718096" />
                             </TouchableOpacity>
                         </View>
 

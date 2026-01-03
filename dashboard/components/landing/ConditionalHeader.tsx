@@ -3,7 +3,7 @@
 import { usePathname } from 'next/navigation';
 import Header from './Header';
 
-function ConditionalHeader() {
+export default function ConditionalHeader() {
     const pathname = usePathname();
 
     // Don't show header on admin pages
@@ -13,5 +13,3 @@ function ConditionalHeader() {
 
     return <Header />;
 }
-
-export default ConditionalHeader;

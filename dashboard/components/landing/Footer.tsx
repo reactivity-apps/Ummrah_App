@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 
 export default function Footer() {
   return (
@@ -6,10 +7,13 @@ export default function Footer() {
       <div className="max-w-7xl mx-auto">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8">
           <div className="space-y-4">
-            <div className="flex items-center gap-3">
-              <div className="text-2xl text-[#C5A059]">☪</div>
-              <span className="text-xl font-semibold text-white">Umrah Companion</span>
-            </div>
+            <Image
+              src="/Safar.svg"
+              alt="Safar"
+              width={140}
+              height={46}
+              className="h-11 w-auto"
+            />
             <p className="text-[#a8a29e] max-w-md">
               Calm, unified trip companion for Umrah groups
             </p>
@@ -50,7 +54,7 @@ export default function Footer() {
         </div>
 
         <div className="border-t border-[#44403c] mt-8 pt-8 text-center text-sm text-[#78716c]">
-          <p>&copy; {new Date().getFullYear()} Umrah Companion. All rights reserved.</p>
+          <p>&copy; {new Date().getFullYear()} Safar. All rights reserved.</p>
         </div>
       </div>
     </footer>

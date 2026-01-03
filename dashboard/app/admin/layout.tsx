@@ -2,6 +2,7 @@
 
 import { ReactNode, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
+import Image from 'next/image';
 import { createClient } from '@/lib/supabase/client';
 import {
     LayoutDashboard,
@@ -81,10 +82,13 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
             <aside className="hidden lg:flex w-64 bg-white border-r border-[#e8dfc8] flex-col">
                 {/* Logo */}
                 <div className="p-6 border-b border-[#e8dfc8]">
-                    <div className="flex items-center gap-3">
-                        <div className="text-2xl text-[#C5A059]">☪</div>
-                        <span className="text-xl font-semibold text-[#292524]">Umrah Companion</span>
-                    </div>
+                    <Image
+                        src="/Safar.svg"
+                        alt="Safar"
+                        width={120}
+                        height={40}
+                        className="h-10 w-auto mb-2"
+                    />
                     <p className="text-xs text-[#a8a29e] mt-1">Admin Dashboard</p>
                 </div>
 
@@ -131,10 +135,13 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
                     <aside className="absolute left-0 top-0 bottom-0 w-64 bg-white border-r border-[#e8dfc8] flex flex-col">
                         {/* Logo */}
                         <div className="p-6 border-b border-[#e8dfc8] flex items-center justify-between">
-                            <div className="flex items-center gap-3">
-                                <div className="text-2xl text-[#C5A059]">☪</div>
-                                <span className="text-xl font-semibold text-[#292524]">Umrah Companion</span>
-                            </div>
+                            <Image
+                                src="/Safar.svg"
+                                alt="Safar"
+                                width={100}
+                                height={33}
+                                className="h-8 w-auto"
+                            />
                             <button
                                 onClick={() => setSidebarOpen(false)}
                                 className="text-[#78716c] hover:text-[#292524]"

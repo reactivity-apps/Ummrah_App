@@ -69,10 +69,7 @@ async function getTripMemberTokens(tripId: string): Promise<{
         // Get all active trip members
         const { data: memberships, error: membershipError } = await supabase
             .from('trip_memberships')
-            .select(`
-                user_id,
-                profiles:user_id (name)
-            `)
+            .select('user_id')
             .eq('trip_id', tripId)
             .is('left_at', null);
 
@@ -83,6 +80,12 @@ async function getTripMemberTokens(tripId: string): Promise<{
 
         // Get push tokens for these users
         const userIds = memberships.map(m => m.user_id);
+        
+        if (userIds.length === 0) {
+            console.log('No trip members found');
+            return [];
+        }
+        
         const { data: tokens, error: tokensError } = await supabase
             .from('push_tokens')
             .select('user_id, push_token')
@@ -93,11 +96,12 @@ async function getTripMemberTokens(tripId: string): Promise<{
             return [];
         }
 
-        // Combine data
+        console.log(`Found ${tokens.length} push tokens for trip members`);
+
+        // Return tokens data
         return tokens.map(token => ({
             userId: token.user_id,
-            pushToken: token.push_token,
-            name: (memberships.find(m => m.user_id === token.user_id)?.profiles as any)?.name
+            pushToken: token.push_token
         }));
     } catch (err) {
         console.error('Error in getTripMemberTokens:', err);

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 
 export default function Header() {
   const [scrolled, setScrolled] = useState(false);
@@ -26,10 +27,15 @@ export default function Header() {
           }`}
       >
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="text-xl text-[#C5A059]">☪</div>
-            <span className="text-xl font-semibold text-[#292524]">Umrah Companion</span>
-          </div>
+          <Link href="/" className="flex items-center hover:opacity-80 transition-opacity">
+            <Image
+              src="/Safar.svg"
+              alt="Safar"
+              width={120}
+              height={40}
+              className="h-10 w-auto"
+            />
+          </Link>
 
           <nav className="hidden md:flex items-center gap-8">
             <Link href="#how-it-works" className="text-sm text-[#78716c] hover:text-[#292524] transition-colors">

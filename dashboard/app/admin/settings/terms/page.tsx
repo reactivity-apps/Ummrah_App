@@ -33,7 +33,7 @@ export default function TermsPage() {
                     <section>
                         <h4 className="font-semibold text-[#292524] mb-2">1. Acceptance of Terms</h4>
                         <p className="text-[#78716c]">
-                            By accessing and using the Umrah Companion application, you accept and agree to be bound by the terms and provision of this agreement.
+                            By accessing and using the Safar application, you accept and agree to be bound by the terms and provision of this agreement.
                         </p>
                     </section>
 
@@ -54,14 +54,14 @@ export default function TermsPage() {
                     <section>
                         <h4 className="font-semibold text-[#292524] mb-2">4. Content</h4>
                         <p className="text-[#78716c]">
-                            Users retain ownership of content they create. By posting content, you grant Umrah Companion the right to use, modify, and display that content within the application.
+                            Users retain ownership of content they create. By posting content, you grant Safar the right to use, modify, and display that content within the application.
                         </p>
                     </section>
 
                     <section>
                         <h4 className="font-semibold text-[#292524] mb-2">5. Limitation of Liability</h4>
                         <p className="text-[#78716c]">
-                            Umrah Companion shall not be liable for any indirect, incidental, special, consequential, or punitive damages resulting from your use of the application.
+                            Safar shall not be liable for any indirect, incidental, special, consequential, or punitive damages resulting from your use of the application.
                         </p>
                     </section>
 

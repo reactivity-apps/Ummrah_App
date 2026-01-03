@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, ScrollView, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, Alert, Animated } from 'react-native';
+import React, { useState, useRef, useEffect } from 'react';
+import { View, Text, ScrollView, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, Dimensions, Alert, Animated, Keyboard } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Send, Sparkles, BookOpen, MapPin, Moon } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
@@ -19,6 +19,7 @@ export default function MurshidScreen() {
     const router = useRouter();
     const [inputText, setInputText] = useState('');
     const [isTyping, setIsTyping] = useState(false);
+    const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
     const [messages, setMessages] = useState<Message[]>([
         {
             id: '1',
@@ -29,6 +30,10 @@ export default function MurshidScreen() {
 
     // Smooth entrance animation
     const contentFadeStyle = useFadeIn(0);
+
+    // Animated value for smooth transitions
+    const suggestionsHeight = useRef(new Animated.Value(1)).current;
+    const disclaimerOpacity = useRef(new Animated.Value(1)).current;
 
     const scrollViewRef = useRef<any>(null);
 
@@ -97,6 +102,54 @@ export default function MurshidScreen() {
         }, 100);
     }, [messages, isTyping]);
 
+    // Keyboard listeners for smooth UI transitions
+    useEffect(() => {
+        const keyboardWillShow = Keyboard.addListener(
+            Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow',
+            () => {
+                setIsKeyboardVisible(true);
+                // Animate suggestions and disclaimer out
+                Animated.parallel([
+                    Animated.timing(suggestionsHeight, {
+                        toValue: 0,
+                        duration: 250,
+                        useNativeDriver: false,
+                    }),
+                    Animated.timing(disclaimerOpacity, {
+                        toValue: 0,
+                        duration: 200,
+                        useNativeDriver: true,
+                    }),
+                ]).start();
+            }
+        );
+
+        const keyboardWillHide = Keyboard.addListener(
+            Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide',
+            () => {
+                setIsKeyboardVisible(false);
+                // Animate suggestions and disclaimer back in
+                Animated.parallel([
+                    Animated.timing(suggestionsHeight, {
+                        toValue: 1,
+                        duration: 250,
+                        useNativeDriver: false,
+                    }),
+                    Animated.timing(disclaimerOpacity, {
+                        toValue: 1,
+                        duration: 200,
+                        useNativeDriver: true,
+                    }),
+                ]).start();
+            }
+        );
+
+        return () => {
+            keyboardWillShow.remove();
+            keyboardWillHide.remove();
+        };
+    }, []);
+
     return (
         <SafeAreaView className="flex-1 bg-card" edges={['top']}>
             {/* Header */}
@@ -113,14 +166,21 @@ export default function MurshidScreen() {
             <KeyboardAvoidingView
                 behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
                 className="flex-1"
-                keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
+                keyboardVerticalOffset={0}
             >
                 {/* Chat Area */}
                 <Animated.ScrollView
                     style={contentFadeStyle}
                     ref={scrollViewRef}
                     className="flex-1 bg-background"
-                    contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 20 }}
+                    contentContainerStyle={{
+                        paddingHorizontal: 16,
+                        paddingTop: 8,
+                        paddingBottom: 16,
+                        flexGrow: 1,
+                    }}
+                    keyboardShouldPersistTaps="handled"
+                    keyboardDismissMode="on-drag"
                 >
                     {messages.map((msg) => (
                         <MessageItem key={msg.id} message={msg} />
@@ -129,56 +189,102 @@ export default function MurshidScreen() {
                     {isTyping && <TypingIndicator />}
                 </Animated.ScrollView>
 
-                {/* Suggestions & Input */}
-                <View className="bg-[#FDFBF7] pb-4">
-                    {/* Suggestion Chips */}
-                    <ScrollView horizontal showsHorizontalScrollIndicator={false} className="py-3 pl-4 mb-2">
-                        {suggestions.map((chip) => (
-                            <TouchableOpacity
-                                key={chip.id}
-                                onPress={() => handleSend(chip.text)}
-                                disabled={isTyping}
-                                className="flex-row items-center bg-card border-2 border-sand-200 rounded-full px-4 py-2 mr-3"
-                                style={{ opacity: isTyping ? 0.5 : 1 }}
-                            >
-                                {chip.icon}
-                                <Text className="ml-2 text-sm font-medium text-muted-foreground">{chip.text}</Text>
-                            </TouchableOpacity>
-                        ))}
-                        <View className="w-4" />
-                    </ScrollView>
+                {/* Bottom Input Container */}
+                <View className="bg-[#FDFBF7] border-t border-sand-200">
+                    {/* Suggestion Chips - Collapsible */}
+                    <Animated.View
+                        style={{
+                            height: suggestionsHeight.interpolate({
+                                inputRange: [0, 1],
+                                outputRange: [0, 70],
+                            }),
+                            opacity: suggestionsHeight,
+                            overflow: 'hidden',
+                        }}
+                    >
+                        <ScrollView
+                            horizontal
+                            showsHorizontalScrollIndicator={false}
+                            className="py-3 pl-4"
+                            contentContainerStyle={{ paddingRight: 16 }}
+                        >
+                            {suggestions.map((chip) => (
+                                <TouchableOpacity
+                                    key={chip.id}
+                                    onPress={() => {
+                                        handleSend(chip.text);
+                                        Keyboard.dismiss();
+                                    }}
+                                    disabled={isTyping}
+                                    className="flex-row items-center bg-card border-2 border-sand-200 rounded-full px-4 py-2 mr-3"
+                                    style={{ opacity: isTyping ? 0.5 : 1 }}
+                                >
+                                    {chip.icon}
+                                    <Text className="ml-2 text-sm font-medium text-muted-foreground">{chip.text}</Text>
+                                </TouchableOpacity>
+                            ))}
+                        </ScrollView>
+                    </Animated.View>
 
-                    {/* Input Field */}
-                    <View className="px-4 flex-row items-center">
-                        <View className="flex-1 bg-card border-2 border-sand-200 rounded-full px-4 py-3 flex-row items-center mr-3">
+                    {/* Input Field - Always Visible */}
+                    <View className="px-4 py-3 flex-row items-center">
+                        <View className="flex-1 bg-white rounded-full px-4 py-3 shadow-sm flex-row items-center mr-3" style={{ borderColor: '#4A6741', borderWidth: 1 }}>
                             <TextInput
-                                className="flex-1 text-base h-6 text-foreground"
+                                className="flex-1 text-base"
+                                style={{
+                                    color: '#4A6741',
+                                    minHeight: 24,
+                                    maxHeight: 100,
+                                    paddingTop: Platform.OS === 'ios' ? 2 : 0,
+                                    paddingBottom: Platform.OS === 'ios' ? 2 : 0,
+                                }}
                                 placeholder="Ask for guidance..."
                                 placeholderTextColor="hsl(40 5% 55%)"
                                 value={inputText}
                                 onChangeText={setInputText}
-                                multiline={false}
+                                multiline
                                 returnKeyType="send"
-                                onSubmitEditing={() => handleSend(inputText)}
-                                editable={!isTyping}
+                                onSubmitEditing={() => {
+                                    handleSend(inputText);
+                                    Keyboard.dismiss();
+                                }}
+                                blurOnSubmit
                             />
                         </View>
                         <TouchableOpacity
-                            onPress={() => handleSend(inputText)}
-                            disabled={isTyping || !inputText.trim()}
-                            className="w-12 h-12 bg-[#4A6741] border-2 border-[#4A6741] rounded-full items-center justify-center"
-                            style={{ opacity: (isTyping || !inputText.trim()) ? 0.5 : 1 }}
+                            onPress={() => {
+                                handleSend(inputText);
+                                Keyboard.dismiss();
+                            }}
+                            disabled={!inputText.trim()}
+                            className="w-12 h-12 bg-white border rounded-full items-center justify-center shadow-md"
+                            style={{
+                                borderColor: inputText.trim() ? '#4A6741' : '#E2E8F0',
+                                opacity: inputText.trim() ? 1 : 0.5,
+                            }}
                         >
-                            <Send size={20} color="white" />
+                            <Send size={20} color={inputText.trim() ? '#4A6741' : '#CBD5E0'} />
                         </TouchableOpacity>
                     </View>
 
-                    {/* Disclaimer */}
-                    <View className="mt-4 px-6 items-center">
-                        <Text className="text-[10px] text-sand-400 text-center leading-4">
-                            Guidance supported by scholarly sources — Verify with your group’s scholars whenever needed.
-                        </Text>
-                    </View>
+                    {/* Disclaimer - Collapsible */}
+                    <Animated.View
+                        style={{
+                            opacity: disclaimerOpacity,
+                            transform: [{
+                                translateY: disclaimerOpacity.interpolate({
+                                    inputRange: [0, 1],
+                                    outputRange: [-10, 0],
+                                }),
+                            }],
+                        }}
+                    >
+                        <View className="pb-3 px-6 items-center">
+                            <Text className="text-[10px] text-sand-400 text-center leading-4">
+                                Guidance supported by scholarly sources — Verify with your group's scholars whenever needed.
+                            </Text>
+                        </View>
+                    </Animated.View>
                 </View>
             </KeyboardAvoidingView>
         </SafeAreaView>

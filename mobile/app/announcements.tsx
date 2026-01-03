@@ -112,15 +112,21 @@ export default function AnnouncementsScreen() {
             {/* Detail Modal */}
             <Modal
                 visible={selectedAnnouncement !== null}
-                animationType="slide"
+                animationType="fade"
                 transparent={true}
                 onRequestClose={() => setSelectedAnnouncement(null)}
             >
                 {selectedAnnouncement && (
-                    <View className="flex-1 bg-black/50 justify-end">
-                        <View className="bg-card rounded-t-3xl max-h-[85%]">
+                    <View className="flex-1 bg-black/60 justify-center items-center p-4">
+                        <View className="bg-card rounded-3xl max-h-[90%] w-full max-w-lg" style={{
+                            shadowColor: '#000',
+                            shadowOffset: { width: 0, height: 10 },
+                            shadowOpacity: 0.3,
+                            shadowRadius: 20,
+                            elevation: 10,
+                        }}>
                             {/* Header */}
-                            <View className="p-4 border-b border-sand-200 flex-row items-center justify-between">
+                            <View className="p-5 border-b border-sand-200 flex-row items-center justify-between">
                                 <View className="flex-1 mr-4">
                                     {selectedAnnouncement.is_high_priority && (
                                         <View className="flex-row items-center mb-2">
@@ -136,14 +142,14 @@ export default function AnnouncementsScreen() {
                                 </View>
                                 <TouchableOpacity
                                     onPress={() => setSelectedAnnouncement(null)}
-                                    className="p-2"
+                                    className="p-2 rounded-full bg-sand-100"
                                 >
-                                    <X size={24} color="#6B7280" />
+                                    <X size={20} color="#6B7280" />
                                 </TouchableOpacity>
                             </View>
 
                             {/* Content */}
-                            <ScrollView className="p-4">
+                            <ScrollView className="p-5" showsVerticalScrollIndicator={false}>
                                 <Text className="text-base text-foreground leading-relaxed mb-6">
                                     {selectedAnnouncement.body}
                                 </Text>
@@ -177,12 +183,12 @@ export default function AnnouncementsScreen() {
                             </ScrollView>
 
                             {/* Close Button */}
-                            <View className="p-4 border-t border-sand-200">
+                            <View className="p-5 border-t border-sand-200">
                                 <TouchableOpacity
                                     onPress={() => setSelectedAnnouncement(null)}
-                                    className="bg-sand-100 p-4 rounded-xl items-center"
+                                    className="bg-primary p-4 rounded-xl items-center"
                                 >
-                                    <Text className="text-foreground font-bold">Close</Text>
+                                    <Text className="text-white font-bold">Close</Text>
                                 </TouchableOpacity>
                             </View>
                         </View>

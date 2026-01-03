@@ -16,6 +16,8 @@ import {
     ActivityIndicator,
     Platform,
     Vibration,
+    KeyboardAvoidingView,
+    Keyboard,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ArrowLeft, Calendar, Clock, MapPin, AlignLeft, ChevronRight, Check } from 'lucide-react-native';
@@ -141,49 +143,56 @@ export default function ItineraryEditModal({
             onRequestClose={onClose}
         >
             <SafeAreaView className="flex-1 bg-sand-50" edges={['top']}>
-                {/* Header - Back + Save in Header */}
-                <View className="bg-white border-b border-sand-200">
-                    <View className="px-5 py-4 flex-row items-center justify-between">
-                        <TouchableOpacity
-                            onPress={onClose}
-                            className="flex-row items-center"
-                            activeOpacity={0.6}
-                            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-                        >
-                            <ArrowLeft size={24} color="#6B7280" />
-                        </TouchableOpacity>
+                <KeyboardAvoidingView 
+                    behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+                    className="flex-1"
+                    keyboardVerticalOffset={0}
+                >
+                    {/* Header - Back + Save in Header */}
+                    <View className="bg-white border-b border-sand-200">
+                        <View className="px-5 py-4 flex-row items-center justify-between">
+                            <TouchableOpacity
+                                onPress={onClose}
+                                className="flex-row items-center"
+                                activeOpacity={0.6}
+                                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                            >
+                                <ArrowLeft size={24} color="#6B7280" />
+                            </TouchableOpacity>
 
-                        <View className="flex-1 mx-4">
-                            <Text className="text-lg font-bold text-foreground">
-                                {editingItem.isNew ? 'New Activity' : 'Review Activity'}
-                            </Text>
-                            <Text className="text-xs text-muted-foreground mt-0.5">
-                                Adjust details if needed
-                            </Text>
+                            <View className="flex-1 mx-4">
+                                <Text className="text-lg font-bold text-foreground">
+                                    {editingItem.isNew ? 'New Activity' : 'Review Activity'}
+                                </Text>
+                                <Text className="text-xs text-muted-foreground mt-0.5">
+                                    Adjust details if needed
+                                </Text>
+                            </View>
+
+                            <TouchableOpacity
+                                onPress={onSave}
+                                disabled={saving || !editingItem.title?.trim()}
+                                className={`px-4 py-2 rounded-full ${!editingItem.title?.trim()
+                                        ? 'bg-sand-200'
+                                        : 'bg-[#4A6741]'
+                                    }`}
+                                activeOpacity={0.7}
+                            >
+                                {saving ? (
+                                    <ActivityIndicator size="small" color="#fff" />
+                                ) : (
+                                    <Text className="text-white font-semibold text-sm">Save</Text>
+                                )}
+                            </TouchableOpacity>
                         </View>
-
-                        <TouchableOpacity
-                            onPress={onSave}
-                            disabled={saving || !editingItem.title?.trim()}
-                            className={`px-4 py-2 rounded-full ${!editingItem.title?.trim()
-                                    ? 'bg-sand-200'
-                                    : 'bg-[#4A6741]'
-                                }`}
-                            activeOpacity={0.7}
-                        >
-                            {saving ? (
-                                <ActivityIndicator size="small" color="#fff" />
-                            ) : (
-                                <Text className="text-white font-semibold text-sm">Save</Text>
-                            )}
-                        </TouchableOpacity>
                     </View>
-                </View>
 
                 <ScrollView
                     className="flex-1"
                     contentContainerStyle={{ paddingBottom: 100 }}
                     showsVerticalScrollIndicator={false}
+                    keyboardShouldPersistTaps="handled"
+                    keyboardDismissMode="on-drag"
                 >
                     {/* Activity Summary Card (Always Visible) */}
                     {!editingItem.isNew && (
@@ -485,44 +494,7 @@ export default function ItineraryEditModal({
                         />
                     )}
                 </ScrollView>
-
-                {/* Sticky Bottom Save Button */}
-                <View
-                    className="bg-white border-t border-sand-200 px-5 py-4"
-                    style={{
-                        shadowColor: '#000',
-                        shadowOffset: { width: 0, height: -2 },
-                        shadowOpacity: 0.08,
-                        shadowRadius: 8,
-                        elevation: 5,
-                    }}
-                >
-                    <TouchableOpacity
-                        onPress={onSave}
-                        disabled={saving || !editingItem.title?.trim()}
-                        className={`rounded-2xl py-4 ${!editingItem.title?.trim()
-                                ? 'bg-sand-200'
-                                : 'bg-[#4A6741]'
-                            }`}
-                        activeOpacity={0.8}
-                        style={{
-                            minHeight: 56,
-                            shadowColor: '#4A6741',
-                            shadowOffset: { width: 0, height: 4 },
-                            shadowOpacity: editingItem.title?.trim() ? 0.2 : 0,
-                            shadowRadius: 8,
-                            elevation: editingItem.title?.trim() ? 4 : 0,
-                        }}
-                    >
-                        {saving ? (
-                            <ActivityIndicator size="small" color="#fff" />
-                        ) : (
-                            <Text className="text-white font-bold text-center text-base">
-                                Save Changes
-                            </Text>
-                        )}
-                    </TouchableOpacity>
-                </View>
+                </KeyboardAvoidingView>
             </SafeAreaView>
         </Modal>
     );

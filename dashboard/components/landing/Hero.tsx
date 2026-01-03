@@ -1,10 +1,22 @@
 'use client';
 
+import Image from 'next/image';
+
 export default function Hero() {
   return (
     <section className="min-h-[85vh] flex items-center justify-center px-6 pt-20 bg-[#fdfbf7]">
       <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-12 items-center">
         <div className="space-y-6">
+          {/* Logo above heading */}
+          <div className="flex justify-start">
+            <Image
+              src="/Safar.svg"
+              alt="Safar"
+              width={180}
+              height={60}
+              className="h-14 w-auto"
+            />
+          </div>
           <h1 className="text-4xl md:text-5xl font-bold text-[#292524] leading-tight">
             Calm, unified Umrah trip companion for groups
           </h1>
