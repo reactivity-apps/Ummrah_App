@@ -4,15 +4,10 @@ import { Calendar, Edit, X } from "lucide-react-native";
 import { QuickActionItem } from "./QuickActionItem";
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { updateTrip } from "../../lib/api/services/trip.service";
+import { TripRow } from "../../types/db";
 
 interface TripDetailsTabProps {
-    trip: {
-        id: string;
-        name: string;
-        status: string;
-        startDate: string;
-        endDate: string;
-    };
+    trip: TripRow;
     onNavigateToItinerary?: () => void;
 }
 
@@ -20,8 +15,8 @@ export function TripDetailsTab({ trip, onNavigateToItinerary }: TripDetailsTabPr
     const [isEditing, setIsEditing] = useState(false);
     const [tripName, setTripName] = useState(trip.name);
     const [showDateModal, setShowDateModal] = useState(false);
-    const [startDate, setStartDate] = useState(new Date(trip.startDate));
-    const [endDate, setEndDate] = useState(new Date(trip.endDate));
+    const [startDate, setStartDate] = useState(trip.start_date ? new Date(trip.start_date) : new Date());
+    const [endDate, setEndDate] = useState(trip.end_date ? new Date(trip.end_date) : new Date());
     const [showStartPicker, setShowStartPicker] = useState(false);
     const [showEndPicker, setShowEndPicker] = useState(false);
 
@@ -96,7 +91,11 @@ export function TripDetailsTab({ trip, onNavigateToItinerary }: TripDetailsTabPr
                         <View className="flex-row items-center gap-2">
                             <Calendar size={16} color="hsl(40 5% 55%)" />
                             <Text className="text-sm text-muted-foreground">
-                                {new Date(trip.startDate).toLocaleDateString()} - {new Date(trip.endDate).toLocaleDateString()}
+                                {trip.start_date && trip.end_date ? (
+                                    `${new Date(trip.start_date).toLocaleDateString()} - ${new Date(trip.end_date).toLocaleDateString()}`
+                                ) : (
+                                    'Dates not set'
+                                )}
                             </Text>
                         </View>
                     </>
@@ -127,16 +126,24 @@ export function TripDetailsTab({ trip, onNavigateToItinerary }: TripDetailsTabPr
                     <View className="flex-row items-center justify-between mb-2">
                         <Text className="text-muted-foreground">Total Days</Text>
                         <Text className="text-foreground font-semibold">
-                            {Math.ceil((new Date(trip.endDate).getTime() - new Date(trip.startDate).getTime()) / (1000 * 60 * 60 * 24))} days
+                            {trip.start_date && trip.end_date ? (
+                                `${Math.ceil((new Date(trip.end_date).getTime() - new Date(trip.start_date).getTime()) / (1000 * 60 * 60 * 24))} days`
+                            ) : (
+                                'N/A'
+                            )}
                         </Text>
                     </View>
                     <View className="flex-row items-center justify-between mb-2">
                         <Text className="text-muted-foreground">Start Date</Text>
-                        <Text className="text-foreground font-semibold">{new Date(trip.startDate).toLocaleDateString()}</Text>
+                        <Text className="text-foreground font-semibold">
+                            {trip.start_date ? new Date(trip.start_date).toLocaleDateString() : 'Not set'}
+                        </Text>
                     </View>
                     <View className="flex-row items-center justify-between">
                         <Text className="text-muted-foreground">End Date</Text>
-                        <Text className="text-foreground font-semibold">{new Date(trip.endDate).toLocaleDateString()}</Text>
+                        <Text className="text-foreground font-semibold">
+                            {trip.end_date ? new Date(trip.end_date).toLocaleDateString() : 'Not set'}
+                        </Text>
                     </View>
                 </View>
             </View>

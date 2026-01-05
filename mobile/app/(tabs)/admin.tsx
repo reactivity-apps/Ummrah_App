@@ -294,7 +294,6 @@ export default function AdminScreen() {
                     <OverviewTab
                         tripData={currentTrip}
                         onNavigate={setActiveTab}
-                        tripId={currentTrip?.id}
                         memberCount={memberCount}
                         adminCount={adminCount}
                         joinCode={joinCode}
@@ -304,10 +303,10 @@ export default function AdminScreen() {
                         activitiesLoading={activitiesLoading}
                     />
                 )}
-                {activeTab === 'members' && <MembersTab tripId={ADMIN_DATA.currentTrip.id} />}
-                {activeTab === 'itinerary' && <ItineraryTab tripId={ADMIN_DATA.currentTrip.id} tripName={ADMIN_DATA.currentTrip.name} />}
+                {activeTab === 'members' && <MembersTab tripId={currentTrip.id} />}
+                {activeTab === 'itinerary' && <ItineraryTab tripId={currentTrip.id} tripName={currentTrip.name} />}
                 {activeTab === 'communication' && <CommunicationTab tripId={currentTrip?.id} />}
-                {activeTab === 'trip' && <TripDetailsTab trip={ADMIN_DATA.currentTrip} onNavigateToItinerary={() => setActiveTab('itinerary')} />}
+                {activeTab === 'trip' && <TripDetailsTab trip={currentTrip} onNavigateToItinerary={() => setActiveTab('itinerary')} />}
             </Animated.ScrollView>
         </SafeAreaView>
     );
