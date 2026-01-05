@@ -8,12 +8,12 @@
 import React, { useState } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
 import { Plus, AlertCircle, Calendar } from 'lucide-react-native';
-import { ItineraryItemInput } from '../lib/api/services/itinerary.service';
-import { ItineraryItemRow } from '../types/db';
-import { ActivityTemplate } from './ActivityTemplates';
-import ItineraryItemCard from './itinerary/ItineraryItemCard';
-import ItineraryEditModal, { EditingItem } from './itinerary/ItineraryEditModal';
-import TemplatePickerModal from './itinerary/TemplatePickerModal';
+import { ItineraryItemInput } from '../../lib/api/services/itinerary.service';
+import { ItineraryItemRow } from '../../types/db';
+import { ActivityTemplate } from '../ActivityTemplates';
+import ItineraryItemCard from './ItineraryItemCard';
+import ItineraryEditModal, { EditingItem } from './ItineraryEditModal';
+import TemplatePickerModal from './TemplatePickerModal';
 
 interface ItineraryManagerProps {
     tripId: string;

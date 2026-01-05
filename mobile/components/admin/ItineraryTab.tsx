@@ -1,6 +1,6 @@
 import { View, Text } from "react-native";
 import { ListTodo } from "lucide-react-native";
-import ItineraryManager from "../ItineraryManager";
+import ItineraryManager from "../itinerary/ItineraryManager";
 import { ItineraryItemRow } from "../../types/db";
 import { ItineraryItemInput } from "../../lib/api/services/itinerary.service";
 
