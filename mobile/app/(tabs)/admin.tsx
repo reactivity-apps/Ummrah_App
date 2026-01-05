@@ -1,10 +1,12 @@
 import { View, Text, ScrollView, TouchableOpacity, Animated, ActivityIndicator, Alert } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useState } from "react";
-import { Shield, AlertCircle, Plus, Lock } from "lucide-react-native";
+import { Shield, AlertCircle, Plus, Lock, RefreshCw } from "lucide-react-native";
 import { useFadeIn } from "../../lib/sharedElementTransitions";
 import { useTrip } from "../../lib/context/TripContext";
 import { getOrCreateDefaultGroup } from "../../lib/api/services/group.service";
+import { useTripMembers } from "../../lib/api/hooks/admin/useTripMembers";
+import { useTripJoinCode } from "../../lib/api/hooks/admin/useTripJoinCode";
 
 // Import admin components
 import { AdminHeader } from "../../components/admin/AdminHeader";
@@ -15,33 +17,7 @@ import { MembersTab } from "../../components/admin/MembersTab";
 import { ItineraryTab } from "../../components/admin/ItineraryTab";
 import { CommunicationTab } from "../../components/admin/CommunicationTab";
 import { TripDetailsTab } from "../../components/admin/TripDetailsTab";
-
-// Mock data for admin
-const MOCK_ADMIN_DATA = {
-    currentTrip: {
-        id: '1',
-        name: 'Umrah February 2025',
-        status: 'active',
-        startDate: '2025-02-08',
-        endDate: '2025-02-18',
-        totalMembers: 45,
-        joinedMembers: 42,
-        pendingMembers: 3,
-    },
-    groupCode: 'UMR2025FEB',
-    members: [
-        { id: '1', name: 'Ahmed Hassan', role: 'group_admin', status: 'active', joinedAt: '2024-11-15' },
-        { id: '2', name: 'Fatima Khan', role: 'traveler', status: 'active', joinedAt: '2024-11-18' },
-        { id: '3', name: 'Omar Ali', role: 'traveler', status: 'active', joinedAt: '2024-11-20' },
-        { id: '4', name: 'Aisha Mohamed', role: 'traveler', status: 'pending', joinedAt: '2024-11-22' },
-    ],
-    recentActivity: [
-        { type: 'member_joined', message: 'Aisha Mohamed joined the group', time: '2 hours ago' },
-        { type: 'announcement', message: 'New announcement sent to 42 members', time: '5 hours ago' },
-        { type: 'trip_updated', message: 'Trip itinerary updated', time: '1 day ago' },
-    ],
-    unreadMessages: 8,
-};
+import { useActivity } from "../../lib/api/hooks/useActivity";
 
 export default function AdminScreen() {
     const [activeTab, setActiveTab] = useState<'overview' | 'members' | 'communication' | 'trip' | 'itinerary'>('overview');
@@ -72,6 +48,28 @@ export default function AdminScreen() {
         refreshTrips,
     } = useTrip();
 
+    // Fetch member and join code data
+    const {
+        members,
+        memberCount,
+        adminCount,
+        loading: membersLoading,
+        refetch: refetchMembers,
+    } = useTripMembers(currentTrip?.id);
+
+    const {
+        joinCode,
+        loading: joinCodeLoading,
+        refetch: refetchJoinCode,
+    } = useTripJoinCode(currentTrip?.id);
+
+    // Fetch activity data with trip ID
+    const { activities, loading: activitiesLoading } = useActivity({
+        tripId: currentTrip?.id || '',
+        limit: 10,
+        enableRealtime: true,
+    });
+
     // Show unauthorized screen if not admin
     if (!loading && !isGroupAdmin) {
         return (
@@ -91,6 +89,7 @@ export default function AdminScreen() {
         );
     }
 
+    // TODO: should be invite user, no func yet, comment out for now
     const handleAddMember = () => {
         if (!newMemberPhone.trim() || !newMemberFirstName.trim() || !newMemberLastName.trim()) {
             Alert.alert('Error', 'Please fill in all fields');
@@ -172,9 +171,10 @@ export default function AdminScreen() {
                     <Text className="text-muted-foreground text-center mt-2">{error}</Text>
                     <TouchableOpacity
                         onPress={refreshTrips}
-                        className="bg-[#4A6741] px-6 py-3 rounded-lg mt-6"
+                        className="flex-row items-center justify-center bg-red-50 px-6 py-3 rounded-lg border border-red-300 mt-6"
                     >
-                        <Text className="text-white font-semibold">Retry</Text>
+                        <RefreshCw size={16} color="#DC2626" />
+                        <Text className="text-red-600 font-medium ml-2">Retry</Text>
                     </TouchableOpacity>
                 </View>
             </SafeAreaView>
@@ -208,23 +208,10 @@ export default function AdminScreen() {
             </SafeAreaView>
         );
     }
-
-    // Mock data based on current trip
-    const ADMIN_DATA = {
-        currentTrip: {
-            id: currentTrip.id!,
-            name: currentTrip.name,
-            status: 'active',
-            startDate: currentTrip.start_date || '2025-02-08',
-            endDate: currentTrip.end_date || '2025-02-18',
-            totalMembers: 45,
-            joinedMembers: 42,
-            pendingMembers: 3,
-        },
-        groupCode: 'UMR2025FEB',
-        members: MOCK_ADMIN_DATA.members,
-        recentActivity: MOCK_ADMIN_DATA.recentActivity,
-        unreadMessages: 8,
+   
+    // Refetch function for pull-to-refresh
+    const handleRefresh = async () => {
+        await Promise.all([refetchMembers(), refetchJoinCode()]);
     };
 
     return (
@@ -305,10 +292,16 @@ export default function AdminScreen() {
             <Animated.ScrollView style={fadeInStyle} className="flex-1" contentContainerStyle={{ paddingBottom: 16 }}>
                 {activeTab === 'overview' && (
                     <OverviewTab
-                        data={ADMIN_DATA}
+                        tripData={currentTrip}
                         onNavigate={setActiveTab}
-                        onAddMember={() => setShowAddMemberModal(true)}
                         tripId={currentTrip?.id}
+                        memberCount={memberCount}
+                        adminCount={adminCount}
+                        joinCode={joinCode}
+                        loading={membersLoading || joinCodeLoading}
+                        onRefresh={handleRefresh}
+                        activities={activities}
+                        activitiesLoading={activitiesLoading}
                     />
                 )}
                 {activeTab === 'members' && <MembersTab tripId={ADMIN_DATA.currentTrip.id} />}

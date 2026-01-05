@@ -1,136 +1,64 @@
-import { View, Text, ActivityIndicator } from "react-native";
-import { useState, useEffect } from "react";
+import { View, Text, ActivityIndicator, ScrollView, TouchableOpacity } from "react-native";
+import React from "react";
 import {
     Calendar,
     Users,
-    MessageSquare,
     Bell,
     UserPlus,
     UserMinus,
     Clock,
     ListTodo,
     AlertCircle,
-    BarChart3,
+    RefreshCw,
 } from "lucide-react-native";
-import { useActivity } from "../../lib/api/hooks/useActivity";
-import { getTripMembers } from "../../lib/api/services/trip.service";
 import { QuickActionItem } from "./QuickActionItem";
 import { GroupCodeCard } from "./GroupCodeCard";
-import { supabase } from "../../lib/supabase";
+import { ActivityItem } from "../../lib/api/services/activity.service";
+import { TripRow } from "../../types/db";
 
 interface OverviewTabProps {
-    data: {
-        currentTrip: {
-            id: string;
-            name: string;
-            status: string;
-            startDate: string;
-            endDate: string;
-            totalMembers: number;
-            joinedMembers: number;
-            pendingMembers: number;
-        };
-        groupCode: string;
-        recentActivity: Array<{
-            type: string;
-            message: string;
-            time: string;
-        }>;
-        unreadMessages: number;
-    };
+    tripData: TripRow;
     onNavigate: (tab: 'overview' | 'members' | 'communication' | 'trip' | 'itinerary') => void;
-    onAddMember: () => void;
-    tripId?: string;
+    memberCount: number;
+    adminCount: number;
+    joinCode: string | null;
+    loading: boolean;
+    onRefresh: () => Promise<void>;
+    activities: ActivityItem[];
+    activitiesLoading: boolean;
 }
 
 export function OverviewTab({
-    data,
+    tripData,
     onNavigate,
-    onAddMember,
-    tripId
+    memberCount,
+    adminCount,
+    joinCode,
+    loading,
+    onRefresh,
+    activities,
+    activitiesLoading,
 }: OverviewTabProps) {
-    const [memberCount, setMemberCount] = useState(0);
-    const [adminCount, setAdminCount] = useState(0);
-    const [loadingMembers, setLoadingMembers] = useState(true);
-    const [joinCode, setJoinCode] = useState<string | null>(null);
-
-    // Fetch real activity data if we have a trip ID
-    const { activities, loading: activitiesLoading } = useActivity({
-        tripId: tripId || '',
-        limit: 10,
-        enableRealtime: true,
-    });
-
-    // Fetch real member stats
-    useEffect(() => {
-        if (!tripId) {
-            setLoadingMembers(false);
-            return;
-        }
-
-        async function loadMemberStats() {
-            // Get trip members (regular users)
-            const result = await getTripMembers(tripId!);
-            if (result.success && result.members) {
-                setMemberCount(result.members.length);
-            }
-
-            // Get group admins (users in group_memberships)
-            const { data: trip } = await supabase
-                .from('trips')
-                .select('group_id')
-                .eq('id', tripId!)
-                .single();
-
-            if (trip?.group_id) {
-                const { data: groupMemberships, error } = await supabase
-                    .from('group_memberships')
-                    .select('id')
-                    .eq('group_id', trip.group_id);
-
-                if (!error && groupMemberships) {
-                    setAdminCount(groupMemberships.length);
-                }
-            }
-
-            // Get trip join code
-            const { data: joinCodeData } = await supabase
-                .from('trip_join_codes')
-                .select('code')
-                .eq('trip_id', tripId!)
-                .eq('is_active', true)
-                .order('created_at', { ascending: false })
-                .limit(1)
-                .maybeSingle();
-
-            if (joinCodeData) {
-                setJoinCode(joinCodeData.code);
-            }
-
-            setLoadingMembers(false);
-        }
-
-        loadMemberStats();
-    }, [tripId]);
-
-    // Use real activities if available, otherwise fallback to mock data
-    const displayActivities = tripId && activities.length > 0 ? activities : data.recentActivity;
-
     return (
-        <View className="p-4">
+        <ScrollView className="flex-1">
+            <View className="p-4">
             {/* Current Trip Status */}
-            <View className="bg-card rounded-xl p-4 border border-[#C5A059]/20 mb-4 shadow-sm">
+            <View className="bg-card rounded-xl p-4 border border-[#C5A059]/20 mb-4">
                 <View className="flex-row items-center justify-between mb-3">
                     <Text className="text-lg font-bold text-foreground">Current Trip</Text>
                     <View className="bg-[#4A6741]/10 px-2.5 py-1 rounded-md">
-                        <Text className="text-[#4A6741] text-xs font-semibold uppercase">{data.currentTrip.status}</Text>
+                        <Text className="text-[#4A6741] text-xs font-semibold uppercase">{tripData.status}</Text>
                     </View>
                 </View>
-                <Text className="text-xl font-bold text-foreground mb-2">{data.currentTrip.name}</Text>
+                <Text className="text-xl font-bold text-foreground mb-2">{tripData.name}</Text>
                 <View className="flex-row items-center gap-2 mb-4">
                     <Calendar size={14} color="#C5A059" />
                     <Text className="text-sm text-muted-foreground">
-                        {new Date(data.currentTrip.startDate).toLocaleDateString()} - {new Date(data.currentTrip.endDate).toLocaleDateString()}
+                        {tripData.start_date && tripData.end_date ? (
+                            `${new Date(tripData.start_date).toLocaleDateString()} - ${new Date(tripData.end_date).toLocaleDateString()}`
+                        ) : (
+                            'Dates not set'
+                        )}
                     </Text>
                 </View>
 
@@ -142,7 +70,7 @@ export function OverviewTab({
                             <Text className="text-xs text-muted-foreground ml-1 font-medium">MEMBER(S)</Text>
                         </View>
                         <Text className="text-foreground text-lg font-bold">
-                            {loadingMembers ? '...' : memberCount}
+                            {loading ? '...' : memberCount}
                         </Text>
                     </View>
                     <View className="flex-1 bg-[#C5A059]/5 p-3 rounded-lg border border-[#C5A059]/20">
@@ -151,14 +79,24 @@ export function OverviewTab({
                             <Text className="text-xs text-muted-foreground ml-1 font-medium">ADMIN(S)</Text>
                         </View>
                         <Text className="text-foreground text-lg font-bold">
-                            {loadingMembers ? '...' : adminCount}
+                            {loading ? '...' : adminCount}
                         </Text>
                     </View>
                 </View>
+
+                {/* Refresh Button */}
+                <TouchableOpacity
+                    onPress={onRefresh}
+                    className="mt-3 flex-row items-center justify-center bg-[#C5A059]/10 p-3 rounded-lg border border-[#C5A059]/30"
+                    disabled={loading}
+                >
+                    <RefreshCw size={16} color="#C5A059" />
+                    <Text className="text-[#C5A059] font-medium ml-2">Refresh Data</Text>
+                </TouchableOpacity>
             </View>
 
             {/* Group Code Card */}
-            <GroupCodeCard code={joinCode || data.groupCode} />
+            <GroupCodeCard code={joinCode} loading={loading} />
 
             {/* Quick Actions */}
             <View className="mb-4">
@@ -176,13 +114,13 @@ export function OverviewTab({
                         subtitle="Notify all members"
                         onPress={() => onNavigate('communication')}
                     />
-                    <QuickActionItem
+                    {/* <QuickActionItem
                         icon={UserPlus}
                         title="Add Member"
                         subtitle="Invite new travelers"
                         onPress={onAddMember}
                         last
-                    />
+                    /> */}
                 </View>
             </View>
 
@@ -190,11 +128,11 @@ export function OverviewTab({
             <View className="mb-4">
                 <View className="flex-row items-center justify-between mb-3">
                     <Text className="text-lg font-bold text-foreground">Recent Activity</Text>
-                    {activitiesLoading && <ActivityIndicator size="small" color="#4A6741" />}
+                    {(activitiesLoading || loading) && <ActivityIndicator size="small" color="#4A6741" />}
                 </View>
                 <View className="bg-card rounded-xl border border-sand-200 overflow-hidden">
-                    {displayActivities.length > 0 ? (
-                        displayActivities.map((activity, index) => {
+                    {activities.length > 0 ? (
+                        activities.map((activity, index) => {
                             // Determine icon based on activity type
                             let ActivityIcon = Clock;
                             let iconColor = "#9CA3AF";
@@ -219,7 +157,7 @@ export function OverviewTab({
                             return (
                                 <View
                                     key={index}
-                                    className={`p-4 flex-row items-start ${index !== displayActivities.length - 1 ? 'border-b border-sand-100' : ''}`}
+                                    className={`p-4 flex-row items-start ${index !== activities.length - 1 ? 'border-b border-sand-100' : ''}`}
                                 >
                                     <View className="mr-3 mt-0.5">
                                         <ActivityIcon size={18} color={iconColor} />
@@ -268,5 +206,6 @@ export function OverviewTab({
                 </View>
             </View> */}
         </View>
+        </ScrollView>
     );
 }
