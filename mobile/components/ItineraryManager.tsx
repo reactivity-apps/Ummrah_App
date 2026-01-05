@@ -8,7 +8,6 @@
 import React, { useState } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
 import { Plus, AlertCircle, Calendar } from 'lucide-react-native';
-import { useItinerary } from '../lib/api/hooks/useItinerary';
 import { ItineraryItemInput } from '../lib/api/services/itinerary.service';
 import { ItineraryItemRow } from '../types/db';
 import { ActivityTemplate } from './ActivityTemplates';
@@ -19,32 +18,30 @@ import TemplatePickerModal from './itinerary/TemplatePickerModal';
 interface ItineraryManagerProps {
     tripId: string;
     tripName?: string;
+    items: ItineraryItemRow[];
+    loading: boolean;
+    error: string | null;
+    isAdmin: boolean;
+    checkingPermissions: boolean;
+    createItem: (input: ItineraryItemInput) => Promise<boolean>;
+    updateItem: (itemId: string, updates: Partial<ItineraryItemInput>, optimistic?: boolean) => Promise<boolean>;
+    deleteItem: (itemId: string, optimistic?: boolean) => Promise<boolean>;
+    refresh: () => Promise<void>;
 }
 
-export default function ItineraryManager({ tripId, tripName }: ItineraryManagerProps) {
-    const {
-        items,
-        loading,
-        error,
-        isAdmin,
-        checkingPermissions,
-        createItem,
-        updateItem,
-        deleteItem,
-        refresh,
-    } = useItinerary({
-        tripId,
-        enableRealtime: true,
-        onError: (err) => Alert.alert('Error', err),
-        onConflict: () => {
-            Alert.alert(
-                'Conflict Detected',
-                'This item was modified by another admin. Please refresh and try again.',
-                [{ text: 'Refresh', onPress: () => refresh() }]
-            );
-        },
-    });
-
+export default function ItineraryManager({
+    tripId,
+    tripName,
+    items,
+    loading,
+    error,
+    isAdmin,
+    checkingPermissions,
+    createItem,
+    updateItem,
+    deleteItem,
+    refresh,
+}: ItineraryManagerProps) {
     const [showEditModal, setShowEditModal] = useState(false);
     const [showTemplateModal, setShowTemplateModal] = useState(false);
     const [editingItem, setEditingItem] = useState<EditingItem | null>(null);
@@ -233,27 +230,23 @@ export default function ItineraryManager({ tripId, tripName }: ItineraryManagerP
 
     return (
         <View className="flex-1 bg-sand-50">
-            {/* Header */}
-            <View className="bg-card border-b border-sand-200 px-4 py-4">
-                <Text className="text-xl font-bold text-foreground mb-1">Itinerary</Text>
-                {tripName && <Text className="text-sm text-muted-foreground">{tripName}</Text>}
-            </View>
+            
 
             {/* Action Buttons */}
-            <View className="bg-card border-b border-sand-100 px-4 py-3 flex-row gap-2">
+            <View className="bg-card border-b border-[#C5A059]/10 px-4 py-3 flex-row gap-2">
                 <TouchableOpacity
                     onPress={handleCreateNew}
-                    className="flex-1 bg-[#4A6741] rounded-lg py-2.5 flex-row items-center justify-center"
+                    className="flex-1 bg-[#4A6741]/10 border border-[#4A6741]/30 rounded-lg py-2.5 flex-row items-center justify-center"
                 >
-                    <Plus size={18} color="white" />
-                    <Text className="text-white font-semibold ml-2">Add Item</Text>
+                    <Plus size={18} color="#4A6741" />
+                    <Text className="text-[#4A6741] font-semibold ml-2">Add Item</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                     onPress={() => setShowTemplateModal(true)}
-                    className="flex-1 bg-[#C5A059] rounded-lg py-2.5 flex-row items-center justify-center"
+                    className="flex-1 bg-[#C5A059]/10 border border-[#C5A059]/30 rounded-lg py-2.5 flex-row items-center justify-center"
                 >
-                    <Calendar size={18} color="white" />
-                    <Text className="text-white font-semibold ml-2">Templates</Text>
+                    <Calendar size={18} color="#C5A059" />
+                    <Text className="text-[#C5A059] font-semibold ml-2">Templates</Text>
                 </TouchableOpacity>
             </View>
 
@@ -261,25 +254,37 @@ export default function ItineraryManager({ tripId, tripName }: ItineraryManagerP
             {loading ? (
                 <View className="flex-1 items-center justify-center">
                     <ActivityIndicator size="large" color="#4A6741" />
+                    <Text className="text-muted-foreground mt-4">Loading itinerary...</Text>
                 </View>
             ) : items.length === 0 ? (
-                <View className="flex-1 items-center justify-center p-4">
-                    <AlertCircle size={48} color="#CBD5E0" />
-                    <Text className="text-foreground font-semibold text-lg mt-4">No Items Yet</Text>
-                    <Text className="text-muted-foreground text-center mt-2">
-                        Add your first activity or choose from templates
-                    </Text>
+                <View className="flex-1 items-center justify-center p-8">
+                    <View className="bg-card rounded-xl p-8 border border-[#C5A059]/20 border-dashed">
+                        <View className="items-center">
+                            <Calendar size={48} color="hsl(40 5% 70%)" />
+                            <Text className="text-foreground font-semibold text-lg mt-4">No Activities Yet</Text>
+                            <Text className="text-sm text-muted-foreground mt-2 text-center">
+                                Add your first activity or choose from templates
+                            </Text>
+                        </View>
+                    </View>
                 </View>
             ) : (
-                <ScrollView className="flex-1">
+                <ScrollView className="flex-1" contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 16, paddingBottom: 16 }}>
                     {sortedDays.map((day) => (
-                        <View key={day} className="mb-4">
-                            <View className="bg-[#4A6741] px-4 py-2">
-                                <Text className="text-white font-bold text-sm">
-                                    {day === 'No Date' ? day : formatDate(day)}
-                                </Text>
+                        <View key={day} className="mb-6">
+                            <View className="flex-row items-center mb-3">
+                                <View className="px-3 py-1.5 rounded-full bg-sand-200">
+                                    <Text className="font-bold text-sm text-foreground">
+                                        {day === 'No Date' ? 'Unscheduled' : formatDate(day)}
+                                    </Text>
+                                </View>
+                                <View className="flex-1 ml-3">
+                                    <Text className="text-xs text-muted-foreground">
+                                        {groupedItems[day].length} {groupedItems[day].length === 1 ? 'activity' : 'activities'}
+                                    </Text>
+                                </View>
                             </View>
-                            <View className="px-4 pt-3">
+                            <View className="ml-6 border-l-2 border-sand-200">
                                 {groupedItems[day].map((item) => (
                                     <ItineraryItemCard
                                         key={item.id}

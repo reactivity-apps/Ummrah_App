@@ -18,6 +18,7 @@ import { ItineraryTab } from "../../components/admin/ItineraryTab";
 import { CommunicationTab } from "../../components/admin/CommunicationTab";
 import { TripDetailsTab } from "../../components/admin/TripDetailsTab";
 import { useActivity } from "../../lib/api/hooks/useActivity";
+import { useItinerary } from "../../lib/api/hooks/useItinerary";
 
 export default function AdminScreen() {
     const [activeTab, setActiveTab] = useState<'overview' | 'members' | 'communication' | 'trip' | 'itinerary'>('overview');
@@ -68,6 +69,30 @@ export default function AdminScreen() {
         tripId: currentTrip?.id || '',
         limit: 10,
         enableRealtime: true,
+    });
+
+    // Fetch itinerary data
+    const {
+        items: itineraryItems,
+        loading: itineraryLoading,
+        error: itineraryError,
+        isAdmin: isItineraryAdmin,
+        checkingPermissions: checkingItineraryPermissions,
+        createItem,
+        updateItem,
+        deleteItem,
+        refresh: refreshItinerary,
+    } = useItinerary({
+        tripId: currentTrip?.id || '',
+        enableRealtime: true,
+        onError: (err) => Alert.alert('Error', err),
+        onConflict: () => {
+            Alert.alert(
+                'Conflict Detected',
+                'This item was modified by another admin. Please refresh and try again.',
+                [{ text: 'Refresh', onPress: () => refreshItinerary() }]
+            );
+        },
     });
 
     // Show unauthorized screen if not admin
@@ -304,7 +329,21 @@ export default function AdminScreen() {
                     />
                 )}
                 {activeTab === 'members' && <MembersTab tripId={currentTrip.id} members={members} loading={membersLoading} onRefresh={refetchMembers} />}
-                {activeTab === 'itinerary' && <ItineraryTab tripId={currentTrip.id} tripName={currentTrip.name} />}
+                {activeTab === 'itinerary' && (
+                    <ItineraryTab
+                        tripId={currentTrip.id}
+                        tripName={currentTrip.name}
+                        items={itineraryItems}
+                        loading={itineraryLoading}
+                        error={itineraryError}
+                        isAdmin={isItineraryAdmin}
+                        checkingPermissions={checkingItineraryPermissions}
+                        createItem={createItem}
+                        updateItem={updateItem}
+                        deleteItem={deleteItem}
+                        refresh={refreshItinerary}
+                    />
+                )}
                 {activeTab === 'communication' && <CommunicationTab tripId={currentTrip?.id} />}
                 {activeTab === 'trip' && <TripDetailsTab trip={currentTrip} onNavigateToItinerary={() => setActiveTab('itinerary')} />}
             </Animated.ScrollView>

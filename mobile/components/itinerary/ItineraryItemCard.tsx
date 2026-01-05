@@ -6,8 +6,9 @@
 
 import React from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
-import { Clock, MapPin, Edit3, Trash2, GripVertical } from 'lucide-react-native';
+import { MapPin, Edit3, Trash2, GripVertical } from 'lucide-react-native';
 import { ItineraryItemRow } from '../../types/db';
+import { ActivityIcon } from '../../lib/itineraryUtils';
 
 interface ItineraryItemCardProps {
     item: ItineraryItemRow;
@@ -35,45 +36,58 @@ export default function ItineraryItemCard({
     };
 
     return (
-        <View className="mb-3">
+        <View className="relative pl-6 pb-4">
+            {/* Timeline Dot */}
+            <View
+                className="absolute left-0 top-1 w-3 h-3 rounded-full border-2 bg-card border-sand-300"
+                style={{ transform: [{ translateX: -7 }] }}
+            />
+
             <TouchableOpacity
                 onPress={() => item.id && onToggle(item.id)}
-                className="bg-card border border-sand-200 rounded-xl p-4 shadow-sm"
+                className="bg-card border border-[#C5A059]/20 rounded-xl p-3.5"
                 activeOpacity={0.7}
             >
-                <View className="flex-row items-start justify-between">
-                    <View className="flex-1 mr-3">
-                        {/* Time and Title */}
-                        <View className="flex-row items-center mb-2">
-                            <View className="bg-[#4A6741]/10 px-2.5 py-1 rounded-md mr-2">
-                                <Text className="text-xs font-bold text-[#4A6741]">
-                                    {formatTime(item.starts_at)}
-                                </Text>
-                            </View>
-                            <Text className="text-base font-bold text-foreground flex-1" numberOfLines={1}>
-                                {item.title}
-                            </Text>
+                <View className="flex-row items-start justify-between mb-2">
+                    <View className="flex-row items-center flex-1">
+                        <View className="mr-2">
+                            <ActivityIcon title={item.title} />
                         </View>
-
-                        {/* Location */}
-                        {item.location && (
-                            <View className="flex-row items-center mt-1">
-                                <MapPin size={12} color="#718096" />
-                                <Text className="text-muted-foreground text-xs ml-1">
-                                    {item.location}
-                                </Text>
-                            </View>
+                        {item.starts_at && (
+                            <Text className="text-xs text-muted-foreground font-semibold">
+                                {formatTime(item.starts_at)}
+                            </Text>
                         )}
                     </View>
-                    <GripVertical size={20} color="#CBD5E0" />
+                    <GripVertical size={20} color="#C5A059" />
                 </View>
+
+                <Text className="text-foreground font-semibold leading-5 mb-1">
+                    {item.title}
+                </Text>
+
+                {item.description && (
+                    <Text className="text-xs text-muted-foreground mt-1">
+                        {item.description}
+                    </Text>
+                )}
+
+                {/* Location */}
+                {item.location && (
+                    <View className="flex-row items-center mt-2">
+                        <MapPin size={12} color="hsl(40 5% 55%)" />
+                        <Text className="text-muted-foreground text-xs ml-1">
+                            {item.location}
+                        </Text>
+                    </View>
+                )}
 
                 {/* Expanded Details */}
                 {isExpanded && (
-                    <View className="mt-4 pt-4 border-t border-sand-100">
+                    <View className="mt-3 pt-3 border-t border-[#C5A059]/10">
                         {item.description && (
                             <View className="mb-3">
-                                <Text className="text-xs text-muted-foreground font-medium mb-1">
+                                <Text className="text-xs text-[#C5A059] font-medium mb-1">
                                     DESCRIPTION
                                 </Text>
                                 <Text className="text-foreground text-sm leading-5">
@@ -84,7 +98,7 @@ export default function ItineraryItemCard({
 
                         {item.ends_at && (
                             <View className="mb-3">
-                                <Text className="text-xs text-muted-foreground font-medium mb-1">
+                                <Text className="text-xs text-[#C5A059] font-medium mb-1">
                                     END TIME
                                 </Text>
                                 <Text className="text-foreground text-sm">
@@ -97,10 +111,10 @@ export default function ItineraryItemCard({
                         <View className="flex-row gap-2 mt-4">
                             <TouchableOpacity
                                 onPress={() => onEdit(item)}
-                                className="flex-1 bg-[#4A6741]/10 border border-[#4A6741]/20 rounded-lg py-2.5 flex-row items-center justify-center"
+                                className="flex-1 bg-[#C5A059]/10 border border-[#C5A059]/30 rounded-lg py-2.5 flex-row items-center justify-center"
                             >
-                                <Edit3 size={16} color="#4A6741" />
-                                <Text className="text-[#4A6741] font-medium ml-2">Edit</Text>
+                                <Edit3 size={16} color="#C5A059" />
+                                <Text className="text-[#C5A059] font-medium ml-2">Edit</Text>
                             </TouchableOpacity>
                             <TouchableOpacity
                                 onPress={() => onDelete(item)}

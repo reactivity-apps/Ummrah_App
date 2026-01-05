@@ -1,23 +1,13 @@
 import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, Animated } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
-import { Calendar, MapPin, Clock, Users, Utensils, Plane, Hotel, AlertCircle } from "lucide-react-native";
+import { Calendar, MapPin, AlertCircle } from "lucide-react-native";
 import { useFadeIn } from "../../lib/sharedElementTransitions";
-import Svg, { Path, Rect } from "react-native-svg";
 import { useItinerary } from "../../lib/api/hooks/useItinerary";
 import { useTrip } from "../../lib/context/TripContext";
 import { useTripStatus } from "../../lib/api/hooks/useTripStatus";
 import { ItineraryItemRow } from "../../types/db";
-
-// Kaaba Icon Component
-const KaabaIcon = ({ size = 16, color = "#C5A059" }) => (
-    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-        <Rect x="4" y="5" width="16" height="15" rx="2" fill={color} />
-        <Path d="M4 9H20" stroke="white" strokeWidth="2" strokeOpacity="0.6" />
-        <Path d="M7 5V9" stroke="white" strokeWidth="1.5" strokeOpacity="0.4" />
-        <Path d="M12 14H16" stroke="white" strokeWidth="1.5" strokeOpacity="0.4" />
-    </Svg>
-);
+import { ActivityIcon, getActivityColor, getActivityType } from "../../lib/itineraryUtils";
 
 export default function ItineraryScreen() {
     const fadeStyle = useFadeIn(0);
@@ -37,43 +27,6 @@ export default function ItineraryScreen() {
 
     // Calculate trip status using centralized hook
     const tripStatus = useTripStatus(currentTrip);
-
-    const ActivityIcon = ({ title }: { title: string }) => {
-        const lowerTitle = title.toLowerCase();
-        if (lowerTitle.includes('prayer') || lowerTitle.includes('salah') || lowerTitle.includes('fajr') || lowerTitle.includes('dhuhr') || lowerTitle.includes('asr') || lowerTitle.includes('maghrib') || lowerTitle.includes('isha')) {
-            return <KaabaIcon size={16} color="#C5A059" />;
-        } else if (lowerTitle.includes('meal') || lowerTitle.includes('breakfast') || lowerTitle.includes('lunch') || lowerTitle.includes('dinner')) {
-            return <Utensils size={16} color="#C5A059" />;
-        } else if (lowerTitle.includes('hotel') || lowerTitle.includes('check-in') || lowerTitle.includes('accommodation')) {
-            return <Hotel size={16} color="#C5A059" />;
-        } else if (lowerTitle.includes('airport') || lowerTitle.includes('flight') || lowerTitle.includes('arrival') || lowerTitle.includes('departure')) {
-            return <Plane size={16} color="#C5A059" />;
-        } else if (lowerTitle.includes('group') || lowerTitle.includes('orientation') || lowerTitle.includes('session')) {
-            return <Users size={16} color="#C5A059" />;
-        } else if (lowerTitle.includes('ziyarat') || lowerTitle.includes('visit')) {
-            return <MapPin size={16} color="#C5A059" />;
-        }
-        return <Clock size={16} color="#C5A059" />;
-    };
-
-    const getActivityColor = (title: string) => {
-        const lowerTitle = title.toLowerCase();
-        if (lowerTitle.includes('prayer') || lowerTitle.includes('salah') || lowerTitle.includes('group') || lowerTitle.includes('orientation')) {
-            return 'bg-[#4A6741]/10 border-[#4A6741]/20';
-        }
-        return 'bg-[#C5A059]/10 border-[#C5A059]/30';
-    };
-
-    const getActivityType = (title: string) => {
-        const lowerTitle = title.toLowerCase();
-        if (lowerTitle.includes('prayer') || lowerTitle.includes('salah')) return 'Prayer';
-        if (lowerTitle.includes('meal') || lowerTitle.includes('breakfast') || lowerTitle.includes('lunch') || lowerTitle.includes('dinner')) return 'Meal';
-        if (lowerTitle.includes('hotel') || lowerTitle.includes('accommodation')) return 'Accommodation';
-        if (lowerTitle.includes('airport') || lowerTitle.includes('flight')) return 'Travel';
-        if (lowerTitle.includes('group') || lowerTitle.includes('orientation')) return 'Group';
-        if (lowerTitle.includes('ziyarat') || lowerTitle.includes('visit')) return 'Ziyarat';
-        return 'Activity';
-    };
 
     // Group items by day
     const groupedItems = items.reduce((acc, item) => {
@@ -137,7 +90,7 @@ export default function ItineraryScreen() {
                 <View className="flex-row items-center justify-between mb-3">
                     <View className="flex-row items-center flex-1">
                         <Calendar size={20} color="#C5A059" className="mr-2" />
-                        <Text className="text-lg font-bold text-foreground">{tripName}</Text>
+                        <Text className="text-lg font-bold text-foreground">{tripName}'s Itinerary</Text>
                     </View>
                     {tripStatus.type && (
                         <View className={`px-3 py-1 rounded-full ${

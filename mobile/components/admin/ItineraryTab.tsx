@@ -1,13 +1,36 @@
 import { View, Text } from "react-native";
 import { ListTodo } from "lucide-react-native";
 import ItineraryManager from "../ItineraryManager";
+import { ItineraryItemRow } from "../../types/db";
+import { ItineraryItemInput } from "../../lib/api/services/itinerary.service";
 
 interface ItineraryTabProps {
     tripId: string;
     tripName: string;
+    items: ItineraryItemRow[];
+    loading: boolean;
+    error: string | null;
+    isAdmin: boolean;
+    checkingPermissions: boolean;
+    createItem: (input: ItineraryItemInput) => Promise<boolean>;
+    updateItem: (itemId: string, updates: Partial<ItineraryItemInput>, optimistic?: boolean) => Promise<boolean>;
+    deleteItem: (itemId: string, optimistic?: boolean) => Promise<boolean>;
+    refresh: () => Promise<void>;
 }
 
-export function ItineraryTab({ tripId, tripName }: ItineraryTabProps) {
+export function ItineraryTab({
+    tripId,
+    tripName,
+    items,
+    loading,
+    error,
+    isAdmin,
+    checkingPermissions,
+    createItem,
+    updateItem,
+    deleteItem,
+    refresh,
+}: ItineraryTabProps) {
     // Safety check: Don't render ItineraryManager if no valid tripId
     if (!tripId) {
         return (
@@ -25,7 +48,19 @@ export function ItineraryTab({ tripId, tripName }: ItineraryTabProps) {
 
     return (
         <View className="flex-1">
-            <ItineraryManager tripId={tripId} tripName={tripName} />
+            <ItineraryManager
+                tripId={tripId}
+                tripName={tripName}
+                items={items}
+                loading={loading}
+                error={error}
+                isAdmin={isAdmin}
+                checkingPermissions={checkingPermissions}
+                createItem={createItem}
+                updateItem={updateItem}
+                deleteItem={deleteItem}
+                refresh={refresh}
+            />
         </View>
     );
 }
