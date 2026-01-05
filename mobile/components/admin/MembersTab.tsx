@@ -1,8 +1,8 @@
 import { View, Text, TextInput, TouchableOpacity, ActivityIndicator } from "react-native";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Users, UserMinus } from "lucide-react-native";
 import { Alert } from "react-native";
-import { getTripMembers, removeTripMember } from "../../lib/api/services/trip.service";
+import { removeTripMember } from "../../lib/api/services/trip.service";
 
 interface Member {
     id: string;
@@ -14,29 +14,13 @@ interface Member {
 
 interface MembersTabProps {
     tripId: string;
+    members: Member[];
+    loading: boolean;
+    onRefresh: () => Promise<void>;
 }
 
-export function MembersTab({ tripId }: MembersTabProps) {
+export function MembersTab({ tripId, members, loading, onRefresh }: MembersTabProps) {
     const [searchQuery, setSearchQuery] = useState('');
-    const [members, setMembers] = useState<Member[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [refreshing, setRefreshing] = useState(false);
-
-    useEffect(() => {
-        loadMembers();
-    }, [tripId]);
-
-    const loadMembers = async () => {
-        setLoading(true);
-        const result = await getTripMembers(tripId);
-        if (result.success && result.members) {
-            setMembers(result.members);
-        } else {
-            Alert.alert('Error', result.error || 'Failed to load members');
-        }
-        setLoading(false);
-        setRefreshing(false);
-    };
 
     const filteredMembers = members.filter(m =>
         m.name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -55,7 +39,7 @@ export function MembersTab({ tripId }: MembersTabProps) {
                         const result = await removeTripMember(tripId, userId);
                         if (result.success) {
                             Alert.alert('Success', `${name} has been removed from the group`);
-                            loadMembers(); // Refresh the list
+                            await onRefresh(); // Refresh the list
                         } else {
                             Alert.alert('Error', result.error || 'Failed to remove member');
                         }

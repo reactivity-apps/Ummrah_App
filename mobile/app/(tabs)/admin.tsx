@@ -303,7 +303,7 @@ export default function AdminScreen() {
                         activitiesLoading={activitiesLoading}
                     />
                 )}
-                {activeTab === 'members' && <MembersTab tripId={currentTrip.id} />}
+                {activeTab === 'members' && <MembersTab tripId={currentTrip.id} members={members} loading={membersLoading} onRefresh={refetchMembers} />}
                 {activeTab === 'itinerary' && <ItineraryTab tripId={currentTrip.id} tripName={currentTrip.name} />}
                 {activeTab === 'communication' && <CommunicationTab tripId={currentTrip?.id} />}
                 {activeTab === 'trip' && <TripDetailsTab trip={currentTrip} onNavigateToItinerary={() => setActiveTab('itinerary')} />}

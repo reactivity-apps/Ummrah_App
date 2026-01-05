@@ -84,7 +84,7 @@ export function OverviewTab({
                     </View>
                 </View>
 
-                {/* Refresh Button */}
+                {/* Temporary until i can get refresh control working: Refresh Button */}
                 <TouchableOpacity
                     onPress={onRefresh}
                     className="mt-3 flex-row items-center justify-center bg-[#C5A059]/10 p-3 rounded-lg border border-[#C5A059]/30"
