@@ -27,7 +27,6 @@ function AppContent() {
         <>
             <Stack
                 screenOptions={{
-                    headerShown: false,
                     headerStyle: {
                         backgroundColor: '#FFFFFF',
                     },
@@ -39,16 +38,12 @@ function AppContent() {
             >
                 <Stack.Screen name="index" options={{ headerShown: false }} />
                 <Stack.Screen name="auth" options={{ headerShown: false }} />
-                <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-                <Stack.Screen name="itinerary" options={{ headerShown: false }} />
-                <Stack.Screen name="itinerary-builder" options={{ headerShown: false }} />
-                <Stack.Screen name="announcements" options={{ headerShown: false }} />
+                <Stack.Screen name="(tabs)" options={{ headerShown: false, title: "Home" }} />
+                <Stack.Screen name="announcements" options={{ title: "Announcements" }} />
                 <Stack.Screen name="prayers" options={{ headerShown: false }} />
                 <Stack.Screen name="duas" options={{ headerShown: false }} />
                 <Stack.Screen name="umrah-guide" options={{ headerShown: false }} />
                 <Stack.Screen name="umrah-guide/[id]" options={{ headerShown: false }} />
-                <Stack.Screen name="guide/[id]" options={{ headerShown: false }} />
-                <Stack.Screen name="map/[id]" options={{ headerShown: false }} />
                 <Stack.Screen name="settings" options={{ headerShown: false }} />
             </Stack>
             <StatusBar style="auto" />

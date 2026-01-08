@@ -7,7 +7,7 @@
 import React, { useState } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, Modal, Linking, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Bell, AlertCircle, X, ExternalLink } from 'lucide-react-native';
+import { Bell, X, ExternalLink } from 'lucide-react-native';
 import { useAnnouncements } from '../lib/api/hooks/useAnnouncements';
 import { formatTimeAgo } from '../lib/api/utils/helpers';
 import { AnnouncementRow } from '../types/db';
@@ -36,7 +36,7 @@ export default function AnnouncementsScreen() {
                 {!loading && (
                     <View className="px-4 pt-4 pb-2">
                         <Text className="text-sm text-muted-foreground">
-                            {announcements.length} message{announcements.length !== 1 ? 's' : ''}
+                            {announcements.length} announcement{announcements.length !== 1 ? 's' : ''}
                         </Text>
                     </View>
                 )}
@@ -61,48 +61,49 @@ export default function AnnouncementsScreen() {
                             <TouchableOpacity
                                 key={announcement.id}
                                 onPress={() => setSelectedAnnouncement(announcement)}
-                                className="bg-card rounded-xl border border-sand-200 shadow-sm mb-3"
+                                className="bg-card rounded-xl border border-[#C5A059]/20 mb-4"
                                 activeOpacity={0.7}
                             >
                                 <View className="p-4">
-                                    {/* Priority Badge */}
-                                    {announcement.is_high_priority && (
-                                        <View className="flex-row items-center mb-2">
-                                            <View className="bg-amber-100 px-3 py-1 rounded-full flex-row items-center">
-                                                <AlertCircle size={14} color="#F59E0B" />
-                                                <Text className="text-xs font-bold text-amber-700 ml-1">HIGH PRIORITY</Text>
+                                    {/* Header */}
+                                    <View className="flex-row items-start justify-between mb-2">
+                                        <View className="flex-1">
+                                            <View className="flex-row items-center mb-1">
+                                                {announcement.is_high_priority && (
+                                                    <View className="bg-[#F5E6C8] px-2 py-0.5 rounded mr-2">
+                                                        <Text className="text-xs font-bold text-[#D4A574]">HIGH PRIORITY</Text>
+                                                    </View>
+                                                )}
+                                                <View className="px-2 py-0.5 rounded bg-[#4A6741]/10">
+                                                    <Text className="text-xs font-semibold text-[#4A6741]">
+                                                        SENT
+                                                    </Text>
+                                                </View>
                                             </View>
+                                            <Text className="text-lg font-bold text-foreground">
+                                                {announcement.title}
+                                            </Text>
                                         </View>
-                                    )}
+                                    </View>
 
-                                    {/* Title */}
-                                    <Text className="text-lg font-bold text-foreground mb-2">
-                                        {announcement.title}
-                                    </Text>
-
-                                    {/* Body Preview */}
-                                    <Text className="text-foreground/80 mb-3" numberOfLines={2}>
+                                    {/* Body */}
+                                    <Text className="text-foreground/80 mb-3" numberOfLines={3}>
                                         {announcement.body}
                                     </Text>
 
                                     {/* Meta */}
                                     <View className="flex-row items-center justify-between">
                                         <Text className="text-xs text-muted-foreground">
-                                            {formatTimeAgo(announcement.sent_at || announcement.created_at!)}
+                                            Sent {formatTimeAgo(announcement.sent_at || announcement.created_at!)}
                                         </Text>
                                         {announcement.link_url && (
-                                            <View className="flex-row items-center bg-primary/10 px-2 py-1 rounded">
+                                            <View className="flex-row items-center">
                                                 <ExternalLink size={12} color="#4A6741" />
-                                                <Text className="text-xs text-primary font-semibold ml-1">Has Link</Text>
+                                                <Text className="text-xs text-[#4A6741] font-semibold ml-1">Link</Text>
                                             </View>
                                         )}
                                     </View>
                                 </View>
-
-                                {/* Priority Indicator Bar */}
-                                {announcement.is_high_priority && (
-                                    <View className="h-1 bg-gradient-to-r from-amber-400 to-amber-600" />
-                                )}
                             </TouchableOpacity>
                         ))}
                     </View>
@@ -130,9 +131,8 @@ export default function AnnouncementsScreen() {
                                 <View className="flex-1 mr-4">
                                     {selectedAnnouncement.is_high_priority && (
                                         <View className="flex-row items-center mb-2">
-                                            <View className="bg-amber-100 px-3 py-1 rounded-full flex-row items-center">
-                                                <AlertCircle size={14} color="#F59E0B" />
-                                                <Text className="text-xs font-bold text-amber-700 ml-1">HIGH PRIORITY</Text>
+                                            <View className="bg-[#F5E6C8] px-2 py-0.5 rounded">
+                                                <Text className="text-xs font-bold text-[#D4A574]">HIGH PRIORITY</Text>
                                             </View>
                                         </View>
                                     )}
@@ -186,9 +186,9 @@ export default function AnnouncementsScreen() {
                             <View className="p-5 border-t border-sand-200">
                                 <TouchableOpacity
                                     onPress={() => setSelectedAnnouncement(null)}
-                                    className="bg-primary p-4 rounded-xl items-center"
+                                    className="bg-sand-100 p-4 rounded-xl items-center"
                                 >
-                                    <Text className="text-white font-bold">Close</Text>
+                                    <Text className="text-muted-foreground font-bold">Close</Text>
                                 </TouchableOpacity>
                             </View>
                         </View>
