@@ -5,31 +5,38 @@
  */
 
 import React, { useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, TextInput, Switch, Alert, Modal } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, TextInput, Switch, Alert, Modal, Platform } from 'react-native';
 import { Bell, Plus, Calendar, Send, Trash2, Edit2, AlertCircle } from 'lucide-react-native';
-import { useAnnouncements } from '../lib/api/hooks/useAnnouncements';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import { AnnouncementInput, getAnnouncementStatus } from '../lib/api/services/announcement.service';
 import { formatTimeAgo } from '../lib/api/utils/helpers';
-import DateTimePicker from '@react-native-community/datetimepicker';
-import { Platform } from 'react-native';
+import { AnnouncementRow } from '../types/db';
 
 interface AnnouncementsManagerProps {
     tripId: string;
+    announcements: AnnouncementRow[];
+    loading: boolean;
+    error: string | null;
+    isAdmin: boolean;
+    createItem: (input: AnnouncementInput) => Promise<boolean>;
+    updateItem: (id: string, input: AnnouncementInput) => Promise<boolean>;
+    deleteItem: (id: string) => Promise<boolean>;
+    sendNow: (id: string) => Promise<boolean>;
+    refresh: () => Promise<void>;
 }
 
-export function AnnouncementsManager({ tripId }: AnnouncementsManagerProps) {
-    const {
-        announcements,
-        loading,
-        error,
-        isAdmin,
-        createItem,
-        updateItem,
-        deleteItem,
-        sendNow,
-        refresh
-    } = useAnnouncements({ tripId, adminView: true });
-
+export function AnnouncementsManager({
+    tripId,
+    announcements,
+    loading,
+    error,
+    isAdmin,
+    createItem,
+    updateItem,
+    deleteItem,
+    sendNow,
+    refresh
+}: AnnouncementsManagerProps) {
     const [showModal, setShowModal] = useState(false);
     const [editingId, setEditingId] = useState<string | null>(null);
     const [formData, setFormData] = useState<AnnouncementInput>({

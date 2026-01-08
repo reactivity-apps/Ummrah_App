@@ -19,6 +19,7 @@ import { CommunicationTab } from "../../components/admin/CommunicationTab";
 import { TripDetailsTab } from "../../components/admin/TripDetailsTab";
 import { useActivity } from "../../lib/api/hooks/useActivity";
 import { useItinerary } from "../../lib/api/hooks/useItinerary";
+import { useAnnouncements } from "../../lib/api/hooks/useAnnouncements";
 
 export default function AdminScreen() {
     const [activeTab, setActiveTab] = useState<'overview' | 'members' | 'communication' | 'trip' | 'itinerary'>('overview');
@@ -94,6 +95,18 @@ export default function AdminScreen() {
             );
         },
     });
+
+    const {
+        announcements,
+        loading: announcementsLoading,
+        error: announcementsError,
+        isAdmin: isAnnouncementsAdmin,
+        createItem: createAnnouncement,
+        updateItem: updateAnnouncement,
+        deleteItem: deleteAnnouncement,
+        sendNow: sendAnnouncementNow,
+        refresh: refreshAnnouncements
+    } = useAnnouncements({ tripId: currentTrip?.id || '', adminView: true });
 
     // Show unauthorized screen if not admin
     if (!loading && !isGroupAdmin) {
@@ -234,13 +247,12 @@ export default function AdminScreen() {
         );
     }
    
-    // Refetch function for pull-to-refresh
     const handleRefresh = async () => {
         await Promise.all([refetchMembers(), refetchJoinCode()]);
     };
 
     return (
-        <SafeAreaView className="flex-1 bg-sand-50" edges={['top']}>
+        <SafeAreaView className="flex-1 bg-card" edges={["top"]}>
             <AdminModals
                 showAddMemberModal={showAddMemberModal}
                 setShowAddMemberModal={setShowAddMemberModal}
@@ -314,7 +326,7 @@ export default function AdminScreen() {
                 </ScrollView>
             </View>
 
-            <Animated.ScrollView style={fadeInStyle} className="flex-1" contentContainerStyle={{ paddingBottom: 16 }}>
+            <Animated.ScrollView style={fadeInStyle} className="flex-1 bg-background" contentContainerStyle={{ paddingBottom: 16 }}>
                 {activeTab === 'overview' && (
                     <OverviewTab
                         tripData={currentTrip}
@@ -344,7 +356,20 @@ export default function AdminScreen() {
                         refresh={refreshItinerary}
                     />
                 )}
-                {activeTab === 'communication' && <CommunicationTab tripId={currentTrip?.id} />}
+                {activeTab === 'communication' && (
+                    <CommunicationTab
+                        tripId={currentTrip?.id}
+                        announcements={announcements}
+                        loading={announcementsLoading}
+                        error={announcementsError}
+                        isAdmin={isAnnouncementsAdmin}
+                        createItem={createAnnouncement}
+                        updateItem={updateAnnouncement}
+                        deleteItem={deleteAnnouncement}
+                        sendNow={sendAnnouncementNow}
+                        refresh={refreshAnnouncements}
+                    />
+                )}
                 {activeTab === 'trip' && <TripDetailsTab trip={currentTrip} onNavigateToItinerary={() => setActiveTab('itinerary')} />}
             </Animated.ScrollView>
         </SafeAreaView>
