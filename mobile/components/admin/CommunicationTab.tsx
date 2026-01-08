@@ -30,20 +30,18 @@ export function CommunicationTab({
     // Show AnnouncementsManager if we have a trip ID
     if (tripId) {
         return (
-            <View className="p-4">
-                <AnnouncementsManager
-                    tripId={tripId}
-                    announcements={announcements}
-                    loading={loading}
-                    error={error}
-                    isAdmin={isAdmin}
-                    createItem={createItem}
-                    updateItem={updateItem}
-                    deleteItem={deleteItem}
-                    sendNow={sendNow}
-                    refresh={refresh}
-                />
-            </View>
+            <AnnouncementsManager
+                tripId={tripId}
+                announcements={announcements}
+                loading={loading}
+                error={error}
+                isAdmin={isAdmin}
+                createItem={createItem}
+                updateItem={updateItem}
+                deleteItem={deleteItem}
+                sendNow={sendNow}
+                refresh={refresh}
+            />
         );
     }
 
