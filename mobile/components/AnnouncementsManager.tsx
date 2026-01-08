@@ -5,8 +5,8 @@
  */
 
 import React, { useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, TextInput, Switch, Alert, Modal, Platform } from 'react-native';
-import { Bell, Plus, Calendar, Send, Trash2, Edit2, Edit3, AlertCircle, RefreshCw } from 'lucide-react-native';
+import { View, Text, ScrollView, TouchableOpacity, TextInput, Switch, Alert, Modal, Platform, KeyboardAvoidingView, ActivityIndicator } from 'react-native';
+import { Bell, Plus, Send, Trash2, Edit2, Edit3, AlertCircle, RefreshCw, X } from 'lucide-react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { AnnouncementInput, getAnnouncementStatus } from '../lib/api/services/announcement.service';
 import { formatTimeAgo } from '../lib/api/utils/helpers';
@@ -39,6 +39,7 @@ export function AnnouncementsManager({
 }: AnnouncementsManagerProps) {
     const [showModal, setShowModal] = useState(false);
     const [editingId, setEditingId] = useState<string | null>(null);
+    const [saving, setSaving] = useState(false);
     const [formData, setFormData] = useState<AnnouncementInput>({
         trip_id: tripId,
         title: '',
@@ -89,10 +90,12 @@ export function AnnouncementsManager({
             return;
         }
 
+        setSaving(true);
         const success = editingId
             ? await updateItem(editingId, formData)
             : await createItem(formData);
 
+        setSaving(false);
         if (success) {
             setShowModal(false);
             Alert.alert('Success', `Announcement ${editingId ? 'updated' : 'created'} successfully`);
@@ -157,14 +160,6 @@ export function AnnouncementsManager({
         );
     }
 
-    if (loading) {
-        return (
-            <View className="p-4">
-                <Text className="text-muted-foreground">Loading announcements...</Text>
-            </View>
-        );
-    }
-
     return (
         <View className="flex-1">
             {/* Action Buttons */}
@@ -187,15 +182,25 @@ export function AnnouncementsManager({
 
             {/* Announcements List */}
             <ScrollView className="flex-1 px-4">
-                {announcements.length === 0 ? (
+                {loading ? (
                     <View className="p-8 items-center">
-                        {/* <Bell size={48} color="#9CA3AF" opacity={0.3} /> */}
+                        <Text className="text-muted-foreground mt-4 text-center">
+                            Loading announcements...
+                        </Text>
+                    </View>
+                ) : announcements.length === 0 ? (
+                    <View className="p-8 items-center">
                         <Text className="text-muted-foreground mt-4 text-center">
                             No announcements yet. Create one to notify your trip members.
                         </Text>
                     </View>
                 ) : (
                     <>
+                        <View className="flex-row items-center justify-between px-3 mt-4">
+                            <Text className="text-sm text-muted-foreground">
+                                {announcements.length} {announcements.length === 1 ? 'announcement' : 'announcements'}
+                            </Text>
+                        </View>
                         {announcements.map(announcement => {
                             const status = getAnnouncementStatus(announcement);
                             return (
@@ -262,13 +267,13 @@ export function AnnouncementsManager({
                                                     <Text className="text-[#4A6741] font-medium ml-2">Send Now</Text>
                                                 </TouchableOpacity>
                                             )}
-                                            <TouchableOpacity
+                                            {/* <TouchableOpacity
                                                 onPress={() => handleOpenModal(announcement.id!)}
                                                 className="flex-1 bg-[#C5A059]/10 border border-[#C5A059]/30 rounded-lg py-2.5 flex-row items-center justify-center"
                                             >
                                                 <Edit3 size={16} color="#C5A059" />
                                                 <Text className="text-[#C5A059] font-medium ml-2">Edit</Text>
-                                            </TouchableOpacity>
+                                            </TouchableOpacity> */}
                                             <TouchableOpacity
                                                 onPress={() => handleDelete(announcement.id!)}
                                                 className="flex-1 bg-red-50 border border-red-200 rounded-lg py-2.5 flex-row items-center justify-center"
@@ -288,124 +293,149 @@ export function AnnouncementsManager({
             {/* Create/Edit Modal */}
             <Modal
                 visible={showModal}
-                animationType="fade"
+                animationType="none"
                 transparent={true}
                 onRequestClose={() => setShowModal(false)}
             >
                 <View className="flex-1 bg-black/50 justify-end">
-                    <View className="bg-card rounded-t-3xl p-6 max-h-[90%]">
-                        <View className="flex-row items-center justify-between mb-4">
-                            <Text className="text-xl font-bold text-foreground">
-                                {editingId ? 'Edit' : 'New'} Announcement
-                            </Text>
-                            <TouchableOpacity onPress={() => setShowModal(false)}>
-                                <Text className="text-[#C5A059] font-semibold">Cancel</Text>
-                            </TouchableOpacity>
-                        </View>
-
-                        <ScrollView className="mb-4">
-                            {/* Title */}
-                            <View className="mb-4">
-                                <Text className="text-sm font-semibold text-foreground mb-2">Title</Text>
-                                <TextInput
-                                    value={formData.title}
-                                    onChangeText={(text) => setFormData(prev => ({ ...prev, title: text }))}
-                                    placeholder="Enter announcement title..."
-                                    className="bg-sand-50 p-3 rounded-lg border border-sand-200 text-foreground"
-                                />
+                    <KeyboardAvoidingView
+                        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+                        className="max-h-[90%]"
+                    >
+                        <View className="bg-card rounded-t-3xl p-6">
+                            <View className="flex-row items-center justify-between mb-4">
+                                <Text className="text-xl font-bold text-foreground">
+                                    {editingId ? 'Edit' : 'New'} Announcement
+                                </Text>
+                                <TouchableOpacity onPress={() => setShowModal(false)} className="p-1 bg-sand-100 rounded-full">
+                                    <X size={20} color="#718096" />
+                                </TouchableOpacity>
                             </View>
 
-                            {/* Body */}
-                            <View className="mb-4">
-                                <Text className="text-sm font-semibold text-foreground mb-2">Message</Text>
-                                <TextInput
-                                    value={formData.body}
-                                    onChangeText={(text) => setFormData(prev => ({ ...prev, body: text }))}
-                                    placeholder="Enter announcement message..."
-                                    multiline
-                                    numberOfLines={4}
-                                    className="bg-sand-50 p-3 rounded-lg border border-sand-200 text-foreground min-h-[100px]"
-                                />
-                            </View>
-
-                            {/* Link URL */}
-                            <View className="mb-4">
-                                <Text className="text-sm font-semibold text-foreground mb-2">Link (Optional)</Text>
-                                <TextInput
-                                    value={formData.link_url || ''}
-                                    onChangeText={(text) => setFormData(prev => ({ ...prev, link_url: text }))}
-                                    placeholder="https://..."
-                                    className="bg-sand-50 p-3 rounded-lg border border-sand-200 text-foreground"
-                                    autoCapitalize="none"
-                                />
-                            </View>
-
-                            {/* High Priority Toggle */}
-                            <View className="flex-row items-center justify-between mb-4 bg-sand-50 p-3 rounded-lg">
-                                <View className="flex-row items-center">
-                                    <AlertCircle size={20} color="#F59E0B" />
-                                    <Text className="text-foreground font-semibold ml-2">High Priority</Text>
+                            <ScrollView>
+                                {/* Title */}
+                                <View className="mb-4">
+                                    <Text className="text-sm font-semibold text-foreground mb-2">Title</Text>
+                                    <TextInput
+                                        value={formData.title}
+                                        onChangeText={(text) => setFormData(prev => ({ ...prev, title: text }))}
+                                        placeholder="e.g., Important Update About Tomorrow's Schedule"
+                                        placeholderTextColor="#9CA3AF"
+                                        className="bg-sand-50 p-3 rounded-lg border border-sand-200 text-foreground"
+                                    />
                                 </View>
-                                <Switch
-                                    value={formData.is_high_priority}
-                                    onValueChange={(value) => setFormData(prev => ({ ...prev, is_high_priority: value }))}
-                                    trackColor={{ false: '#D1D5DB', true: '#4A6741' }}
-                                    thumbColor={formData.is_high_priority ? '#ffffff' : '#f4f3f4'}
-                                />
-                            </View>
 
-                            {/* Schedule */}
-                            {/* <View className="mb-4">
-                                <View className="flex-row items-center justify-between mb-2">
-                                    <Text className="text-sm font-semibold text-foreground">Schedule for Later</Text>
+                                {/* Body */}
+                                <View className="mb-4">
+                                    <Text className="text-sm font-semibold text-foreground mb-2">Message</Text>
+                                    <TextInput
+                                        value={formData.body}
+                                        onChangeText={(text) => setFormData(prev => ({ ...prev, body: text }))}
+                                        placeholder="Write your message here."
+                                        placeholderTextColor="#9CA3AF"
+                                        multiline
+                                        numberOfLines={4}
+                                        className="bg-sand-50 p-3 rounded-lg border border-sand-200 text-foreground min-h-[100px]"
+                                    />
+                                </View>
+
+                                {/* Link URL */}
+                                <View className="mb-4">
+                                    <Text className="text-sm font-semibold text-foreground mb-2">Link (Optional)</Text>
+                                    <TextInput
+                                        value={formData.link_url || ''}
+                                        onChangeText={(text) => setFormData(prev => ({ ...prev, link_url: text }))}
+                                        placeholder="https://example.com/important-info"
+                                        placeholderTextColor="#9CA3AF"
+                                        className="bg-sand-50 p-3 rounded-lg border border-sand-200 text-foreground"
+                                        autoCapitalize="none"
+                                    />
+                                </View>
+
+                                {/* High Priority Toggle */}
+                                <View className="flex-row items-center justify-between mb-4 bg-sand-50 p-3 rounded-lg">
+                                    <View className="flex-row items-center">
+                                        <AlertCircle size={20} color="#F59E0B" />
+                                        <Text className="text-foreground font-semibold ml-2">High Priority</Text>
+                                    </View>
                                     <Switch
-                                        value={!!formData.scheduled_for}
-                                        onValueChange={(value) => {
-                                            if (value) {
-                                                setFormData(prev => ({ ...prev, scheduled_for: scheduledDate.toISOString() }));
-                                            } else {
-                                                setFormData(prev => ({ ...prev, scheduled_for: null }));
-                                            }
-                                        }}
+                                        value={formData.is_high_priority}
+                                        onValueChange={(value) => setFormData(prev => ({ ...prev, is_high_priority: value }))}
                                         trackColor={{ false: '#D1D5DB', true: '#4A6741' }}
-                                        thumbColor={formData.scheduled_for ? '#ffffff' : '#f4f3f4'}
+                                        thumbColor={formData.is_high_priority ? '#ffffff' : '#f4f3f4'}
                                     />
                                 </View>
 
-                                {formData.scheduled_for && (
-                                    <TouchableOpacity
-                                        onPress={() => setShowDatePicker(true)}
-                                        className="bg-sand-50 p-3 rounded-lg border border-sand-200 flex-row items-center"
-                                    >
-                                        <Calendar size={20} color="#4A6741" />
-                                        <Text className="text-foreground ml-2">
-                                            {scheduledDate.toLocaleString()}
-                                        </Text>
-                                    </TouchableOpacity>
-                                )}
+                                {/* TODO: Scheduling feature temporarily disabled - needs implementation work */}
+                                {/* Schedule */}
+                                {/* <View className="mb-4">
+                                    <View className="flex-row items-center justify-between mb-2">
+                                        <Text className="text-sm font-semibold text-foreground">Schedule for Later</Text>
+                                        <Switch
+                                            value={!!formData.scheduled_for}
+                                            onValueChange={(value) => {
+                                                if (value) {
+                                                    setFormData(prev => ({ ...prev, scheduled_for: scheduledDate.toISOString() }));
+                                                } else {
+                                                    setFormData(prev => ({ ...prev, scheduled_for: null }));
+                                                }
+                                            }}
+                                            trackColor={{ false: '#D1D5DB', true: '#4A6741' }}
+                                            thumbColor={formData.scheduled_for ? '#ffffff' : '#f4f3f4'}
+                                        />
+                                    </View>
 
-                                {showDatePicker && (
-                                    <DateTimePicker
-                                        value={scheduledDate}
-                                        mode="datetime"
-                                        display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-                                        onChange={handleDateChange}
-                                        minimumDate={new Date()}
-                                    />
-                                )}
-                            </View> */}
-                        </ScrollView>
+                                    {formData.scheduled_for && (
+                                        <TouchableOpacity
+                                            onPress={() => setShowDatePicker(true)}
+                                            className="bg-sand-50 p-3 rounded-lg border border-sand-200 flex-row items-center"
+                                        >
+                                            <Calendar size={20} color="#4A6741" />
+                                            <Text className="text-foreground ml-2">
+                                                {scheduledDate.toLocaleString()}
+                                            </Text>
+                                        </TouchableOpacity>
+                                    )}
 
-                        {/* Save Button */}
-                        <TouchableOpacity
-                            onPress={handleSave}
-                            className="bg-[#4A6741] p-4 rounded-xl items-center"
-                        >
-                            <Text className="text-white font-bold text-base">
-                                {editingId ? 'Update' : formData.scheduled_for ? 'Schedule' : 'Send'} Announcement
-                            </Text>
-                        </TouchableOpacity>
-                    </View>
+                                    {showDatePicker && (
+                                        <DateTimePicker
+                                            value={scheduledDate}
+                                            mode="datetime"
+                                            display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                                            onChange={handleDateChange}
+                                            minimumDate={new Date()}
+                                        />
+                                    )}
+                                </View> */}
+                            </ScrollView>
+
+                            {/* Action Buttons */}
+                            <View className="flex-row gap-3 pb-5 border-t border-sand-200 pt-4">
+                                <TouchableOpacity
+                                    onPress={() => setShowModal(false)}
+                                    disabled={saving}
+                                    className="flex-1 bg-sand-100 border border-sand-200 rounded-xl p-4 flex-row items-center justify-center"
+                                >
+                                    <X size={18} color="#718096" />
+                                    <Text className="text-muted-foreground font-semibold text-center ml-2">Cancel</Text>
+                                </TouchableOpacity>
+                                <TouchableOpacity
+                                    onPress={handleSave}
+                                    disabled={saving}
+                                    className="flex-1 bg-[#4A6741]/10 border border-[#4A6741]/30 rounded-xl p-4 flex-row items-center justify-center"
+                                >
+                                    {saving ? (
+                                        <ActivityIndicator size="small" color="#4A6741" />
+                                    ) : (
+                                        <>
+                                            <Send size={18} color="#4A6741" />
+                                            <Text className="text-[#4A6741] font-semibold text-center ml-2">Send</Text>
+                                        </>
+                                    )}
+                                </TouchableOpacity>
+                            </View>
+                        </View>
+                    </KeyboardAvoidingView>
                 </View>
             </Modal>
         </View>
