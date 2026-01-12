@@ -7,6 +7,8 @@ import { ItineraryItemInput } from "../../lib/api/services/itinerary.service";
 interface ItineraryTabProps {
     tripId: string;
     tripName: string;
+    tripStartDate?: string | null;
+    tripEndDate?: string | null;
     items: ItineraryItemRow[];
     loading: boolean;
     error: string | null;
@@ -21,6 +23,8 @@ interface ItineraryTabProps {
 export function ItineraryTab({
     tripId,
     tripName,
+    tripStartDate,
+    tripEndDate,
     items,
     loading,
     error,
@@ -51,6 +55,8 @@ export function ItineraryTab({
             <ItineraryManager
                 tripId={tripId}
                 tripName={tripName}
+                tripStartDate={tripStartDate}
+                tripEndDate={tripEndDate}
                 items={items}
                 loading={loading}
                 error={error}

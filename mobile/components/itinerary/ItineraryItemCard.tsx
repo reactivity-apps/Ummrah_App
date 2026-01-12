@@ -8,7 +8,8 @@ import React from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
 import { MapPin, Edit3, Trash2, GripVertical } from 'lucide-react-native';
 import { ItineraryItemRow } from '../../types/db';
-import { ActivityIcon } from '../../lib/itineraryUtils';
+import { ActivityIcon, getActivityType } from '../../lib/itineraryUtils';
+import { formatTime } from '../../lib/utils';
 
 interface ItineraryItemCardProps {
     item: ItineraryItemRow;
@@ -25,16 +26,6 @@ export default function ItineraryItemCard({
     onEdit,
     onDelete,
 }: ItineraryItemCardProps) {
-    const formatTime = (datetime: string | null | undefined) => {
-        if (!datetime) return '';
-        const date = new Date(datetime);
-        return date.toLocaleTimeString('en-US', {
-            hour: '2-digit',
-            minute: '2-digit',
-            hour12: true,
-        });
-    };
-
     return (
         <View className="relative pl-6 pb-4">
             {/* Timeline Dot */}
@@ -45,7 +36,7 @@ export default function ItineraryItemCard({
 
             <TouchableOpacity
                 onPress={() => item.id && onToggle(item.id)}
-                className="bg-card border border-[#C5A059]/20 rounded-xl p-3.5"
+                className="bg-card border border-[#C5A059]/30 rounded-xl p-3.5"
                 activeOpacity={0.7}
             >
                 <View className="flex-row items-start justify-between mb-2">
@@ -59,7 +50,14 @@ export default function ItineraryItemCard({
                             </Text>
                         )}
                     </View>
-                    <GripVertical size={20} color="#C5A059" />
+                    <View className="flex-row items-center gap-2">
+                        <View className="px-2 py-0.5 rounded-full bg-sand-100">
+                            <Text className="text-xs font-medium text-foreground">
+                                {getActivityType(item.title)}
+                            </Text>
+                        </View>
+                        <GripVertical size={20} color="#C5A059" />
+                    </View>
                 </View>
 
                 <Text className="text-foreground font-semibold leading-5 mb-1">

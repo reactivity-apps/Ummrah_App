@@ -8,6 +8,7 @@ import { useTrip } from "../../lib/context/TripContext";
 import { useTripStatus } from "../../lib/api/hooks/useTripStatus";
 import { ItineraryItemRow } from "../../types/db";
 import { ActivityIcon, getActivityColor, getActivityType } from "../../lib/itineraryUtils";
+import { formatTime } from "../../lib/utils";
 
 export default function ItineraryScreen() {
     const fadeStyle = useFadeIn(0);
@@ -186,12 +187,12 @@ export default function ItineraryScreen() {
                                                     </View>
                                                     {activity.starts_at && (
                                                         <Text className="text-xs text-muted-foreground font-semibold">
-                                                            {new Date(activity.starts_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}
+                                                            {formatTime(activity.starts_at)}
                                                         </Text>
                                                     )}
                                                 </View>
                                                 <View className="px-2 py-0.5 rounded-full bg-sand-100">
-                                                    <Text className="text-[10px] font-medium text-foreground">
+                                                    <Text className="text-xs font-medium text-foreground">
                                                         {getActivityType(activity.title)}
                                                     </Text>
                                                 </View>

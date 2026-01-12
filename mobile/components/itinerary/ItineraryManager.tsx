@@ -18,6 +18,8 @@ import TemplatePickerModal from './TemplatePickerModal';
 interface ItineraryManagerProps {
     tripId: string;
     tripName?: string;
+    tripStartDate?: string | null;
+    tripEndDate?: string | null;
     items: ItineraryItemRow[];
     loading: boolean;
     error: string | null;
@@ -32,6 +34,8 @@ interface ItineraryManagerProps {
 export default function ItineraryManager({
     tripId,
     tripName,
+    tripStartDate,
+    tripEndDate,
     items,
     loading,
     error,
@@ -229,9 +233,7 @@ export default function ItineraryManager({
     }
 
     return (
-        <View className="flex-1 bg-sand-50">
-            
-
+        <View className="flex-1">
             {/* Action Buttons */}
             <View className="bg-card border-b border-[#C5A059]/10 px-4 py-3 flex-row gap-2">
                 <TouchableOpacity
@@ -306,6 +308,8 @@ export default function ItineraryManager({
                 visible={showEditModal}
                 editingItem={editingItem}
                 saving={saving}
+                tripStartDate={tripStartDate}
+                tripEndDate={tripEndDate}
                 onClose={() => {
                     setShowEditModal(false);
                     setEditingItem(null);

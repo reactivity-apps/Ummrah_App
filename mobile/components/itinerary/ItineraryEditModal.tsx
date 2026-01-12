@@ -23,6 +23,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { ArrowLeft, Calendar, Clock, MapPin, AlignLeft, ChevronRight, Check } from 'lucide-react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { ItineraryItemInput } from '../../lib/api/services/itinerary.service';
+import { formatDate, formatTime } from '../../lib/utils';
 
 export interface EditingItem extends Partial<ItineraryItemInput> {
     id?: string;
@@ -36,6 +37,8 @@ interface ItineraryEditModalProps {
     onSave: () => void;
     onUpdate: (item: EditingItem) => void;
     saving?: boolean;
+    tripStartDate?: string | null;
+    tripEndDate?: string | null;
 }
 
 export default function ItineraryEditModal({
@@ -45,6 +48,8 @@ export default function ItineraryEditModal({
     onSave,
     onUpdate,
     saving = false,
+    tripStartDate,
+    tripEndDate,
 }: ItineraryEditModalProps) {
     // Editing states for inline editing
     const [editingTitle, setEditingTitle] = useState(false);
@@ -52,6 +57,7 @@ export default function ItineraryEditModal({
     const [editingLocation, setEditingLocation] = useState(false);
     const [showSchedulePicker, setShowSchedulePicker] = useState(false);
     const [schedulePickerMode, setSchedulePickerMode] = useState<'date' | 'start' | 'end'>('date');
+    const [validationError, setValidationError] = useState<string>('');
 
     // Reset editing states when modal opens/closes
     useEffect(() => {
@@ -60,27 +66,49 @@ export default function ItineraryEditModal({
             setEditingDescription(false);
             setEditingLocation(false);
             setShowSchedulePicker(false);
+            setValidationError('');
         }
     }, [visible]);
 
-    if (!editingItem) return null;
-
-    // Format date and time for display
-    const formatDate = (dateStr?: string | null) => {
-        if (!dateStr) return 'Not set';
+    // Validation logic
+    const isDateInRange = (dateStr: string | null | undefined): boolean => {
+        if (!dateStr || !tripStartDate || !tripEndDate) return true;
         const date = new Date(dateStr);
-        const options: Intl.DateTimeFormatOptions = { weekday: 'short', month: 'short', day: 'numeric' };
-        return date.toLocaleDateString('en-US', options);
+        const start = new Date(tripStartDate);
+        const end = new Date(tripEndDate);
+        return date >= start && date <= end;
     };
 
-    const formatTime = (timeStr?: string | null) => {
-        if (!timeStr) return '--:--';
-        const date = new Date(timeStr);
-        return date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+    if (!editingItem) return null;
+
+    const canSave = (): boolean => {
+        // Check required fields
+        if (!editingItem.title?.trim()) return false;
+        if (!editingItem.day_date) return false;
+        if (!editingItem.starts_at) return false;
+        if (!editingItem.ends_at) return false;
+
+        // Check date is within trip range
+        if (tripStartDate && tripEndDate && !isDateInRange(editingItem.day_date)) {
+            return false;
+        }
+
+        return true;
+    };
+
+    const getValidationMessage = (): string => {
+        if (!editingItem.title?.trim()) return 'Title is required';
+        if (!editingItem.day_date) return 'Date is required';
+        if (!editingItem.starts_at) return 'Start time is required';
+        if (!editingItem.ends_at) return 'End time is required';
+        if (tripStartDate && tripEndDate && !isDateInRange(editingItem.day_date)) {
+            return 'Date must be within trip dates';
+        }
+        return '';
     };
 
     const formatSchedule = () => {
-        const date = formatDate(editingItem.day_date);
+        const date = editingItem.day_date ? formatDate(editingItem.day_date) : 'Not set';
         const startTime = formatTime(editingItem.starts_at);
         const endTime = formatTime(editingItem.ends_at);
         return `${date} · ${startTime}–${endTime}`;
@@ -94,6 +122,7 @@ export default function ItineraryEditModal({
         if (selectedDate) {
             const dateStr = selectedDate.toISOString().split('T')[0];
             onUpdate({ ...editingItem, day_date: dateStr });
+            setValidationError('');
 
             if (Platform.OS === 'ios') {
                 Vibration.vibrate(10);
@@ -108,6 +137,7 @@ export default function ItineraryEditModal({
 
         if (selectedTime) {
             onUpdate({ ...editingItem, starts_at: selectedTime.toISOString() });
+            setValidationError('');
 
             if (Platform.OS === 'ios') {
                 Vibration.vibrate(10);
@@ -122,6 +152,7 @@ export default function ItineraryEditModal({
 
         if (selectedTime) {
             onUpdate({ ...editingItem, ends_at: selectedTime.toISOString() });
+            setValidationError('');
 
             if (Platform.OS === 'ios') {
                 Vibration.vibrate(10);
@@ -132,7 +163,18 @@ export default function ItineraryEditModal({
     const openSchedulePicker = (mode: 'date' | 'start' | 'end') => {
         setSchedulePickerMode(mode);
         setShowSchedulePicker(true);
+        setValidationError('');
         Vibration.vibrate(10);
+    };
+
+    const handleSave = () => {
+        const message = getValidationMessage();
+        if (message) {
+            setValidationError(message);
+            Vibration.vibrate([0, 100, 50, 100]);
+            return;
+        }
+        onSave();
     };
 
     return (
@@ -170,9 +212,9 @@ export default function ItineraryEditModal({
                             </View>
 
                             <TouchableOpacity
-                                onPress={onSave}
-                                disabled={saving || !editingItem.title?.trim()}
-                                className={`px-4 py-2 rounded-full ${!editingItem.title?.trim()
+                                onPress={handleSave}
+                                disabled={saving || !canSave()}
+                                className={`px-4 py-2 rounded-full ${!canSave()
                                     ? 'bg-sand-200'
                                     : 'bg-[#4A6741]'
                                     }`}
@@ -196,13 +238,7 @@ export default function ItineraryEditModal({
                     >
                         {/* Activity Summary Card (Always Visible) */}
                         {!editingItem.isNew && (
-                            <View className="mx-4 mt-4 bg-white rounded-2xl p-4 shadow-sm" style={{
-                                shadowColor: '#000',
-                                shadowOffset: { width: 0, height: 2 },
-                                shadowOpacity: 0.08,
-                                shadowRadius: 8,
-                                elevation: 3,
-                            }}>
+                            <View className="mx-4 mt-4 bg-white rounded-2xl p-4 border border-[#C5A059]/30">
                                 <Text className="text-lg font-bold text-foreground mb-2">
                                     {editingItem.title || 'Untitled Activity'}
                                 </Text>
@@ -227,6 +263,15 @@ export default function ItineraryEditModal({
                             </Text>
                         )}
 
+                        {/* Validation Error */}
+                        {validationError && (
+                            <View className="mx-4 mt-3 bg-red-50 border border-red-200 rounded-xl p-3">
+                                <Text className="text-sm text-red-600 text-center font-semibold">
+                                    {validationError}
+                                </Text>
+                            </View>
+                        )}
+
                         {/* Spacer */}
                         <View className="h-6" />
 
@@ -239,15 +284,8 @@ export default function ItineraryEditModal({
                             {/* Title - Inline Editing */}
                             <TouchableOpacity
                                 onPress={() => setEditingTitle(true)}
-                                className="bg-white rounded-2xl p-4 mb-3 shadow-sm"
+                                className="bg-white rounded-2xl p-4 mb-3 border border-[#C5A059]/30"
                                 activeOpacity={0.7}
-                                style={{
-                                    shadowColor: '#000',
-                                    shadowOffset: { width: 0, height: 1 },
-                                    shadowOpacity: 0.06,
-                                    shadowRadius: 3,
-                                    elevation: 2,
-                                }}
                             >
                                 <View className="flex-row items-center justify-between mb-2">
                                     <Text className="text-xs font-semibold text-muted-foreground">Title</Text>
@@ -274,15 +312,8 @@ export default function ItineraryEditModal({
                             {/* Description - Inline Editing */}
                             <TouchableOpacity
                                 onPress={() => setEditingDescription(true)}
-                                className="bg-white rounded-2xl p-4 mb-3 shadow-sm"
+                                className="bg-white rounded-2xl p-4 mb-3 border border-[#C5A059]/30"
                                 activeOpacity={0.7}
-                                style={{
-                                    shadowColor: '#000',
-                                    shadowOffset: { width: 0, height: 1 },
-                                    shadowOpacity: 0.06,
-                                    shadowRadius: 3,
-                                    elevation: 2,
-                                }}
                             >
                                 <View className="flex-row items-center justify-between mb-2">
                                     <View className="flex-row items-center">
@@ -314,15 +345,8 @@ export default function ItineraryEditModal({
                             {/* Location - Inline Editing */}
                             <TouchableOpacity
                                 onPress={() => setEditingLocation(true)}
-                                className="bg-white rounded-2xl p-4 shadow-sm"
+                                className="bg-white rounded-2xl p-4 border border-[#C5A059]/30"
                                 activeOpacity={0.7}
-                                style={{
-                                    shadowColor: '#000',
-                                    shadowOffset: { width: 0, height: 1 },
-                                    shadowOpacity: 0.06,
-                                    shadowRadius: 3,
-                                    elevation: 2,
-                                }}
                             >
                                 <View className="flex-row items-center justify-between mb-2">
                                     <View className="flex-row items-center">
@@ -362,15 +386,8 @@ export default function ItineraryEditModal({
                             {/* Combined Schedule Card */}
                             <TouchableOpacity
                                 onPress={() => openSchedulePicker('date')}
-                                className="bg-white rounded-2xl p-4 shadow-sm"
+                                className="bg-white rounded-2xl p-4 border border-[#C5A059]/30"
                                 activeOpacity={0.7}
-                                style={{
-                                    shadowColor: '#000',
-                                    shadowOffset: { width: 0, height: 1 },
-                                    shadowOpacity: 0.06,
-                                    shadowRadius: 3,
-                                    elevation: 2,
-                                }}
                             >
                                 <View className="flex-row items-center justify-between mb-3">
                                     <View className="flex-row items-center">
@@ -429,13 +446,7 @@ export default function ItineraryEditModal({
                         {/* Date/Time Picker (iOS) */}
                         {showSchedulePicker && Platform.OS === 'ios' && (
                             <View className="mx-4 mt-3">
-                                <View className="bg-white rounded-2xl overflow-hidden shadow-sm" style={{
-                                    shadowColor: '#000',
-                                    shadowOffset: { width: 0, height: 1 },
-                                    shadowOpacity: 0.06,
-                                    shadowRadius: 3,
-                                    elevation: 2,
-                                }}>
+                                <View className="bg-white rounded-2xl overflow-hidden border border-[#C5A059]/30">
                                     <View className="flex-row items-center justify-between px-4 py-3 border-b border-sand-100">
                                         <Text className="text-sm font-semibold text-foreground">
                                             {schedulePickerMode === 'date' ? 'Select Date' :
@@ -467,6 +478,8 @@ export default function ItineraryEditModal({
                                                     : handleEndTimeChange
                                         }
                                         textColor="#1F2937"
+                                        minimumDate={schedulePickerMode === 'date' && tripStartDate ? new Date(tripStartDate) : undefined}
+                                        maximumDate={schedulePickerMode === 'date' && tripEndDate ? new Date(tripEndDate) : undefined}
                                     />
                                 </View>
                             </View>
@@ -491,6 +504,8 @@ export default function ItineraryEditModal({
                                             ? handleStartTimeChange
                                             : handleEndTimeChange
                                 }
+                                minimumDate={schedulePickerMode === 'date' && tripStartDate ? new Date(tripStartDate) : undefined}
+                                maximumDate={schedulePickerMode === 'date' && tripEndDate ? new Date(tripEndDate) : undefined}
                             />
                         )}
                     </ScrollView>

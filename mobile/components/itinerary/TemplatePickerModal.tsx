@@ -146,16 +146,11 @@ export default function TemplatePickerModal({
                             <TouchableOpacity
                                 key={template.id}
                                 onPress={() => handleSelectTemplate(template)}
-                                className={`mx-4 my-1.5 rounded-2xl overflow-hidden ${isJustAdded ? 'bg-[#4A6741]/10' : 'bg-white'
+                                className={`mx-4 my-1.5 rounded-2xl overflow-hidden border border-[#C5A059]/30 ${isJustAdded ? 'bg-[#4A6741]/10' : 'bg-white'
                                     }`}
                                 activeOpacity={0.7}
                                 style={{
                                     minHeight: 76,
-                                    shadowColor: '#000',
-                                    shadowOffset: { width: 0, height: 1 },
-                                    shadowOpacity: 0.06,
-                                    shadowRadius: 3,
-                                    elevation: 2,
                                 }}
                             >
                                 <View className="px-4 py-4">

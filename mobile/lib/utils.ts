@@ -14,6 +14,22 @@ export function formatDate(dateString: string, options?: Intl.DateTimeFormatOpti
 }
 
 /**
+ * Format a time string or datetime to a readable time format
+ */
+export function formatTime(datetime: string | null | undefined, options?: Intl.DateTimeFormatOptions): string {
+    if (!datetime) return '--:--';
+    
+    const defaultOptions: Intl.DateTimeFormatOptions = {
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true,
+    };
+    
+    const date = new Date(datetime);
+    return date.toLocaleTimeString('en-US', options || defaultOptions);
+}
+
+/**
  * Get initials from a name
  */
 export function getInitials(name: string): string {
