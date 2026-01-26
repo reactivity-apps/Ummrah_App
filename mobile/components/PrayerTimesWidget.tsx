@@ -27,12 +27,12 @@ interface Prayer {
 
 interface PrayerTimesWidgetProps {
     prayers: Prayer[];
-    nextPrayer: Prayer;
+    nextPrayer: Prayer | null;
     location?: string;
     timeUntil?: string;
     onPress?: () => void;
     clickable?: boolean;
-    themeColors?: string[]; // Gradient colors for location theming
+    themeColors?: [string, string, ...string[]]; // Gradient colors for location theming
 }
 
 export default function PrayerTimesWidget({
@@ -68,7 +68,7 @@ export default function PrayerTimesWidget({
                     </View>
                     <Text style={styles.errorTitle}>Unable to load prayer times</Text>
                     <Text style={styles.errorMessage}>
-                        {!hasValidPrayers 
+                        {!hasValidPrayers
                             ? 'Prayer times are currently unavailable'
                             : 'Next prayer information is missing'}
                     </Text>
@@ -80,7 +80,7 @@ export default function PrayerTimesWidget({
     const content = (
         // @ts-ignore - LinearGradient type compatibility issue with React 19
         <LinearGradient
-            colors={themeColors}
+            colors={(themeColors || ['#4A6741', '#3d5435']) as [string, string, ...string[]]}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
             style={styles.gradient}
@@ -92,16 +92,16 @@ export default function PrayerTimesWidget({
                 </View>
                 <View style={styles.nextPrayerContainer}>
                     <Text style={styles.nextPrayerLabel}>Next Prayer</Text>
-                    <Text style={styles.nextPrayerName}>{nextPrayer.name}</Text>
+                    <Text style={styles.nextPrayerName}>{nextPrayer?.name || 'N/A'}</Text>
                 </View>
             </View>
 
             <View style={styles.timeContainer}>
                 <View style={styles.timeRow}>
                     <Clock size={20} color="rgba(255,255,255,0.8)" />
-                    <Text style={styles.timeText}>{nextPrayer.time}</Text>
+                    <Text style={styles.timeText}>{nextPrayer?.time || 'N/A'}</Text>
                 </View>
-                <Text style={styles.countdownText}>in {timeUntil}</Text>
+                <Text style={styles.countdownText}>in {timeUntil || 'N/A'}</Text>
             </View>
 
             <View style={styles.prayersRow}>
