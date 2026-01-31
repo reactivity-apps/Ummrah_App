@@ -27,7 +27,7 @@ export default function HomeScreen() {
     const { currentTrip } = useTrip();
     const { userName, loading: authLoading } = useAuth();
     const { locationAddress, selectedLocation } = usePrayerLocation();
-    
+
     // Fetch real-time prayer data
     const { prayers, nextPrayer, timeUntilNext, location, isLoading: prayerLoading } = usePrayerWidget({
         address: locationAddress,
@@ -35,7 +35,7 @@ export default function HomeScreen() {
     });
 
     // Theme colors based on selected location
-    const themeColors = selectedLocation === 'Makkah' 
+    const themeColors: [string, string, ...string[]] = selectedLocation === 'Makkah'
         ? ['#4A6741', '#3A5234', '#2A3E28']  // Green for Makkah
         : ['#C5A059', '#B8904D', '#A67F42']; // Gold for Madina
 

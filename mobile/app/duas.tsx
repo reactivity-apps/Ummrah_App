@@ -10,6 +10,7 @@ export default function DuasScreen() {
     const router = useRouter();
     const { category } = useLocalSearchParams<{ category?: string }>();
     const [selectedCategory, setSelectedCategory] = useState(category || "All");
+    const [searchQuery, setSearchQuery] = useState("");
     const [isLoading, setIsLoading] = useState(true);
     const categories = ["All", "Tawaf", "Sa'i", "Morning", "Evening", "Mosque", "Kaaba", "General"];
 

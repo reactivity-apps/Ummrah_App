@@ -43,7 +43,7 @@ export default function PrayersScreen() {
     });
 
     // Theme colors based on selected location
-    const themeColors = selectedLocation === 'Makkah' 
+    const themeColors: [string, string, ...string[]] = selectedLocation === 'Makkah'
         ? ['#4A6741', '#3A5234', '#2A3E28']  // Green for Makkah
         : ['#C5A059', '#B8904D', '#A67F42']; // Gold for Madina
 
@@ -51,7 +51,7 @@ export default function PrayersScreen() {
         <SafeAreaView className="flex-1 bg-[#FDFBF7]" edges={['top']}>
             <View className="px-6 py-4 border-b border-[#C5A059]/20">
                 <View className="flex-row gap-2">
-                    <TouchableOpacity 
+                    <TouchableOpacity
                         onPress={() => setLocation('Makkah')}
                         className={`px-3 py-1.5 rounded-lg ${selectedLocation === 'Makkah' ? 'bg-[#4A6741]' : 'bg-stone-100'}`}
                         activeOpacity={0.7}
@@ -60,7 +60,7 @@ export default function PrayersScreen() {
                             Makkah
                         </Text>
                     </TouchableOpacity>
-                    <TouchableOpacity 
+                    <TouchableOpacity
                         onPress={() => setLocation('Madina')}
                         className={`px-3 py-1.5 rounded-lg ${selectedLocation === 'Madina' ? 'bg-[#C5A059]' : 'bg-stone-100'}`}
                         activeOpacity={0.7}
@@ -122,54 +122,54 @@ export default function PrayersScreen() {
 
                 {/* All Prayer Times */}
                 {!isLoading && prayerTimes.length > 0 && (
-                <View className="mb-6">
-                    <Text className="text-lg font-semibold text-stone-800 mb-4">Today's Schedule</Text>
-                    <View className="bg-white rounded-2xl border border-[#C5A059]/20 shadow-sm overflow-hidden">
-                        {prayerTimes.map((prayer, index) => (
-                            <View key={prayer.name}>
-                                <View className={`flex-row items-center justify-between px-5 py-4 ${prayer.isNext ? 'bg-[#C5A059]/10' : ''}`}>
-                                    <View className="flex-row items-center flex-1">
-                                        <View className={`w-12 h-12 rounded-full items-center justify-center ${prayer.isNext ? 'bg-[#C5A059]' :
-                                            prayer.isPassed ? 'bg-stone-100' : 'bg-[#C5A059]/10'
-                                            }`}>
-                                            {prayer.name === 'Fajr' && <Sunrise size={20} color={prayer.isNext ? 'white' : prayer.isPassed ? '#A0AEC0' : '#C5A059'} />}
-                                            {prayer.name === 'Sunrise' && <Sunrise size={20} color={prayer.isPassed ? '#A0AEC0' : '#C5A059'} />}
-                                            {prayer.name === 'Dhuhr' && <Sun size={20} color={prayer.isNext ? 'white' : prayer.isPassed ? '#A0AEC0' : '#C5A059'} />}
-                                            {prayer.name === 'Asr' && <Cloud size={20} color={prayer.isNext ? 'white' : prayer.isPassed ? '#A0AEC0' : '#C5A059'} />}
-                                            {prayer.name === 'Maghrib' && <Sunset size={20} color={prayer.isNext ? 'white' : prayer.isPassed ? '#A0AEC0' : '#C5A059'} />}
-                                            {prayer.name === 'Isha' && <Moon size={20} color={prayer.isNext ? 'white' : prayer.isPassed ? '#A0AEC0' : '#C5A059'} />}
-                                        </View>
-                                        <View className="ml-4">
-                                            <Text className={`text-base font-semibold ${prayer.isNext ? 'text-[#C5A059]' :
-                                                prayer.isPassed ? 'text-stone-400' : 'text-stone-800'
+                    <View className="mb-6">
+                        <Text className="text-lg font-semibold text-stone-800 mb-4">Today's Schedule</Text>
+                        <View className="bg-white rounded-2xl border border-[#C5A059]/20 shadow-sm overflow-hidden">
+                            {prayerTimes.map((prayer, index) => (
+                                <View key={prayer.name}>
+                                    <View className={`flex-row items-center justify-between px-5 py-4 ${prayer.isNext ? 'bg-[#C5A059]/10' : ''}`}>
+                                        <View className="flex-row items-center flex-1">
+                                            <View className={`w-12 h-12 rounded-full items-center justify-center ${prayer.isNext ? 'bg-[#C5A059]' :
+                                                prayer.isPassed ? 'bg-stone-100' : 'bg-[#C5A059]/10'
                                                 }`}>
-                                                {prayer.name}
+                                                {prayer.name === 'Fajr' && <Sunrise size={20} color={prayer.isNext ? 'white' : prayer.isPassed ? '#A0AEC0' : '#C5A059'} />}
+                                                {prayer.name === 'Sunrise' && <Sunrise size={20} color={prayer.isPassed ? '#A0AEC0' : '#C5A059'} />}
+                                                {prayer.name === 'Dhuhr' && <Sun size={20} color={prayer.isNext ? 'white' : prayer.isPassed ? '#A0AEC0' : '#C5A059'} />}
+                                                {prayer.name === 'Asr' && <Cloud size={20} color={prayer.isNext ? 'white' : prayer.isPassed ? '#A0AEC0' : '#C5A059'} />}
+                                                {prayer.name === 'Maghrib' && <Sunset size={20} color={prayer.isNext ? 'white' : prayer.isPassed ? '#A0AEC0' : '#C5A059'} />}
+                                                {prayer.name === 'Isha' && <Moon size={20} color={prayer.isNext ? 'white' : prayer.isPassed ? '#A0AEC0' : '#C5A059'} />}
+                                            </View>
+                                            <View className="ml-4">
+                                                <Text className={`text-base font-semibold ${prayer.isNext ? 'text-[#C5A059]' :
+                                                    prayer.isPassed ? 'text-stone-400' : 'text-stone-800'
+                                                    }`}>
+                                                    {prayer.name}
+                                                </Text>
+                                                {prayer.isNext && (
+                                                    <Text className="text-xs text-emerald-600 font-medium">Up next</Text>
+                                                )}
+                                            </View>
+                                        </View>
+                                        <View className="items-end">
+                                            <Text className={`text-lg font-semibold ${prayer.isNext ? 'text-[#4A6741]' :
+                                                prayer.isPassed ? 'text-stone-400' : 'text-stone-700'
+                                                }`}>
+                                                {prayer.time}
                                             </Text>
                                             {prayer.isNext && (
-                                                <Text className="text-xs text-emerald-600 font-medium">Up next</Text>
+                                                <Text className="text-xs text-emerald-600 font-medium">
+                                                    {timeUntilNext}
+                                                </Text>
                                             )}
                                         </View>
                                     </View>
-                                    <View className="items-end">
-                                        <Text className={`text-lg font-semibold ${prayer.isNext ? 'text-[#4A6741]' :
-                                            prayer.isPassed ? 'text-stone-400' : 'text-stone-700'
-                                            }`}>
-                                            {prayer.time}
-                                        </Text>
-                                        {prayer.isNext && (
-                                            <Text className="text-xs text-emerald-600 font-medium">
-                                                {timeUntilNext}
-                                            </Text>
-                                        )}
-                                    </View>
+                                    {index < prayerTimes.length - 1 && (
+                                        <View className="h-px bg-stone-100 mx-5" />
+                                    )}
                                 </View>
-                                {index < prayerTimes.length - 1 && (
-                                    <View className="h-px bg-stone-100 mx-5" />
-                                )}
-                            </View>
-                        ))}
+                            ))}
+                        </View>
                     </View>
-                </View>
                 )}
 
                 {/* Qibla Direction */}
@@ -192,15 +192,15 @@ export default function PrayersScreen() {
 
                 {/* Islamic Date */}
                 {!isLoading && (
-                <View className="mb-6 bg-amber-50 rounded-2xl p-5 border border-amber-100">
-                    <View className="flex-row items-center justify-between">
-                        <View>
-                            <Text className="text-sm text-amber-800/60 uppercase tracking-widest mb-1">Islamic Date</Text>
-                            <Text className="text-lg font-semibold text-amber-900">{hijriDate || 'Loading...'}</Text>
+                    <View className="mb-6 bg-amber-50 rounded-2xl p-5 border border-amber-100">
+                        <View className="flex-row items-center justify-between">
+                            <View>
+                                <Text className="text-sm text-amber-800/60 uppercase tracking-widest mb-1">Islamic Date</Text>
+                                <Text className="text-lg font-semibold text-amber-900">{hijriDate || 'Loading...'}</Text>
+                            </View>
+                            <Text className="text-4xl">📅</Text>
                         </View>
-                        <Text className="text-4xl">📅</Text>
                     </View>
-                </View>
                 )}
             </Animated.ScrollView>
 
